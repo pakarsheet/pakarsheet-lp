@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useMemo, useEffect } from "react";
-import { useData } from "@/hooks/useData";
+import { useData, Product } from "@/hooks/useData";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -20,7 +20,6 @@ import {
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "pakarsheet2024";
 const CATEGORIES = ["Keuangan", "Marketing", "Inventory", "HR & Admin", "Lainnya"];
 
-// --- Mock Chart Data ---
 const chartData = [
   { name: 'Sen', clicks: 400 },
   { name: 'Sel', clicks: 300 },
@@ -30,8 +29,6 @@ const chartData = [
   { name: 'Sab', clicks: 900 },
   { name: 'Min', clicks: 1200 },
 ];
-
-// --- Components ---
 
 function StatCard({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: any, color: string }) {
   return (
@@ -60,17 +57,18 @@ export default function AdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Form States for Products
+  // Form States
   const [formData, setFormData] = useState({ name: "", description: "", price: "", lynkUrl: "", category: "Keuangan" });
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleEdit = (item: any) => {
     setEditingItem(item);
     if (activeTab === 'products') {
       setFormData({ name: item.name, description: item.description, price: item.price.toString(), lynkUrl: item.lynkUrl || "", category: item.category });
-      setImagePreview(item.image);
+      setImagePreviews(item.images || []);
+      setImageFiles([]);
     }
     setIsDrawerOpen(true);
   };
@@ -79,36 +77,50 @@ export default function AdminPage() {
     setIsDrawerOpen(false);
     setEditingItem(null);
     setFormData({ name: "", description: "", price: "", lynkUrl: "", category: "Keuangan" });
-    setImagePreview(null);
-    setImageFile(null);
+    setImagePreviews([]);
+    setImageFiles([]);
   };
 
-  const processFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
-    setImageFile(file);
+  const processFiles = (files: FileList) => {
+    const newFiles = Array.from(files);
+    setImageFiles(prev => [...prev, ...newFiles]);
+
+    newFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviews(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (imagePreviews.length === 0) return alert("Pilih minimal satu gambar.");
     setIsSubmitting(true);
 
-    let imageUrl = imagePreview;
+    const uploadedUrls: string[] = [...imagePreviews.filter(url => url.startsWith('http'))];
 
-    // Handle Image Upload to Supabase Storage if new file selected
-    if (supabase && imageFile) {
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `product-images/${fileName}`;
+    // Upload new files to Supabase
+    if (supabase && imageFiles.length > 0) {
+      for (const file of imageFiles) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `product-images/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('products')
-        .upload(filePath, imageFile);
+        const { error: uploadError } = await supabase.storage
+          .from('products')
+          .upload(filePath, file);
 
-      if (!uploadError) {
-        const { data } = supabase.storage.from('products').getPublicUrl(filePath);
-        imageUrl = data.publicUrl;
+        if (!uploadError) {
+          const { data } = supabase.storage.from('products').getPublicUrl(filePath);
+          uploadedUrls.push(data.publicUrl);
+        }
       }
     }
 
@@ -117,7 +129,7 @@ export default function AdminPage() {
       name: formData.name,
       description: formData.description,
       price: parseInt(formData.price || "0", 10),
-      image: imageUrl,
+      images: uploadedUrls,
       lynkUrl: formData.lynkUrl,
       category: formData.category,
       createdAt: editingItem?.createdAt || Date.now(),
@@ -137,7 +149,7 @@ export default function AdminPage() {
   if (!isAuthenticated) return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/5 p-8 rounded-3xl border border-white/10 w-full max-w-sm">
-        <h2 className="text-2xl font-bold text-white mb-6 text-center">Admin Login</h2>
+        <h2 className="text-2xl font-bold text-white mb-6 text-center tracking-tight">Admin Login</h2>
         <input 
           type="password" 
           placeholder="Password..." 
@@ -158,14 +170,12 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-foreground flex">
-      
       {/* Sidebar */}
       <aside className="w-20 md:w-64 border-r border-white/5 bg-black/40 backdrop-blur-xl flex flex-col fixed h-full z-40">
         <div className="p-6 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-black font-black text-xl flex-shrink-0">P</div>
           <span className="font-bold text-lg hidden md:block tracking-tight text-white/90">Admin Hub</span>
         </div>
-
         <nav className="flex-1 px-4 mt-6 space-y-2">
           {[
             { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -185,18 +195,13 @@ export default function AdminPage() {
             </button>
           ))}
         </nav>
-
         <div className="p-4 border-t border-white/5">
           <Link href="/" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-500 hover:text-white hover:bg-white/5 transition-all group">
             <Globe size={18} />
             <span className="font-medium hidden md:block">Buka Website</span>
           </Link>
-          <button 
-            onClick={() => { sessionStorage.removeItem("admin_auth"); setIsAuthenticated(false); }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-600 hover:text-red-400 transition-all group"
-          >
-            <Lock size={18} />
-            <span className="font-medium hidden md:block">Logout</span>
+          <button onClick={() => { sessionStorage.removeItem("admin_auth"); setIsAuthenticated(false); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-600 hover:text-red-400 transition-all group">
+            <Lock size={18} /><span className="font-medium hidden md:block">Logout</span>
           </button>
         </div>
       </aside>
@@ -204,66 +209,27 @@ export default function AdminPage() {
       {/* Main Content */}
       <main className="flex-1 ml-20 md:ml-64 p-6 md:p-12 min-h-screen">
         <div className="max-w-6xl mx-auto">
-          
           <AnimatePresence mode="wait">
             {activeTab === 'dashboard' && (
               <motion.div key="dashboard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                 <h1 className="text-4xl font-bold text-white mb-8 tracking-tight">Dashboard Insights</h1>
-                
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
                   <StatCard title="Total Produk" value={products.length} icon={Package} color="bg-blue-500" />
                   <StatCard title="Total Klik" value={products.reduce((acc, p) => acc + (p.clicks || 0), 0)} icon={MousePointerClick} color="bg-green-500" />
                   <StatCard title="Pending Requests" value={userRequests.filter(r => r.status === 'pending').length} icon={Mail} color="bg-orange-500" />
                 </div>
-
-                <div className="bg-white/[0.02] border border-white/5 p-8 rounded-[32px] mb-12">
-                  <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-xl font-bold text-white">Tren Pengunjung (7 Hari Terakhir)</h3>
-                    <div className="flex items-center gap-2 text-xs text-neutral-500 font-bold bg-white/5 px-4 py-2 rounded-full">
-                      <TrendingUp size={14} className="text-green-400" /> +24% vs minggu lalu
-                    </div>
-                  </div>
-                  <div className="h-[300px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData}>
-                        <defs>
-                          <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 12}} dy={10} />
-                        <YAxis hide />
-                        <Tooltip 
-                          contentStyle={{backgroundColor: '#111', border: '1px solid #333', borderRadius: '12px', fontSize: '12px'}}
-                          itemStyle={{color: '#fff'}}
-                        />
-                        <Area type="monotone" dataKey="clicks" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorClicks)" />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[24px]">
-                    <h4 className="font-bold text-white mb-4 flex items-center gap-2"><Mail size={18} /> Request Terbaru</h4>
-                    <div className="space-y-4">
-                      {userRequests.length > 0 ? userRequests.slice(0, 3).map(req => (
-                        <div key={req.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5">
-                          <p className="text-sm text-neutral-400 truncate max-w-[150px]">{req.request}</p>
-                          <span className="text-[10px] font-bold bg-orange-500/10 text-orange-400 px-2 py-1 rounded">{req.status}</span>
-                        </div>
-                      )) : <p className="text-sm text-neutral-600">Belum ada request.</p>}
-                    </div>
-                  </div>
-                  <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[24px]">
-                    <h4 className="font-bold text-white mb-4 flex items-center gap-2"><HelpCircle size={18} /> Bantuan Cepat</h4>
-                    <div className="grid grid-cols-2 gap-3">
-                      <a href="https://wa.me/628123456789" className="p-4 rounded-xl bg-green-500/10 text-green-400 text-xs font-bold text-center border border-green-500/10 hover:bg-green-500/20 transition-all">WhatsApp CS</a>
-                      <button className="p-4 rounded-xl bg-blue-500/10 text-blue-400 text-xs font-bold text-center border border-blue-500/10 hover:bg-blue-500/20 transition-all">Panduan Setup</button>
-                    </div>
-                  </div>
+                {/* Chart placeholder */}
+                <div className="bg-white/[0.02] border border-white/5 p-8 rounded-[32px] mb-12 h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData}>
+                      <defs><linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient></defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 12}} dy={10} />
+                      <YAxis hide />
+                      <Tooltip contentStyle={{backgroundColor: '#111', border: '1px solid #333', borderRadius: '12px', fontSize: '12px'}} itemStyle={{color: '#fff'}} />
+                      <Area type="monotone" dataKey="clicks" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorClicks)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </motion.div>
             )}
@@ -274,22 +240,23 @@ export default function AdminPage() {
                   <h1 className="text-4xl font-bold text-white tracking-tight">Koleksi Produk</h1>
                   <button onClick={() => { setEditingItem(null); setIsDrawerOpen(true); }} className="bg-white text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-neutral-200 transition-all"><Plus size={18} /> Tambah</button>
                 </div>
-                
                 <div className="grid grid-cols-1 gap-4">
                   {isLoading ? (
-                    <div className="text-center py-20 text-neutral-500 animate-pulse">Memuat produk...</div>
+                    <div className="text-center py-20 text-neutral-500 animate-pulse">Memuat...</div>
                   ) : products.length === 0 ? (
-                    <div className="text-center py-20 text-neutral-600 bg-white/[0.01] rounded-3xl border border-white/5">Belum ada produk. Klik "Tambah" untuk memulai.</div>
+                    <div className="text-center py-20 text-neutral-600 bg-white/[0.01] rounded-3xl border border-white/5">Belum ada produk.</div>
                   ) : products.map(p => (
                     <div key={p.id} className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl flex items-center gap-4 group hover:bg-white/[0.04] transition-all">
-                       <div className="w-16 h-16 rounded-xl bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/5"><Image src={p.image} alt={p.name} fill className="object-cover" unoptimized /></div>
+                       <div className="w-16 h-16 rounded-xl bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/5">
+                         <Image src={p.images?.[0] || ""} alt={p.name} fill className="object-cover" unoptimized />
+                       </div>
                        <div className="flex-1">
                          <h4 className="font-bold text-white">{p.name}</h4>
                          <p className="text-xs text-neutral-500 uppercase tracking-widest font-bold mt-0.5">{p.category} • Rp {p.price.toLocaleString("id-ID")}</p>
                        </div>
-                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
                          <button onClick={() => handleEdit(p)} className="p-2.5 rounded-xl bg-white/5 text-white hover:bg-white/10"><Edit3 size={18} /></button>
-                         <button onClick={() => window.confirm("Hapus produk?") && deleteFromSupabase('products', p.id)} className="p-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20"><Trash2 size={18} /></button>
+                         <button onClick={() => window.confirm("Hapus produk?") && deleteFromSupabase('products', p.id)} className="p-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-400/20"><Trash2 size={18} /></button>
                        </div>
                     </div>
                   ))}
@@ -297,113 +264,90 @@ export default function AdminPage() {
               </motion.div>
             )}
 
-            {activeTab === 'settings' && (
-              <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl">
-                <h1 className="text-4xl font-bold text-white mb-8 tracking-tight">Site Settings</h1>
-                <div className="bg-white/[0.02] border border-white/5 p-8 rounded-[32px] space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2"><Globe size={14} /> Meta Title</label>
-                    <input type="text" defaultValue={settings?.metaTitle} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-white/30 transition-all" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2"><Info size={14} /> Meta Description</label>
-                    <textarea defaultValue={settings?.metaDescription} rows={3} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white resize-none focus:outline-none focus:border-white/30 transition-all" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2"><MessageSquare size={14} /> WhatsApp CS</label>
-                      <input type="text" defaultValue={settings?.whatsappNumber} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-white/30 transition-all" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2"><Share2 size={14} /> Profil Lynk.id</label>
-                      <input type="text" defaultValue={settings?.mainLynkUrl} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-white/30 transition-all" />
-                    </div>
-                  </div>
-                  <button className="w-full bg-white text-black font-bold py-4 rounded-xl hover:bg-neutral-200 transition-all shadow-xl shadow-white/5">Simpan Perubahan Global</button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Testimonials Tab Placeholder */}
-            {activeTab === 'testimonials' && (
-              <motion.div key="testimonials" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="flex items-center justify-between mb-8">
-                  <h1 className="text-4xl font-bold text-white tracking-tight">Testimoni</h1>
-                  <button onClick={() => { setEditingItem(null); setIsDrawerOpen(true); }} className="bg-white text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2"><Plus size={18} /> Tambah</button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {testimonials.length > 0 ? testimonials.map(t => (
-                    <div key={t.id} className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
-                      <p className="text-white font-bold">{t.name}</p>
-                      <p className="text-sm text-neutral-500 italic mt-2">"{t.content}"</p>
-                    </div>
-                  )) : <div className="col-span-2 text-center py-20 text-neutral-600 bg-white/[0.01] rounded-3xl border border-white/5">Belum ada testimoni.</div>}
-                </div>
-              </motion.div>
+            {/* Testimonials/Academy/Settings Tabs placeholders... */}
+            {['testimonials', 'academy', 'requests', 'settings'].includes(activeTab) && (
+               <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center text-neutral-600">
+                  <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6"><BarChart3 size={32} /></div>
+                  <h2 className="text-2xl font-bold text-white mb-2 uppercase tracking-tighter">Modul {activeTab}</h2>
+                  <p className="max-w-md mx-auto">Section ini sedang dalam pengembangan untuk integrasi database penuh.</p>
+               </motion.div>
             )}
           </AnimatePresence>
-
         </div>
       </main>
 
-      {/* Side Drawer Form */}
+      {/* Side Drawer Form - FIXED SCROLLING */}
       <AnimatePresence>
         {isDrawerOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeDrawer} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
-            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#0a0a0a] border-l border-white/10 z-[60] shadow-2xl p-8 flex flex-col">
-              <div className="flex items-center justify-between mb-10">
-                <h2 className="text-2xl font-bold text-white tracking-tight">{editingItem ? "Edit" : "Tambah Baru"}</h2>
-                <button onClick={closeDrawer} className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition-all">
-                  <X size={24} />
-                </button>
+            <motion.div 
+              initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} 
+              transition={{ type: "spring", damping: 25, stiffness: 200 }} 
+              className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#0a0a0a] border-l border-white/10 z-[60] shadow-2xl flex flex-col"
+            >
+              <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-white tracking-tight">{editingItem ? "Edit Produk" : "Tambah Produk"}</h2>
+                <button onClick={closeDrawer} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition-all"><X size={20} /></button>
               </div>
 
-              {activeTab === 'products' ? (
-                <form onSubmit={handleProductSubmit} className="flex-1 overflow-y-auto pr-2 space-y-6 custom-scrollbar">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Image</label>
-                    <div onClick={() => fileInputRef.current?.click()} className="relative w-full aspect-video rounded-2xl border-2 border-dashed border-white/10 hover:border-white/30 bg-white/[0.02] flex items-center justify-center overflow-hidden cursor-pointer">
-                      {imagePreview ? <Image src={imagePreview} alt="Preview" fill className="object-cover" unoptimized /> : <Upload size={24} className="text-neutral-600" />}
+              {/* Form Content - SCROLLABLE AREA */}
+              <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                {activeTab === 'products' ? (
+                  <form onSubmit={handleProductSubmit} className="space-y-6">
+                    {/* Multi Image Upload */}
+                    <div className="space-y-4">
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Foto Produk (Bisa Banyak)</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {imagePreviews.map((url, idx) => (
+                          <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group">
+                            <Image src={url} alt="Preview" fill className="object-cover" unoptimized />
+                            <button type="button" onClick={() => removeImage(idx)} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X size={14} /></button>
+                          </div>
+                        ))}
+                        <button type="button" onClick={() => fileInputRef.current?.click()} className="aspect-video rounded-xl border-2 border-dashed border-white/10 hover:border-white/30 bg-white/[0.02] flex flex-col items-center justify-center text-neutral-500 hover:text-white transition-all">
+                          <Plus size={24} /><span className="text-[10px] mt-1 font-bold">Tambah Foto</span>
+                        </button>
+                      </div>
+                      <input ref={fileInputRef} type="file" className="hidden" accept="image/*" multiple onChange={(e) => e.target.files && processFiles(e.target.files)} />
                     </div>
-                    <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && processFile(e.target.files[0])} />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Nama Produk</label>
-                    <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
+
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Kategori</label>
-                      <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white outline-none">
-                        {CATEGORIES.map(cat => <option key={cat} value={cat} className="bg-black">{cat}</option>)}
-                      </select>
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Nama Produk</label>
+                      <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Kategori</label>
+                        <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white outline-none">
+                          {CATEGORIES.map(cat => <option key={cat} value={cat} className="bg-black">{cat}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Harga (Rp)</label>
+                        <input required type="text" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value.replace(/\D/g, "")})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white" />
+                      </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Harga (Rp)</label>
-                      <input required type="text" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value.replace(/\D/g, "")})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white" />
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Link Lynk.id</label>
+                      <input required type="url" value={formData.lynkUrl} onChange={e => setFormData({...formData, lynkUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white" />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Link Lynk.id</label>
-                    <input required type="url" value={formData.lynkUrl} onChange={e => setFormData({...formData, lynkUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Deskripsi</label>
-                    <textarea required rows={4} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white resize-none" />
-                  </div>
-                  <button disabled={isSubmitting} type="submit" className="w-full bg-white text-black font-bold py-4 rounded-xl hover:bg-neutral-200 transition-all disabled:opacity-50 mt-4">
-                    {isSubmitting ? "Menyimpan..." : showSuccess ? "Berhasil!" : (editingItem ? "Update Produk" : "Tambah Produk")}
-                  </button>
-                </form>
-              ) : (
-                <div className="text-center py-20 text-neutral-600">Form untuk modul {activeTab} akan segera hadir.</div>
-              )}
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Deskripsi</label>
+                      <textarea required rows={5} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white resize-none" />
+                    </div>
+                    <button disabled={isSubmitting} type="submit" className="w-full bg-white text-black font-black py-5 rounded-2xl hover:bg-neutral-200 transition-all disabled:opacity-50 shadow-2xl shadow-white/5">
+                      {isSubmitting ? "Menyimpan..." : showSuccess ? "Berhasil!" : (editingItem ? "Update Produk" : "Simpan Produk")}
+                    </button>
+                  </form>
+                ) : (
+                  <div className="text-center py-20 text-neutral-600">Modul sedang disiapkan.</div>
+                )}
+              </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
-
     </div>
   );
 }

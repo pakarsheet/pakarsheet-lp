@@ -8,7 +8,7 @@ export type Product = {
   name: string;
   description: string;
   price: number;
-  image: string;
+  images: string[]; // Changed from image: string
   lynkUrl: string;
   category: string;
   createdAt: number;

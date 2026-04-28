@@ -1,39 +1,24 @@
 "use client";
 
+import { useData } from "@/hooks/useData";
 import { useProducts } from "@/hooks/useProducts";
-import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck, Zap, ExternalLink } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  ArrowLeft, ExternalLink, ShieldCheck, Zap, 
+  ChevronRight, Star, Clock, Globe, ArrowRight,
+  ChevronLeft
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState, useEffect, useMemo, use } from "react";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 
-// Skeleton for the detail page
-function ProductDetailSkeleton() {
-  return (
-    <div className="min-h-screen pt-24 pb-32 relative overflow-hidden animate-pulse">
-      <div className="container mx-auto px-4 md:px-6 relative z-10 max-w-7xl">
-        <div className="h-8 w-40 bg-white/5 rounded-full mb-10" />
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
-          <div className="lg:col-span-5">
-            <div className="w-full aspect-square rounded-[40px] bg-white/5" />
-          </div>
-          <div className="lg:col-span-7 space-y-6">
-            <div className="h-6 w-40 bg-white/5 rounded-full" />
-            <div className="h-14 w-3/4 bg-white/10 rounded-xl" />
-            <div className="h-12 w-48 bg-white/10 rounded-xl" />
-            <div className="space-y-3">
-              <div className="h-4 w-full bg-white/5 rounded" />
-              <div className="h-4 w-5/6 bg-white/5 rounded" />
-              <div className="h-4 w-4/6 bg-white/5 rounded" />
-            </div>
-            <div className="h-16 w-full bg-white/5 rounded-[20px]" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -44,7 +29,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [product, setProduct] = useState<any>(null);
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && products.length > 0) {
       const found = products.find((p) => p.id === id);
       if (found) {
         setProduct(found);
@@ -55,146 +40,161 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   }, [id, products, isLoading, router]);
 
   if (isLoading || !product) {
-    return <ProductDetailSkeleton />;
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-white/10 border-t-white rounded-full animate-spin" />
+      </div>
+    );
   }
 
+  // Handle both single image (legacy) and multiple images
+  const productImages = product.images || [product.image];
+
   return (
-    <div className="min-h-screen pt-24 pb-32 relative overflow-hidden">
-      {/* Decorative Background */}
-      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.05)_0%,transparent_70%)] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.03)_0%,transparent_70%)] pointer-events-none" />
-
-      <div className="container mx-auto px-4 md:px-6 relative z-10 max-w-7xl">
-
-        {/* Back Button */}
-        <Link
-          href="/shop"
-          className="inline-flex items-center gap-2 text-neutral-400 hover:text-white mb-10 transition-colors font-medium text-sm group"
-        >
-          <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-white selection:text-black pb-20">
+      {/* Navbar Area (Simplified for focus) */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-xl border-b border-white/5">
+        <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+          <Link href="/shop" className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors group">
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="font-medium">Kembali ke Toko</span>
+          </Link>
+          <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+            <ShieldCheck size={16} className="text-blue-400" />
+            <span className="text-xs font-bold text-neutral-300 uppercase tracking-widest">Verified Template</span>
           </div>
-          Kembali ke Koleksi
-        </Link>
+        </div>
+      </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-
-          {/* Left Column - Image (Sticky) */}
-          <div className="lg:col-span-5 lg:sticky lg:top-32">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, type: "spring" }}
-              className="w-full aspect-square relative rounded-[40px] overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-2xl group"
+      <main className="container mx-auto px-4 pt-32 lg:pt-40">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
+          
+          {/* LEFT: IMAGE CAROUSEL SECTION */}
+          <div className="lg:col-span-7 space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative aspect-video md:aspect-square lg:aspect-video rounded-[40px] overflow-hidden bg-neutral-900 border border-white/10 shadow-2xl group"
             >
-              <Image
-                src={product.image}
-                alt={product.name}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                unoptimized={product.image.startsWith("data:")}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
-
-              {/* Floating Badges */}
-              <div className="absolute top-6 left-6 bg-black/40 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
-                <span className="text-xs font-semibold text-white tracking-wide uppercase">Ready</span>
-              </div>
-              {product.category && (
-                <div className="absolute top-6 right-6 bg-black/40 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full">
-                  <span className="text-xs font-semibold text-white/70 tracking-wide">{product.category}</span>
-                </div>
+              <Swiper
+                modules={[Navigation, Pagination, Autoplay]}
+                navigation={{
+                  prevEl: '.swiper-prev',
+                  nextEl: '.swiper-next',
+                }}
+                pagination={{ clickable: true }}
+                autoplay={{ delay: 5000 }}
+                className="w-full h-full"
+              >
+                {productImages.map((img: string, idx: number) => (
+                  <SwiperSlide key={idx}>
+                    <div className="relative w-full h-full">
+                      <Image 
+                        src={img} 
+                        alt={`${product.name} - ${idx + 1}`}
+                        fill 
+                        className="object-cover"
+                        priority
+                        unoptimized
+                      />
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+              
+              {/* Custom Navigation */}
+              {productImages.length > 1 && (
+                <>
+                  <button className="swiper-prev absolute left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-white hover:text-black">
+                    <ChevronLeft size={24} />
+                  </button>
+                  <button className="swiper-next absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-white hover:text-black">
+                    <ChevronRight size={24} />
+                  </button>
+                </>
               )}
+            </motion.div>
+
+            {/* Sub-features grid */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[32px] text-center">
+                <Star className="text-yellow-500 mx-auto mb-2" size={20} />
+                <p className="text-xs font-bold text-neutral-500 uppercase tracking-tighter">Premium Quality</p>
+              </div>
+              <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[32px] text-center">
+                <Clock className="text-blue-500 mx-auto mb-2" size={20} />
+                <p className="text-xs font-bold text-neutral-500 uppercase tracking-tighter">Lifetime Update</p>
+              </div>
+              <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[32px] text-center">
+                <Globe className="text-green-500 mx-auto mb-2" size={20} />
+                <p className="text-xs font-bold text-neutral-500 uppercase tracking-tighter">Cloud Sync</p>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: CONTENT SECTION */}
+          <div className="lg:col-span-5 flex flex-col">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <span className="inline-block px-4 py-1.5 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold uppercase tracking-widest border border-blue-500/20 mb-6">
+                {product.category || "Template"}
+              </span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-tight">
+                {product.name}
+              </h1>
+              <p className="text-neutral-400 text-lg leading-relaxed mb-10">
+                {product.description}
+              </p>
+
+              <div className="space-y-8 mb-12">
+                <div className="flex items-center gap-4 p-6 rounded-[32px] bg-white/[0.02] border border-white/5">
+                  <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-400">
+                    <Zap size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white">Instan Delivery</h4>
+                    <p className="text-sm text-neutral-500">Akses langsung dikirim setelah checkout.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Price Area */}
+              <div className="mb-10">
+                <p className="text-neutral-500 text-sm font-bold uppercase tracking-widest mb-2">Harga Investasi</p>
+                <div className="flex items-baseline gap-4">
+                  <span className="text-5xl font-black text-white tracking-tighter">
+                    Rp {product.price.toLocaleString("id-ID")}
+                  </span>
+                  <span className="text-neutral-600 line-through text-lg">
+                    Rp {(product.price * 2.5).toLocaleString("id-ID")}
+                  </span>
+                </div>
+              </div>
+
+              {/* CTA Area */}
+              <div className="bg-gradient-to-b from-white/5 to-transparent p-1 rounded-[32px]" onClick={() => trackClick(product.id)}>
+                <a
+                  href={product.lynkUrl || "https://lynk.id/pakarsheet"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-white text-black py-6 rounded-[28px] text-xl font-black hover:bg-neutral-200 active:scale-[0.98] transition-all shadow-[0_20px_50px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 group"
+                >
+                  Beli Sekarang
+                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                </a>
+              </div>
+              
+              <p className="text-center text-neutral-600 text-xs mt-6 font-medium">
+                🔒 Pembayaran aman via Lynk.id
+              </p>
             </motion.div>
           </div>
 
-          {/* Right Column - Info */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:col-span-7 flex flex-col justify-center"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-xs text-neutral-300 mb-6 font-medium w-fit backdrop-blur-sm">
-              <Zap size={14} className="text-yellow-400" /> Script Otomatis Tersedia
-            </div>
-
-            <h1 className="text-4xl md:text-6xl font-semibold tracking-tight text-white mb-6 leading-[1.1]">
-              {product.name}
-            </h1>
-
-            <div className="flex items-end gap-4 mb-8 pb-8 border-b border-white/5">
-              <div className="text-4xl md:text-5xl font-bold text-white">
-                Rp {product.price.toLocaleString("id-ID")}
-              </div>
-              <div className="text-neutral-500 mb-2">/ Akses Selamanya</div>
-            </div>
-
-            <h3 className="text-xl font-semibold text-white/90 mb-4">Tentang Template Ini</h3>
-            <p className="text-neutral-400 text-lg md:text-xl leading-relaxed mb-8 font-normal">
-              {product.description}
-            </p>
-
-            {/* Bullet Points Section */}
-            <div className="mb-10">
-              <h4 className="text-sm font-semibold text-neutral-300 uppercase tracking-widest mb-5">Yang Akan Kamu Dapatkan:</h4>
-              <ul className="space-y-4">
-                {[
-                  "File Google Sheets Premium (Siap Pakai)",
-                  "Otomasi Apps Script (Berjalan di background)",
-                  "Video Panduan Step-by-Step Cara Setup & Penggunaan",
-                  "Akses Grup Diskusi / Support 1-on-1 via WhatsApp",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <CheckCircle2 size={14} className="text-green-400" />
-                    </div>
-                    <span className="text-neutral-300">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Features Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
-              <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
-                <CheckCircle2 className="text-green-400 mb-4" size={24} />
-                <h4 className="font-semibold text-white mb-2">Akses Instan</h4>
-                <p className="text-sm text-neutral-500">File langsung terkirim ke email detik itu juga setelah pembayaran.</p>
-              </div>
-              <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
-                <ShieldCheck className="text-blue-400 mb-4" size={24} />
-                <h4 className="font-semibold text-white mb-2">Lisensi Aman</h4>
-                <p className="text-sm text-neutral-500">Dilengkapi proteksi file agar template Anda tidak gampang dibajak.</p>
-              </div>
-            </div>
-
-            {/* CTA Area — Links to lynk.id */}
-            <div className="bg-gradient-to-b from-white/5 to-transparent p-1 rounded-3xl" onClick={() => trackClick(product.id)}>
-              <a
-                href={product.lynkUrl || "https://lynk.id/pakarsheet"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full bg-white text-black py-5 rounded-[20px] text-lg font-bold hover:bg-neutral-200 active:scale-[0.98] transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 group"
-              >
-                Beli & Dapatkan Akses
-                <ExternalLink size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-              </a>
-            </div>
-
-            <div className="flex items-center justify-center gap-6 mt-6">
-              <div className="flex items-center gap-2 text-xs text-neutral-500">
-                <ShieldCheck size={14} /> Garansi 100% Work
-              </div>
-              <div className="w-1 h-1 rounded-full bg-neutral-800" />
-              <div className="flex items-center gap-2 text-xs text-neutral-500">
-                <CheckCircle2 size={14} /> Panduan Lengkap
-              </div>
-            </div>
-          </motion.div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
