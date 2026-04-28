@@ -57,6 +57,16 @@ export default function AdminPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
 
+  const handleEdit = (item: any) => {
+    setEditingItem(item);
+    setIsDrawerOpen(true);
+  };
+
+  const closeDrawer = () => {
+    setIsDrawerOpen(false);
+    setEditingItem(null);
+  };
+
   // Authentication handled in separate component or inline
   if (!isAuthenticated) return (
     <div className="min-h-screen bg-background flex items-center justify-center">
