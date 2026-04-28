@@ -36,7 +36,7 @@ function ProductSkeleton() {
 }
 
 export default function ShopClient() {
-  const { products, isLoading } = useProducts();
+  const { products, isLoading, trackClick } = useProducts();
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
 
