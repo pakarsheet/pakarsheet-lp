@@ -194,6 +194,41 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           </div>
 
         </div>
+
+        {/* FITUR UNGGULAN SECTION */}
+        <div className="mt-32 pt-24 border-t border-white/5">
+          <div className="mb-16 text-center lg:text-left">
+            <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">Fitur Unggulan</h2>
+            <p className="text-neutral-500 text-lg">Keunggulan template yang akan mengotomatisasi operasional bisnis Anda.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              { title: "Otomatisasi Apps Script", desc: "Dilengkapi dengan skrip otomatis yang memproses data dalam hitungan detik.", icon: Zap, color: "text-yellow-400" },
+              { title: "UI/UX Dashboard Clean", desc: "Tampilan dashboard yang bersih dan profesional, memudahkan pembacaan data.", icon: LayoutDashboard, color: "text-blue-400" },
+              { title: "Lifetime Free Update", desc: "Cukup beli sekali, Anda akan mendapatkan update fitur selamanya secara gratis.", icon: Clock, color: "text-green-400" },
+              { title: "Cloud Sync & Backup", desc: "Data tersimpan aman di Google Drive Anda, akses dari mana saja kapan saja.", icon: Globe, color: "text-purple-400" },
+              { title: "Mudah Dikustomisasi", desc: "Bisa disesuaikan dengan kebutuhan spesifik bisnis Anda tanpa merusak rumus.", icon: Edit3, color: "text-orange-400" },
+              { title: "Support Konsultasi", desc: "Bingung cara pakai? Kami siap bantu lewat chat WhatsApp kapanpun.", icon: MessageSquare, color: "text-red-400" },
+            ].map((feature, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="p-10 rounded-[40px] bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all group relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-white/[0.05] transition-colors" />
+                <div className={`w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform ${feature.color} border border-white/5 shadow-xl`}>
+                  <feature.icon size={28} />
+                </div>
+                <h4 className="text-2xl font-bold text-white mb-4 tracking-tight">{feature.title}</h4>
+                <p className="text-neutral-500 leading-relaxed">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </main>
     </div>
   );
