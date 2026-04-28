@@ -7,7 +7,9 @@ export type Product = {
   name: string;
   description: string;
   price: number;
-  image: string; // Base64 image
+  image: string; // Base64 image or URL
+  lynkUrl: string; // Lynk.id checkout URL per product
+  category: string; // For filtering
   createdAt: number;
 };
 
@@ -19,6 +21,8 @@ const dummyProducts: Product[] = [
     description: "Template otomatisasi keuangan untuk bisnis. Lacak pemasukan dan pengeluaran dengan analitik otomatis.",
     price: 250000,
     image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    lynkUrl: "https://lynk.id/pakarsheet",
+    category: "Keuangan",
     createdAt: Date.now(),
   },
   {
@@ -27,6 +31,8 @@ const dummyProducts: Product[] = [
     description: "Jadwalkan dan tracking performa konten sosial media kamu dalam satu dashboard.",
     price: 150000,
     image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    lynkUrl: "https://lynk.id/pakarsheet",
+    category: "Marketing",
     createdAt: Date.now() - 10000,
   },
   {
@@ -35,6 +41,8 @@ const dummyProducts: Product[] = [
     description: "Sistem otomatis rekap stok barang keluar masuk. Cocok untuk toko online & offline.",
     price: 350000,
     image: "https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    lynkUrl: "https://lynk.id/pakarsheet",
+    category: "Inventory",
     createdAt: Date.now() - 20000,
   },
 ];
@@ -44,19 +52,25 @@ export function useProducts() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load products from localStorage on mount
     const loadProducts = () => {
       try {
         const stored = localStorage.getItem("pakarsheet_products");
         if (stored) {
-          setProducts(JSON.parse(stored));
+          const parsed: Product[] = JSON.parse(stored);
+          // Migrate old products that lack new fields
+          const migrated = parsed.map((p) => ({
+            ...p,
+            lynkUrl: p.lynkUrl ?? "https://lynk.id/pakarsheet",
+            category: p.category ?? "Lainnya",
+          }));
+          setProducts(migrated);
         } else {
-          // Initialize with dummy products if empty
           localStorage.setItem("pakarsheet_products", JSON.stringify(dummyProducts));
           setProducts(dummyProducts);
         }
       } catch (error) {
         console.error("Failed to load products from localStorage:", error);
+        setProducts(dummyProducts);
       } finally {
         setIsLoading(false);
       }
@@ -71,16 +85,16 @@ export function useProducts() {
       id: Math.random().toString(36).substring(2, 9),
       createdAt: Date.now(),
     };
-    
+
     const updatedProducts = [newProduct, ...products];
     setProducts(updatedProducts);
     localStorage.setItem("pakarsheet_products", JSON.stringify(updatedProducts));
-    
+
     return newProduct;
   };
 
   const deleteProduct = (id: string) => {
-    const updatedProducts = products.filter(p => p.id !== id);
+    const updatedProducts = products.filter((p) => p.id !== id);
     setProducts(updatedProducts);
     localStorage.setItem("pakarsheet_products", JSON.stringify(updatedProducts));
   };

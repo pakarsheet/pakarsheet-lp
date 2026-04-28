@@ -12,8 +12,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
-  if (pathname.startsWith('/admin')) return null;
-  
+  // All hooks MUST be called before any conditional returns
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -27,14 +26,17 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Conditional return AFTER all hooks
+  if (pathname.startsWith('/admin')) return null;
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 pt-4 px-4 pointer-events-none">
       <motion.div className="scroll-progress" style={{ scaleX }} />
       <div className="container mx-auto max-w-4xl pointer-events-auto">
-        <motion.div 
+        <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className={`mx-auto rounded-full border transition-all duration-300 backdrop-blur-2xl flex items-center justify-between transition-all duration-500 ${
+          className={`mx-auto rounded-full border transition-all duration-300 backdrop-blur-2xl flex items-center justify-between ${
             scrolled ? 'bg-black/80 border-white/10 px-4 py-2' : 'bg-white/[0.03] border-white/5 px-6 py-3'
           }`}
         >
@@ -55,23 +57,24 @@ export function Navbar() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium text-neutral-400 tracking-tight">
-            <Link href="#fitur" className="hover:text-white transition-colors">Fitur</Link>
-            <Link href="#testimoni" className="hover:text-white transition-colors">Testimoni</Link>
-            <Link href="#faq" className="hover:text-white transition-colors">FAQ</Link>
+            <Link href="/#fitur" className="hover:text-white transition-colors">Fitur</Link>
+            <Link href="/#testimoni" className="hover:text-white transition-colors">Testimoni</Link>
+            <Link href="/#faq" className="hover:text-white transition-colors">FAQ</Link>
+            <Link href="/shop" className="hover:text-white transition-colors">Toko</Link>
           </nav>
 
           <div className="flex items-center gap-4">
             <Magnetic>
-              <Link 
-                href="#beli" 
+              <Link
+                href="/shop"
                 className="hidden md:block bg-white text-black px-6 py-2 rounded-full text-[12px] font-semibold tracking-tight hover:bg-neutral-200 transition-all active:scale-95 shadow-lg shadow-white/5"
               >
-                Akses penuh
+                Lihat Template
               </Link>
             </Magnetic>
 
             {/* Mobile Toggle */}
-            <button 
+            <button
               className="md:hidden text-white/70 p-2.5 hover:bg-white/10 rounded-xl transition-all active:scale-90"
               onClick={() => setIsOpen(!isOpen)}
             >
@@ -84,22 +87,23 @@ export function Navbar() {
       {/* Mobile Nav Overlay */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="md:hidden absolute top-24 left-4 right-4 bg-black/95 backdrop-blur-3xl border border-white/10 rounded-[32px] p-8 flex flex-col gap-6 shadow-2xl pointer-events-auto z-[1001]"
           >
-            <Link href="#fitur" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Fitur</Link>
-            <Link href="#testimoni" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Testimoni</Link>
-            <Link href="#faq" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">FAQ</Link>
-            <Link 
-              href="#beli" 
+            <Link href="/#fitur" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Fitur</Link>
+            <Link href="/#testimoni" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Testimoni</Link>
+            <Link href="/#faq" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">FAQ</Link>
+            <Link href="/shop" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Toko</Link>
+            <Link
+              href="/shop"
               onClick={() => setIsOpen(false)}
               className="bg-white text-black py-5 rounded-2xl text-lg font-semibold text-center active:scale-95 transition-all mt-4 tracking-tight"
             >
-              Dapatkan akses sekarang
+              Lihat Semua Template
             </Link>
           </motion.div>
         )}

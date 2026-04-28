@@ -39,10 +39,10 @@ export function CTA() {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <Link 
-              href="#beli" 
+              href="/shop" 
               className="flex items-center justify-center gap-2 bg-white text-black px-8 py-4 rounded-xl font-semibold text-lg hover:bg-neutral-200 transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)] active:scale-95 tracking-tight"
             >
-              Beli sekarang <ArrowRight size={20} />
+              Pilih Template <ArrowRight size={20} />
             </Link>
           </motion.div>
         </div>

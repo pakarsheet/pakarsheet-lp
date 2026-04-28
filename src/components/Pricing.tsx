@@ -82,10 +82,10 @@ export function Pricing() {
                     <div className="text-6xl font-semibold tracking-tight mb-2">99rb</div>
                     <div className="text-xs font-medium tracking-tight mb-8 text-black/60">Sekali bayar saja</div>
                     <Link 
-                      href="/success"
+                      href="/shop"
                       className="bg-black text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform active:scale-95 tracking-tight"
                     >
-                      Beli sekarang <ArrowRight size={18} />
+                      Pilih Template <ArrowRight size={18} />
                     </Link>
                   </div>
                 </div>
