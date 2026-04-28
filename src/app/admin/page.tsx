@@ -248,7 +248,14 @@ export default function AdminPage() {
                   ) : products.map(p => (
                     <div key={p.id} className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl flex items-center gap-4 group hover:bg-white/[0.04] transition-all">
                        <div className="w-16 h-16 rounded-xl bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/5">
-                         <Image src={p.images?.[0] || ""} alt={p.name} fill className="object-cover" unoptimized />
+                         {/* Fallback to legacy image field if images array is empty */}
+                         <Image 
+                           src={(p.images && p.images.length > 0) ? p.images[0] : (p as any).image || ""} 
+                           alt={p.name} 
+                           fill 
+                           className="object-cover" 
+                           unoptimized 
+                         />
                        </div>
                        <div className="flex-1">
                          <h4 className="font-bold text-white">{p.name}</h4>
@@ -284,7 +291,7 @@ export default function AdminPage() {
             <motion.div 
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} 
               transition={{ type: "spring", damping: 25, stiffness: 200 }} 
-              className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#0a0a0a] border-l border-white/10 z-[60] shadow-2xl flex flex-col"
+              className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#0a0a0a] border-l border-white/10 z-[60] shadow-2xl flex flex-col overflow-hidden"
             >
               <div className="p-8 border-b border-white/5 flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white tracking-tight">{editingItem ? "Edit Produk" : "Tambah Produk"}</h2>
