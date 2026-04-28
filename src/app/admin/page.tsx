@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useMemo, useEffect } from "react";
-import { useData, Product } from "@/hooks/useData";
+import { useData } from "@/hooks/useData";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -84,12 +84,9 @@ export default function AdminPage() {
   const processFiles = (files: FileList) => {
     const newFiles = Array.from(files);
     setImageFiles(prev => [...prev, ...newFiles]);
-
     newFiles.forEach(file => {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result as string]);
-      };
+      reader.onloadend = () => setImagePreviews(prev => [...prev, reader.result as string]);
       reader.readAsDataURL(file);
     });
   };
@@ -106,17 +103,12 @@ export default function AdminPage() {
 
     const uploadedUrls: string[] = [...imagePreviews.filter(url => url.startsWith('http'))];
 
-    // Upload new files to Supabase
     if (supabase && imageFiles.length > 0) {
       for (const file of imageFiles) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `product-images/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('products')
-          .upload(filePath, file);
-
+        const { error: uploadError } = await supabase.storage.from('products').upload(filePath, file);
         if (!uploadError) {
           const { data } = supabase.storage.from('products').getPublicUrl(filePath);
           uploadedUrls.push(data.publicUrl);
@@ -143,6 +135,7 @@ export default function AdminPage() {
     setTimeout(() => {
       setShowSuccess(false);
       closeDrawer();
+      window.location.reload(); // Force refresh to sync UI
     }, 1500);
   };
 
@@ -185,11 +178,7 @@ export default function AdminPage() {
             { id: 'requests', label: 'Requests', icon: Mail },
             { id: 'settings', label: 'Settings', icon: SettingsIcon },
           ].map((item) => (
-            <button 
-              key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${activeTab === item.id ? 'bg-white/10 text-white border border-white/10' : 'text-neutral-500 hover:text-white hover:bg-white/5'}`}
-            >
+            <button key={item.id} onClick={() => setActiveTab(item.id as any)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${activeTab === item.id ? 'bg-white/10 text-white border border-white/10' : 'text-neutral-500 hover:text-white hover:bg-white/5'}`}>
               <item.icon size={20} className={activeTab === item.id ? 'text-blue-400' : ''} />
               <span className="font-medium hidden md:block">{item.label}</span>
             </button>
@@ -197,8 +186,7 @@ export default function AdminPage() {
         </nav>
         <div className="p-4 border-t border-white/5">
           <Link href="/" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-500 hover:text-white hover:bg-white/5 transition-all group">
-            <Globe size={18} />
-            <span className="font-medium hidden md:block">Buka Website</span>
+            <Globe size={18} /><span className="font-medium hidden md:block">Buka Website</span>
           </Link>
           <button onClick={() => { sessionStorage.removeItem("admin_auth"); setIsAuthenticated(false); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-600 hover:text-red-400 transition-all group">
             <Lock size={18} /><span className="font-medium hidden md:block">Logout</span>
@@ -206,30 +194,16 @@ export default function AdminPage() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 ml-20 md:ml-64 p-6 md:p-12 min-h-screen">
         <div className="max-w-6xl mx-auto">
           <AnimatePresence mode="wait">
             {activeTab === 'dashboard' && (
-              <motion.div key="dashboard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+              <motion.div key="dashboard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                 <h1 className="text-4xl font-bold text-white mb-8 tracking-tight">Dashboard Insights</h1>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
                   <StatCard title="Total Produk" value={products.length} icon={Package} color="bg-blue-500" />
                   <StatCard title="Total Klik" value={products.reduce((acc, p) => acc + (p.clicks || 0), 0)} icon={MousePointerClick} color="bg-green-500" />
                   <StatCard title="Pending Requests" value={userRequests.filter(r => r.status === 'pending').length} icon={Mail} color="bg-orange-500" />
-                </div>
-                {/* Chart placeholder */}
-                <div className="bg-white/[0.02] border border-white/5 p-8 rounded-[32px] mb-12 h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData}>
-                      <defs><linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient></defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 12}} dy={10} />
-                      <YAxis hide />
-                      <Tooltip contentStyle={{backgroundColor: '#111', border: '1px solid #333', borderRadius: '12px', fontSize: '12px'}} itemStyle={{color: '#fff'}} />
-                      <Area type="monotone" dataKey="clicks" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorClicks)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
                 </div>
               </motion.div>
             )}
@@ -242,114 +216,93 @@ export default function AdminPage() {
                 </div>
                 <div className="grid grid-cols-1 gap-4">
                   {isLoading ? (
-                    <div className="text-center py-20 text-neutral-500 animate-pulse">Memuat...</div>
+                    <div className="text-center py-20 text-neutral-500 animate-pulse font-bold uppercase tracking-widest">Sinkronisasi Database...</div>
                   ) : products.length === 0 ? (
-                    <div className="text-center py-20 text-neutral-600 bg-white/[0.01] rounded-3xl border border-white/5">Belum ada produk.</div>
+                    <div className="text-center py-24 text-neutral-600 bg-white/[0.01] rounded-[40px] border border-white/5 border-dashed">Belum ada produk di database online ini.</div>
                   ) : products.map(p => (
-                    <div key={p.id} className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl flex items-center gap-4 group hover:bg-white/[0.04] transition-all">
-                       <div className="w-16 h-16 rounded-xl bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/5">
-                         {/* Fallback to legacy image field if images array is empty */}
-                         <Image 
-                           src={(p.images && p.images.length > 0) ? p.images[0] : (p as any).image || ""} 
-                           alt={p.name} 
-                           fill 
-                           className="object-cover" 
-                           unoptimized 
-                         />
+                    <div key={p.id} className="bg-white/[0.02] border border-white/5 p-5 rounded-[32px] flex items-center gap-5 group hover:bg-white/[0.04] transition-all">
+                       <div className="w-16 h-16 rounded-2xl bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/10">
+                         <Image src={(p.images && p.images.length > 0) ? p.images[0] : ""} alt={p.name} fill className="object-cover" unoptimized />
                        </div>
                        <div className="flex-1">
-                         <h4 className="font-bold text-white">{p.name}</h4>
-                         <p className="text-xs text-neutral-500 uppercase tracking-widest font-bold mt-0.5">{p.category} • Rp {p.price.toLocaleString("id-ID")}</p>
+                         <h4 className="font-bold text-white text-lg leading-tight">{p.name}</h4>
+                         <p className="text-xs text-neutral-500 uppercase tracking-widest font-bold mt-1">{p.category} • Rp {p.price.toLocaleString("id-ID")}</p>
                        </div>
-                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                         <button onClick={() => handleEdit(p)} className="p-2.5 rounded-xl bg-white/5 text-white hover:bg-white/10"><Edit3 size={18} /></button>
-                         <button onClick={() => window.confirm("Hapus produk?") && deleteFromSupabase('products', p.id)} className="p-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-400/20"><Trash2 size={18} /></button>
+                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+                         <button onClick={() => handleEdit(p)} className="p-3 rounded-2xl bg-white/5 text-white hover:bg-white/10"><Edit3 size={18} /></button>
+                         <button onClick={() => window.confirm("Hapus produk?") && deleteFromSupabase('products', p.id)} className="p-3 rounded-2xl bg-red-500/10 text-red-400 hover:bg-red-500/20"><Trash2 size={18} /></button>
                        </div>
                     </div>
                   ))}
                 </div>
               </motion.div>
             )}
-
-            {/* Testimonials/Academy/Settings Tabs placeholders... */}
-            {['testimonials', 'academy', 'requests', 'settings'].includes(activeTab) && (
-               <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center text-neutral-600">
-                  <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6"><BarChart3 size={32} /></div>
-                  <h2 className="text-2xl font-bold text-white mb-2 uppercase tracking-tighter">Modul {activeTab}</h2>
-                  <p className="max-w-md mx-auto">Section ini sedang dalam pengembangan untuk integrasi database penuh.</p>
-               </motion.div>
-            )}
           </AnimatePresence>
         </div>
       </main>
 
-      {/* Side Drawer Form - FIXED SCROLLING */}
+      {/* Side Drawer Form - COMPLETELY FIXED SCROLLING */}
       <AnimatePresence>
         {isDrawerOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeDrawer} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
-            <motion.div 
-              initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} 
-              transition={{ type: "spring", damping: 25, stiffness: 200 }} 
-              className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#0a0a0a] border-l border-white/10 z-[60] shadow-2xl flex flex-col overflow-hidden"
-            >
-              <div className="p-8 border-b border-white/5 flex items-center justify-between">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeDrawer} className="fixed inset-0 bg-black/80 backdrop-blur-md z-50" />
+            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#080808] border-l border-white/10 z-[60] shadow-2xl flex flex-col">
+              <div className="p-8 border-b border-white/5 flex items-center justify-between bg-black/40 backdrop-blur-xl">
                 <h2 className="text-2xl font-bold text-white tracking-tight">{editingItem ? "Edit Produk" : "Tambah Produk"}</h2>
                 <button onClick={closeDrawer} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition-all"><X size={20} /></button>
               </div>
 
-              {/* Form Content - SCROLLABLE AREA */}
-              <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-                {activeTab === 'products' ? (
-                  <form onSubmit={handleProductSubmit} className="space-y-6">
-                    {/* Multi Image Upload */}
-                    <div className="space-y-4">
-                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Foto Produk (Bisa Banyak)</label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {imagePreviews.map((url, idx) => (
-                          <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group">
-                            <Image src={url} alt="Preview" fill className="object-cover" unoptimized />
-                            <button type="button" onClick={() => removeImage(idx)} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X size={14} /></button>
-                          </div>
-                        ))}
-                        <button type="button" onClick={() => fileInputRef.current?.click()} className="aspect-video rounded-xl border-2 border-dashed border-white/10 hover:border-white/30 bg-white/[0.02] flex flex-col items-center justify-center text-neutral-500 hover:text-white transition-all">
-                          <Plus size={24} /><span className="text-[10px] mt-1 font-bold">Tambah Foto</span>
-                        </button>
-                      </div>
-                      <input ref={fileInputRef} type="file" className="hidden" accept="image/*" multiple onChange={(e) => e.target.files && processFiles(e.target.files)} />
+              {/* Form Content Area - MUST SCROLL */}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden p-8 custom-scrollbar">
+                <form onSubmit={handleProductSubmit} className="space-y-8 pb-12">
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Foto Produk</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {imagePreviews.map((url, idx) => (
+                        <div key={idx} className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group bg-neutral-900">
+                          <Image src={url} alt="Preview" fill className="object-cover" unoptimized />
+                          <button type="button" onClick={() => removeImage(idx)} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"><X size={14} /></button>
+                        </div>
+                      ))}
+                      <button type="button" onClick={() => fileInputRef.current?.click()} className="aspect-video rounded-2xl border-2 border-dashed border-white/10 hover:border-white/30 bg-white/[0.02] flex flex-col items-center justify-center text-neutral-600 hover:text-white transition-all group">
+                        <Plus size={32} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-[10px] mt-2 font-black tracking-widest uppercase">Pilih Foto</span>
+                      </button>
                     </div>
+                    <input ref={fileInputRef} type="file" className="hidden" accept="image/*" multiple onChange={(e) => e.target.files && processFiles(e.target.files)} />
+                  </div>
 
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Nama Produk</label>
-                      <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none" />
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Nama Produk</label>
+                    <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all font-medium" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Kategori</label>
+                      <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:border-white/30 transition-all font-medium appearance-none">
+                        {CATEGORIES.map(cat => <option key={cat} value={cat} className="bg-black">{cat}</option>)}
+                      </select>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Kategori</label>
-                        <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white outline-none">
-                          {CATEGORIES.map(cat => <option key={cat} value={cat} className="bg-black">{cat}</option>)}
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Harga (Rp)</label>
-                        <input required type="text" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value.replace(/\D/g, "")})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white" />
-                      </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Harga (Rp)</label>
+                      <input required type="text" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value.replace(/\D/g, "")})} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all font-medium" />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Link Lynk.id</label>
-                      <input required type="url" value={formData.lynkUrl} onChange={e => setFormData({...formData, lynkUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Deskripsi</label>
-                      <textarea required rows={5} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white resize-none" />
-                    </div>
-                    <button disabled={isSubmitting} type="submit" className="w-full bg-white text-black font-black py-5 rounded-2xl hover:bg-neutral-200 transition-all disabled:opacity-50 shadow-2xl shadow-white/5">
-                      {isSubmitting ? "Menyimpan..." : showSuccess ? "Berhasil!" : (editingItem ? "Update Produk" : "Simpan Produk")}
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Link Lynk.id</label>
+                    <input required type="url" value={formData.lynkUrl} onChange={e => setFormData({...formData, lynkUrl: e.target.value})} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all font-medium" />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Deskripsi</label>
+                    <textarea required rows={6} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white resize-none focus:outline-none focus:border-white/30 transition-all font-medium" />
+                  </div>
+                  
+                  <div className="sticky bottom-0 pt-4 bg-[#080808]">
+                    <button disabled={isSubmitting} type="submit" className="w-full bg-white text-black font-black py-5 rounded-2xl hover:bg-neutral-200 active:scale-[0.98] transition-all disabled:opacity-50 shadow-2xl shadow-white/5 flex items-center justify-center gap-3">
+                      {isSubmitting ? <><div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" /> Menyimpan...</> : showSuccess ? "Berhasil Diunggah!" : (editingItem ? "Update Produk" : "Simpan ke Database")}
                     </button>
-                  </form>
-                ) : (
-                  <div className="text-center py-20 text-neutral-600">Modul sedang disiapkan.</div>
-                )}
+                  </div>
+                </form>
               </div>
             </motion.div>
           </>
