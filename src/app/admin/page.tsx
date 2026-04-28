@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useData } from "@/hooks/useData";
+import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, Trash2, Image as ImageIcon, CheckCircle2, Lock, Eye, EyeOff, 
   Edit3, BarChart3, Package, TrendingUp, X, Search, Filter, 
   ExternalLink, MousePointerClick, MessageSquare, BookOpen, 
   Settings as SettingsIcon, Mail, Info, HelpCircle, LayoutDashboard,
-  ShieldCheck, Globe, Share2
+  ShieldCheck, Globe, Share2, Upload
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -52,30 +53,95 @@ function StatCard({ title, value, icon: Icon, color }: { title: string, value: s
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'testimonials' | 'academy' | 'requests' | 'settings'>('dashboard');
   const [isAuthenticated, setIsAuthenticated] = useState(() => (typeof window !== "undefined" ? sessionStorage.getItem("admin_auth") === "true" : false));
-  const { products, testimonials, tutorials, userRequests, settings, isLoading, saveToSupabase, deleteFromSupabase } = useData();
+  const { products, testimonials, tutorials, userRequests, settings, isLoading, saveToSupabase, deleteFromSupabase, fetchData } = useData();
   
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Form States for Products
+  const [formData, setFormData] = useState({ name: "", description: "", price: "", lynkUrl: "", category: "Keuangan" });
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleEdit = (item: any) => {
     setEditingItem(item);
+    if (activeTab === 'products') {
+      setFormData({ name: item.name, description: item.description, price: item.price.toString(), lynkUrl: item.lynkUrl || "", category: item.category });
+      setImagePreview(item.image);
+    }
     setIsDrawerOpen(true);
   };
 
   const closeDrawer = () => {
     setIsDrawerOpen(false);
     setEditingItem(null);
+    setFormData({ name: "", description: "", price: "", lynkUrl: "", category: "Keuangan" });
+    setImagePreview(null);
+    setImageFile(null);
   };
 
-  // Authentication handled in separate component or inline
+  const processFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+    setImageFile(file);
+  };
+
+  const handleProductSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    let imageUrl = imagePreview;
+
+    // Handle Image Upload to Supabase Storage if new file selected
+    if (supabase && imageFile) {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `product-images/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('products')
+        .upload(filePath, imageFile);
+
+      if (!uploadError) {
+        const { data } = supabase.storage.from('products').getPublicUrl(filePath);
+        imageUrl = data.publicUrl;
+      }
+    }
+
+    const productData = {
+      id: editingItem?.id || Math.random().toString(36).substring(2, 9),
+      name: formData.name,
+      description: formData.description,
+      price: parseInt(formData.price || "0", 10),
+      image: imageUrl,
+      lynkUrl: formData.lynkUrl,
+      category: formData.category,
+      createdAt: editingItem?.createdAt || Date.now(),
+      clicks: editingItem?.clicks || 0
+    };
+
+    await saveToSupabase('products', productData);
+    
+    setIsSubmitting(false);
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+      closeDrawer();
+    }, 1500);
+  };
+
   if (!isAuthenticated) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/5 p-8 rounded-3xl border border-white/10 w-full max-w-sm">
         <h2 className="text-2xl font-bold text-white mb-6 text-center">Admin Login</h2>
         <input 
           type="password" 
           placeholder="Password..." 
-          className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white mb-4"
+          className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white mb-4 focus:outline-none focus:border-white/30"
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               if (e.currentTarget.value === ADMIN_PASSWORD) {
@@ -183,12 +249,12 @@ export default function AdminPage() {
                   <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[24px]">
                     <h4 className="font-bold text-white mb-4 flex items-center gap-2"><Mail size={18} /> Request Terbaru</h4>
                     <div className="space-y-4">
-                      {userRequests.slice(0, 3).map(req => (
+                      {userRequests.length > 0 ? userRequests.slice(0, 3).map(req => (
                         <div key={req.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5">
                           <p className="text-sm text-neutral-400 truncate max-w-[150px]">{req.request}</p>
                           <span className="text-[10px] font-bold bg-orange-500/10 text-orange-400 px-2 py-1 rounded">{req.status}</span>
                         </div>
-                      ))}
+                      )) : <p className="text-sm text-neutral-600">Belum ada request.</p>}
                     </div>
                   </div>
                   <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[24px]">
@@ -206,20 +272,24 @@ export default function AdminPage() {
               <motion.div key="products" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <div className="flex items-center justify-between mb-8">
                   <h1 className="text-4xl font-bold text-white tracking-tight">Koleksi Produk</h1>
-                  <button onClick={() => { setEditingItem(null); setIsDrawerOpen(true); }} className="bg-white text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2"><Plus size={18} /> Tambah</button>
+                  <button onClick={() => { setEditingItem(null); setIsDrawerOpen(true); }} className="bg-white text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-neutral-200 transition-all"><Plus size={18} /> Tambah</button>
                 </div>
-                {/* List products similar to previous version but integrated with useData */}
+                
                 <div className="grid grid-cols-1 gap-4">
-                  {products.map(p => (
-                    <div key={p.id} className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl flex items-center gap-4 group">
-                       <div className="w-16 h-16 rounded-xl bg-neutral-900 relative overflow-hidden"><Image src={p.image} alt={p.name} fill className="object-cover" unoptimized /></div>
+                  {isLoading ? (
+                    <div className="text-center py-20 text-neutral-500 animate-pulse">Memuat produk...</div>
+                  ) : products.length === 0 ? (
+                    <div className="text-center py-20 text-neutral-600 bg-white/[0.01] rounded-3xl border border-white/5">Belum ada produk. Klik "Tambah" untuk memulai.</div>
+                  ) : products.map(p => (
+                    <div key={p.id} className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl flex items-center gap-4 group hover:bg-white/[0.04] transition-all">
+                       <div className="w-16 h-16 rounded-xl bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/5"><Image src={p.image} alt={p.name} fill className="object-cover" unoptimized /></div>
                        <div className="flex-1">
                          <h4 className="font-bold text-white">{p.name}</h4>
-                         <p className="text-xs text-neutral-500">{p.category} • Rp {p.price.toLocaleString()}</p>
+                         <p className="text-xs text-neutral-500 uppercase tracking-widest font-bold mt-0.5">{p.category} • Rp {p.price.toLocaleString("id-ID")}</p>
                        </div>
-                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button onClick={() => handleEdit(p)} className="p-2 rounded-lg bg-white/5 text-white"><Edit3 size={16} /></button>
-                         <button onClick={() => deleteFromSupabase('products', p.id)} className="p-2 rounded-lg bg-red-500/10 text-red-400"><Trash2 size={16} /></button>
+                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                         <button onClick={() => handleEdit(p)} className="p-2.5 rounded-xl bg-white/5 text-white hover:bg-white/10"><Edit3 size={18} /></button>
+                         <button onClick={() => window.confirm("Hapus produk?") && deleteFromSupabase('products', p.id)} className="p-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20"><Trash2 size={18} /></button>
                        </div>
                     </div>
                   ))}
@@ -233,42 +303,102 @@ export default function AdminPage() {
                 <div className="bg-white/[0.02] border border-white/5 p-8 rounded-[32px] space-y-6">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2"><Globe size={14} /> Meta Title</label>
-                    <input type="text" defaultValue={settings?.metaTitle} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white" />
+                    <input type="text" defaultValue={settings?.metaTitle} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-white/30 transition-all" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2"><Info size={14} /> Meta Description</label>
-                    <textarea defaultValue={settings?.metaDescription} rows={3} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white resize-none" />
+                    <textarea defaultValue={settings?.metaDescription} rows={3} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white resize-none focus:outline-none focus:border-white/30 transition-all" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2"><MessageSquare size={14} /> WhatsApp CS</label>
-                      <input type="text" defaultValue={settings?.whatsappNumber} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white" />
+                      <input type="text" defaultValue={settings?.whatsappNumber} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-white/30 transition-all" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2"><Share2 size={14} /> Profil Lynk.id</label>
-                      <input type="text" defaultValue={settings?.mainLynkUrl} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white" />
+                      <input type="text" defaultValue={settings?.mainLynkUrl} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-white/30 transition-all" />
                     </div>
                   </div>
-                  <button className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-500 transition-all shadow-xl shadow-blue-600/20">Simpan Perubahan Global</button>
+                  <button className="w-full bg-white text-black font-bold py-4 rounded-xl hover:bg-neutral-200 transition-all shadow-xl shadow-white/5">Simpan Perubahan Global</button>
                 </div>
               </motion.div>
             )}
 
-            {/* Other tabs follow the same pattern... */}
+            {/* Testimonials Tab Placeholder */}
+            {activeTab === 'testimonials' && (
+              <motion.div key="testimonials" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <div className="flex items-center justify-between mb-8">
+                  <h1 className="text-4xl font-bold text-white tracking-tight">Testimoni</h1>
+                  <button onClick={() => { setEditingItem(null); setIsDrawerOpen(true); }} className="bg-white text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2"><Plus size={18} /> Tambah</button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {testimonials.length > 0 ? testimonials.map(t => (
+                    <div key={t.id} className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                      <p className="text-white font-bold">{t.name}</p>
+                      <p className="text-sm text-neutral-500 italic mt-2">"{t.content}"</p>
+                    </div>
+                  )) : <div className="col-span-2 text-center py-20 text-neutral-600 bg-white/[0.01] rounded-3xl border border-white/5">Belum ada testimoni.</div>}
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
 
         </div>
       </main>
 
-      {/* Reusable Side Drawer for all tabs */}
+      {/* Side Drawer Form */}
       <AnimatePresence>
         {isDrawerOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeDrawer} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
-            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#0a0a0a] border-l border-white/10 z-[60] p-8">
-              <h2 className="text-2xl font-bold text-white mb-8">Editor Konten</h2>
-              <p className="text-neutral-500 mb-8">Fitur CRUD untuk {activeTab} akan diimplementasikan di sini.</p>
-              <button onClick={() => setIsDrawerOpen(false)} className="w-full bg-white/10 text-white py-4 rounded-xl">Tutup</button>
+            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#0a0a0a] border-l border-white/10 z-[60] shadow-2xl p-8 flex flex-col">
+              <div className="flex items-center justify-between mb-10">
+                <h2 className="text-2xl font-bold text-white tracking-tight">{editingItem ? "Edit" : "Tambah Baru"}</h2>
+                <button onClick={closeDrawer} className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition-all">
+                  <X size={24} />
+                </button>
+              </div>
+
+              {activeTab === 'products' ? (
+                <form onSubmit={handleProductSubmit} className="flex-1 overflow-y-auto pr-2 space-y-6 custom-scrollbar">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Image</label>
+                    <div onClick={() => fileInputRef.current?.click()} className="relative w-full aspect-video rounded-2xl border-2 border-dashed border-white/10 hover:border-white/30 bg-white/[0.02] flex items-center justify-center overflow-hidden cursor-pointer">
+                      {imagePreview ? <Image src={imagePreview} alt="Preview" fill className="object-cover" unoptimized /> : <Upload size={24} className="text-neutral-600" />}
+                    </div>
+                    <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && processFile(e.target.files[0])} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Nama Produk</label>
+                    <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Kategori</label>
+                      <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white outline-none">
+                        {CATEGORIES.map(cat => <option key={cat} value={cat} className="bg-black">{cat}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Harga (Rp)</label>
+                      <input required type="text" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value.replace(/\D/g, "")})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Link Lynk.id</label>
+                    <input required type="url" value={formData.lynkUrl} onChange={e => setFormData({...formData, lynkUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Deskripsi</label>
+                    <textarea required rows={4} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white resize-none" />
+                  </div>
+                  <button disabled={isSubmitting} type="submit" className="w-full bg-white text-black font-bold py-4 rounded-xl hover:bg-neutral-200 transition-all disabled:opacity-50 mt-4">
+                    {isSubmitting ? "Menyimpan..." : showSuccess ? "Berhasil!" : (editingItem ? "Update Produk" : "Tambah Produk")}
+                  </button>
+                </form>
+              ) : (
+                <div className="text-center py-20 text-neutral-600">Form untuk modul {activeTab} akan segera hadir.</div>
+              )}
             </motion.div>
           </>
         )}
