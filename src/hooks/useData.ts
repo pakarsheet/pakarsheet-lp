@@ -61,8 +61,15 @@ export function useData() {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
+    
     if (!supabase) {
-      // Basic fallback logic (simplified for brevity)
+      const stored = localStorage.getItem("pakarsheet_products");
+      if (stored) {
+        setProducts(JSON.parse(stored));
+      } else {
+        // Fallback to empty or initial products if needed
+        setProducts([]);
+      }
       setIsLoading(false);
       return;
     }
@@ -95,7 +102,16 @@ export function useData() {
   // --- CRUD Operations (Generic Logic) ---
   
   const saveToSupabase = async (table: string, data: any) => {
-    if (!supabase) return null;
+    if (!supabase) {
+      if (table === 'products') {
+        const updated = products.some(p => p.id === data.id) 
+          ? products.map(p => p.id === data.id ? data : p)
+          : [data, ...products];
+        setProducts(updated);
+        localStorage.setItem("pakarsheet_products", JSON.stringify(updated));
+      }
+      return data;
+    }
     const { data: result, error } = await supabase.from(table).upsert([data]);
     if (error) {
       console.error(`Error saving to ${table}:`, error);
@@ -106,7 +122,14 @@ export function useData() {
   };
 
   const deleteFromSupabase = async (table: string, id: string) => {
-    if (!supabase) return;
+    if (!supabase) {
+      if (table === 'products') {
+        const updated = products.filter(p => p.id !== id);
+        setProducts(updated);
+        localStorage.setItem("pakarsheet_products", JSON.stringify(updated));
+      }
+      return;
+    }
     await supabase.from(table).delete().eq('id', id);
     await fetchData();
   };
