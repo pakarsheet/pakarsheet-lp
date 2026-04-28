@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, ExternalLink, ShieldCheck, Zap, 
   ChevronRight, Star, Clock, Globe, ArrowRight,
-  ChevronLeft
+  ChevronLeft, LayoutDashboard, Edit3, MessageSquare
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
