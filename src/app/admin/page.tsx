@@ -97,6 +97,7 @@ export default function AdminPage() {
     category: "Keuangan",
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -116,6 +117,7 @@ export default function AdminPage() {
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
+    setImageFile(file);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,20 +154,21 @@ export default function AdminPage() {
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    addProduct({
+    await addProduct({
       name: formData.name,
       description: formData.description,
       price: parseInt(formData.price || "0", 10),
       image: imagePreview,
       lynkUrl: formData.lynkUrl || "https://lynk.id/pakarsheet",
       category: formData.category,
-    });
+    }, imageFile || undefined);
 
     setIsSubmitting(false);
     setShowSuccess(true);
 
     setFormData({ name: "", description: "", price: "", lynkUrl: "", category: "Keuangan" });
     setImagePreview(null);
+    setImageFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
 
     setTimeout(() => setShowSuccess(false), 3000);
@@ -381,7 +384,7 @@ export default function AdminPage() {
                         <button
                           onClick={() => {
                             if (window.confirm("Yakin ingin menghapus produk ini?")) {
-                              deleteProduct(product.id);
+                              deleteProduct(product.id, product.image);
                             }
                           }}
                           className="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-500 hover:text-red-400 hover:bg-red-400/10 transition-colors opacity-0 group-hover:opacity-100"
