@@ -156,6 +156,7 @@ export default function ShopClient() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: i * 0.1, type: "spring", stiffness: 100 }}
+                onClick={() => trackClick(product.id)}
               >
                 <Link href={`/shop/${product.id}`} className="block group h-full">
                   <div className="h-full relative flex flex-col rounded-[32px] border border-white/10 bg-[#0a0a0a] overflow-hidden hover:border-white/20 hover:bg-[#0f0f0f] transition-all duration-500">

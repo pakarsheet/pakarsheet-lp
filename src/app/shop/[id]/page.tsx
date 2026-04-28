@@ -40,7 +40,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const id = resolvedParams.id;
   const router = useRouter();
 
-  const { products, isLoading } = useProducts();
+  const { products, isLoading, trackClick } = useProducts();
   const [product, setProduct] = useState<any>(null);
 
   useEffect(() => {
@@ -171,7 +171,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
 
             {/* CTA Area — Links to lynk.id */}
-            <div className="bg-gradient-to-b from-white/5 to-transparent p-1 rounded-3xl">
+            <div className="bg-gradient-to-b from-white/5 to-transparent p-1 rounded-3xl" onClick={() => trackClick(product.id)}>
               <a
                 href={product.lynkUrl || "https://lynk.id/pakarsheet"}
                 target="_blank"

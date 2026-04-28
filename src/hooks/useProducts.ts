@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 
 export type Product = {
@@ -12,6 +12,7 @@ export type Product = {
   lynkUrl: string;
   category: string;
   createdAt: number;
+  clicks?: number; // Added for sales stats
 };
 
 const dummyProducts: Product[] = [
@@ -24,16 +25,7 @@ const dummyProducts: Product[] = [
     lynkUrl: "https://lynk.id/pakarsheet",
     category: "Keuangan",
     createdAt: Date.now(),
-  },
-  {
-    id: "2",
-    name: "Social Media Planner",
-    description: "Jadwalkan dan tracking performa konten sosial media kamu dalam satu dashboard.",
-    price: 150000,
-    image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    lynkUrl: "https://lynk.id/pakarsheet",
-    category: "Marketing",
-    createdAt: Date.now() - 10000,
+    clicks: 0,
   },
 ];
 
@@ -41,12 +33,10 @@ export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     
-    // Fallback to localStorage if Supabase is not configured
     if (!supabase) {
-      console.warn("Supabase not configured, using localStorage");
       const stored = localStorage.getItem("pakarsheet_products");
       if (stored) {
         setProducts(JSON.parse(stored));
@@ -71,16 +61,15 @@ export function useProducts() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
-  const addProduct = async (product: Omit<Product, "id" | "createdAt">, imageFile?: File) => {
+  const addProduct = async (product: Omit<Product, "id" | "createdAt" | "clicks">, imageFile?: File) => {
     let imageUrl = product.image;
 
-    // Handle Image Upload to Supabase Storage if configured
     if (supabase && imageFile) {
       const fileExt = imageFile.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -103,14 +92,12 @@ export function useProducts() {
       image: imageUrl,
       id: Math.random().toString(36).substring(2, 9),
       createdAt: Date.now(),
+      clicks: 0,
     };
 
     if (supabase) {
       const { error } = await supabase.from('products').insert([newProduct]);
-      if (error) {
-        console.error("Error adding product to Supabase:", error);
-        return null;
-      }
+      if (error) return null;
     } else {
       const updatedProducts = [newProduct, ...products];
       localStorage.setItem("pakarsheet_products", JSON.stringify(updatedProducts));
@@ -120,28 +107,65 @@ export function useProducts() {
     return newProduct;
   };
 
+  const updateProduct = async (id: string, updates: Partial<Omit<Product, "id" | "createdAt">>, imageFile?: File) => {
+    let imageUrl = updates.image;
+
+    if (supabase && imageFile) {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `product-images/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('products')
+        .upload(filePath, imageFile);
+
+      if (!uploadError) {
+        const { data } = supabase.storage.from('products').getPublicUrl(filePath);
+        imageUrl = data.publicUrl;
+      }
+    }
+
+    const finalUpdates = { ...updates };
+    if (imageUrl) finalUpdates.image = imageUrl;
+
+    if (supabase) {
+      const { error } = await supabase.from('products').update(finalUpdates).eq('id', id);
+      if (error) return false;
+    } else {
+      const updatedProducts = products.map(p => p.id === id ? { ...p, ...finalUpdates } : p);
+      localStorage.setItem("pakarsheet_products", JSON.stringify(updatedProducts));
+    }
+
+    await fetchProducts();
+    return true;
+  };
+
   const deleteProduct = async (id: string, imageUrl?: string) => {
     if (supabase) {
-      // Optional: Delete image from storage if it's a Supabase URL
       if (imageUrl && imageUrl.includes('product-images/')) {
         const path = imageUrl.split('product-images/').pop();
-        if (path) {
-          await supabase.storage.from('products').remove([`product-images/${path}`]);
-        }
+        if (path) await supabase.storage.from('products').remove([`product-images/${path}`]);
       }
-
       const { error } = await supabase.from('products').delete().eq('id', id);
-      if (error) {
-        console.error("Error deleting product from Supabase:", error);
-        return;
-      }
+      if (error) return;
     } else {
       const updatedProducts = products.filter((p) => p.id !== id);
       localStorage.setItem("pakarsheet_products", JSON.stringify(updatedProducts));
     }
-    
     await fetchProducts();
   };
 
-  return { products, isLoading, addProduct, deleteProduct, refresh: fetchProducts };
+  const trackClick = async (id: string) => {
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+
+    if (supabase) {
+      await supabase.from('products').update({ clicks: (product.clicks || 0) + 1 }).eq('id', id);
+    } else {
+      const updatedProducts = products.map(p => p.id === id ? { ...p, clicks: (p.clicks || 0) + 1 } : p);
+      localStorage.setItem("pakarsheet_products", JSON.stringify(updatedProducts));
+    }
+  };
+
+  return { products, isLoading, addProduct, updateProduct, deleteProduct, trackClick, refresh: fetchProducts };
 }
