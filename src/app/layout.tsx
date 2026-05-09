@@ -21,13 +21,6 @@ export const metadata: Metadata = {
     description: "Ubah cara kerjamu hari ini. Template Google Sheets custom dengan otomasi Apps Script, UI cantik, dan sistem anti-ribet.",
     url: "https://pakarsheet.com",
     siteName: "Pakarsheet",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-      },
-    ],
     locale: "id_ID",
     type: "website",
   },
@@ -35,7 +28,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Pakarsheet - Template Google Sheets Bebas Ribet untuk Bisnis",
     description: "Ubah cara kerjamu hari ini. Template Google Sheets custom dengan otomasi Apps Script, UI cantik, dan sistem anti-ribet.",
-    images: ["/og-image.png"],
   },
 };
 

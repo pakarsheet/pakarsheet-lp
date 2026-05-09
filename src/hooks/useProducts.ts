@@ -8,11 +8,13 @@ export type Product = {
   name: string;
   description: string;
   price: number;
-  image: string;
+  // Support both legacy single image and new multi-image format
+  image?: string;
+  images?: string[];
   lynkUrl: string;
   category: string;
   createdAt: number;
-  clicks?: number; // Added for sales stats
+  clicks?: number;
 };
 
 const dummyProducts: Product[] = [
@@ -21,7 +23,7 @@ const dummyProducts: Product[] = [
     name: "Finance Tracker Pro",
     description: "Template otomatisasi keuangan untuk bisnis. Lacak pemasukan dan pengeluaran dengan analitik otomatis.",
     price: 250000,
-    image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    images: ["https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
     lynkUrl: "https://lynk.id/pakarsheet",
     category: "Keuangan",
     createdAt: Date.now(),
@@ -165,6 +167,8 @@ export function useProducts() {
       const updatedProducts = products.map(p => p.id === id ? { ...p, clicks: (p.clicks || 0) + 1 } : p);
       localStorage.setItem("pakarsheet_products", JSON.stringify(updatedProducts));
     }
+    // Refresh local state so click count stays in sync
+    await fetchProducts();
   };
 
   return { products, isLoading, addProduct, updateProduct, deleteProduct, trackClick, refresh: fetchProducts };

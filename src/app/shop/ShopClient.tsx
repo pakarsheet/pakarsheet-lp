@@ -163,11 +163,11 @@ export default function ShopClient() {
                     <div className="p-3 pb-0 z-10">
                       <div className="relative w-full aspect-square rounded-[24px] bg-neutral-900 overflow-hidden shadow-2xl border border-white/5">
                         <Image
-                          src={product.image}
+                          src={(product.images && product.images.length > 0) ? product.images[0] : (product.image || "")}
                           alt={product.name}
                           fill
                           className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                          unoptimized={product.image.startsWith("data:")}
+                          unoptimized={!!(product.images?.[0] || product.image || "").startsWith("data:")}
                         />
                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center backdrop-blur-[2px]">
                           <span className="bg-white text-black px-6 py-3 rounded-full text-sm font-semibold flex items-center gap-2 transform translate-y-8 group-hover:translate-y-0 transition-all duration-500 shadow-2xl">

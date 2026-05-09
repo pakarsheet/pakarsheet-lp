@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSettings } from "@/hooks/useSettings";
 
 export function Footer() {
   const pathname = usePathname();
+  const { waUrl } = useSettings();
 
   if (pathname.startsWith('/admin')) return null;
 
@@ -45,7 +47,7 @@ export function Footer() {
             </div>
             <div className="flex flex-col gap-4">
               <h4 className="text-white/40 text-[11px] font-semibold tracking-tight">Bantuan</h4>
-              <Link href="https://wa.me/6281234567890" target="_blank" className="text-neutral-500 text-sm hover:text-white transition-colors">WhatsApp</Link>
+              <Link href={waUrl} target="_blank" rel="noopener noreferrer" className="text-neutral-500 text-sm hover:text-white transition-colors">WhatsApp</Link>
               <Link href="mailto:halo@pakarsheet.com" className="text-neutral-500 text-sm hover:text-white transition-colors">Email</Link>
             </div>
           </div>

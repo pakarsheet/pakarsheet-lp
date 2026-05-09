@@ -4,8 +4,10 @@ import { Reveal } from "@/components/Reveal";
 import { Heart, ArrowRight, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useSettings } from "@/hooks/useSettings";
 
 export default function ThankYouPage() {
+  const { waUrl } = useSettings();
   return (
     <div className="container mx-auto px-4 md:px-6 py-32 flex flex-col items-center justify-center min-h-[60vh] text-center">
       <Reveal>
@@ -51,7 +53,7 @@ export default function ThankYouPage() {
             Kembali ke Beranda
           </Link>
           <a
-            href="https://wa.me/6281234567890"
+            href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="bg-green-500/10 text-green-400 border border-green-500/20 px-8 py-3 rounded-xl font-medium hover:bg-green-500/20 transition-colors flex items-center justify-center gap-2"
