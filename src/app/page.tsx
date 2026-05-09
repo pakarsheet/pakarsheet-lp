@@ -15,37 +15,35 @@ import { Reveal } from "@/components/Reveal";
 export default function Home() {
   return (
     <>
-      <Reveal delay={0.1}>
-        <Hero />
-      </Reveal>
-      <Reveal delay={0.15}>
+      <Hero />
+      <Reveal>
         <SocialProof />
       </Reveal>
-      <Reveal delay={0.2}>
+      <Reveal>
         <StatsCounter />
       </Reveal>
-      <Reveal delay={0.25}>
+      <Reveal>
         <HowItWorks />
       </Reveal>
-      <Reveal delay={0.3}>
+      <Reveal>
         <DetailedFeatures />
       </Reveal>
-      <Reveal delay={0.35}>
+      <Reveal>
         <Features />
       </Reveal>
-      <Reveal delay={0.4}>
+      <Reveal>
         <Comparison />
       </Reveal>
-      <Reveal delay={0.45}>
+      <Reveal>
         <Testimonials />
       </Reveal>
-      <Reveal delay={0.5}>
+      <Reveal>
         <FAQ />
       </Reveal>
-      <Reveal delay={0.55}>
+      <Reveal>
         <Pricing />
       </Reveal>
-      <Reveal delay={0.6}>
+      <Reveal>
         <CTA />
       </Reveal>
     </>

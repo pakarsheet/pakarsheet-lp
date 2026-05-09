@@ -74,10 +74,11 @@ export function Hero() {
 
         {/* Dashboard Mockup Visual */}
         <motion.div 
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.5 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
           className="mt-20 relative mx-auto max-w-5xl"
+          style={{ willChange: "transform, opacity" }}
         >
           <div className="rounded-[32px] border border-white/10 bg-white/[0.02] p-2 md:p-3 shadow-2xl overflow-hidden relative backdrop-blur-2xl">
             {/* Top bar of mock browser/window */}
@@ -149,8 +150,9 @@ export function Hero() {
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: `${(rowIndex * 7 + 30) % 100}%` }}
-                          transition={{ delay: 2, duration: 1.5 }}
+                          transition={{ delay: 0.8, duration: 1.0 }}
                           className="h-full bg-neutral-600"
+                          style={{ willChange: "width" }}
                         />
                       </div>
                     </div>
@@ -162,7 +164,7 @@ export function Hero() {
               <motion.div 
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 2.5, type: 'spring' }}
+                transition={{ delay: 1.2, type: 'spring', stiffness: 200, damping: 20 }}
                 className="absolute top-1/4 right-8 w-40 bg-black/40 border border-white/5 rounded-2xl p-4 shadow-2xl backdrop-blur-xl z-20"
               >
                 <div className="text-[9px] text-neutral-500 mb-2 tracking-widest font-medium">Analytics</div>
@@ -170,7 +172,7 @@ export function Hero() {
                   <motion.span
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 3 }}
+                    transition={{ delay: 1.5 }}
                   >
                     42.5
                   </motion.span>
@@ -182,8 +184,9 @@ export function Hero() {
                         key={i} 
                         initial={{ height: 0 }}
                         animate={{ height: `${h}%` }}
-                        transition={{ delay: 3 + (i * 0.1), duration: 0.5 }}
+                        transition={{ delay: 1.5 + (i * 0.06), duration: 0.4 }}
                         className="flex-1 bg-white/10 rounded-t-[1px]"
+                        style={{ willChange: "height" }}
                      />
                    ))}
                 </div>
