@@ -110,20 +110,19 @@ export default function AdminPage() {
 
   const { products, testimonials, tutorials, userRequests, settings, isLoading, saveToSupabase, deleteFromSupabase, fetchData } = useData();
 
-  // Check auth status on mount via a lightweight ping
+  // Verify auth by checking the httpOnly cookie server-side via GET
   useEffect(() => {
-    fetch("/api/admin/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: "" }) })
-      .then(() => {})
-      .catch(() => {});
-    // We rely on sessionStorage as a client-side hint to avoid flicker,
-    // but the real auth is the httpOnly cookie checked server-side.
-    const hint = sessionStorage.getItem("admin_auth");
-    if (hint === "true") setIsAuthenticated(true);
-    setAuthChecked(true);
+    fetch("/api/admin/auth", { method: "GET" })
+      .then((res) => {
+        if (res.ok) {
+          setIsAuthenticated(true);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setAuthChecked(true));
   }, []);
 
   const handleLogin = () => {
-    sessionStorage.setItem("admin_auth", "true");
     setIsAuthenticated(true);
   };
 
@@ -385,10 +384,16 @@ function ProductsTab({ products, isLoading, saveToSupabase, deleteFromSupabase, 
       clicks: editingItem?.clicks || 0,
     };
 
-    await saveToSupabase("products", productData);
+    const result = await saveToSupabase("products", productData);
     await fetchData();
 
     setIsSubmitting(false);
+
+    if (result?.ok === false) {
+      setUploadError(`Gagal menyimpan produk: ${result.error}`);
+      return;
+    }
+
     setShowSuccess(true);
     setTimeout(() => {
       setShowSuccess(false);

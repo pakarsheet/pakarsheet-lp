@@ -47,8 +47,18 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     );
   }
 
-  // Handle both single image (legacy) and multiple images
-  const productImages = product.images || [product.image];
+  // Handle both single image (legacy) and multiple images, filter out empty strings
+  const productImages: string[] = (product.images?.length > 0
+    ? product.images
+    : product.image
+    ? [product.image]
+    : []
+  ).filter(Boolean);
+
+  // Guard: no images at all
+  if (productImages.length === 0) {
+    productImages.push("https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&auto=format&fit=crop&q=60");
+  }
 
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-white selection:text-black pb-20">

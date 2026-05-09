@@ -101,7 +101,7 @@ export function useData() {
 
   // --- CRUD Operations (Generic Logic) ---
   
-  const saveToSupabase = async (table: string, data: any) => {
+  const saveToSupabase = async (table: string, data: any): Promise<{ ok: boolean; error?: string }> => {
     if (!supabase) {
       if (table === 'products') {
         const updated = products.some(p => p.id === data.id) 
@@ -110,28 +110,33 @@ export function useData() {
         setProducts(updated);
         localStorage.setItem("pakarsheet_products", JSON.stringify(updated));
       }
-      return data;
+      return { ok: true };
     }
-    const { data: result, error } = await supabase.from(table).upsert([data]);
+    const { error } = await supabase.from(table).upsert([data]);
     if (error) {
       console.error(`Error saving to ${table}:`, error);
-      return null;
+      return { ok: false, error: error.message };
     }
     await fetchData();
-    return result;
+    return { ok: true };
   };
 
-  const deleteFromSupabase = async (table: string, id: string) => {
+  const deleteFromSupabase = async (table: string, id: string): Promise<{ ok: boolean; error?: string }> => {
     if (!supabase) {
       if (table === 'products') {
         const updated = products.filter(p => p.id !== id);
         setProducts(updated);
         localStorage.setItem("pakarsheet_products", JSON.stringify(updated));
       }
-      return;
+      return { ok: true };
     }
-    await supabase.from(table).delete().eq('id', id);
+    const { error } = await supabase.from(table).delete().eq('id', id);
+    if (error) {
+      console.error(`Error deleting from ${table}:`, error);
+      return { ok: false, error: error.message };
+    }
     await fetchData();
+    return { ok: true };
   };
 
   return {
