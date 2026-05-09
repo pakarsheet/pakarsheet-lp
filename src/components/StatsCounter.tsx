@@ -32,6 +32,14 @@ export function StatsCounter() {
   return (
     <section className="py-32 border-y border-white/5 bg-black/20">
       <div className="container mx-auto px-4 md:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6">
+            Angka yang bicara.
+          </h2>
+          <p className="text-neutral-400 text-lg font-normal leading-relaxed">
+            Bukan klaim kosong. Ini hasil nyata dari pengguna yang sudah beralih ke Pakarsheet.
+          </p>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
           {stats.map((stat, i) => (
             <SpotlightCard key={i} className="p-8 rounded-[32px] border border-white/5 bg-white/[0.02] flex flex-col items-center text-center">

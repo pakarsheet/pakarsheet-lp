@@ -1,6 +1,6 @@
 export function SocialProof() {
   return (
-    <section className="py-12 border-y border-white/5 bg-white/[0.01]">
+    <section className="py-20 border-y border-white/5 bg-white/[0.01]">
       <div className="container mx-auto px-4 md:px-6">
         <p className="text-center text-sm font-medium text-neutral-500 mb-8">
           Dirancang berdasarkan masukan praktisi handal:

@@ -31,17 +31,17 @@ export function HowItWorks() {
     <section id="cara-kerja" className="py-32 bg-white/[0.01]">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-2xl mx-auto mb-20">
-          <h2 className="text-3xl md:text-5xl font-medium tracking-tight text-white mb-4">
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6">
             3 Langkah Gampang
           </h2>
-          <p className="text-neutral-400 text-lg">
+          <p className="text-neutral-400 text-lg font-normal leading-relaxed">
             Nggak perlu jadi ahli excel. Cukup ikuti alur kerja simpel ini.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto relative">
           {steps.map((step, i) => (
-            <SpotlightCard key={i} className="p-8 rounded-[32px] border border-white/5 bg-[#0a0a0a] flex flex-col items-center text-center">
+            <SpotlightCard key={i} className="p-8 rounded-[32px] border border-white/5 bg-white/[0.02] flex flex-col items-center text-center">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}

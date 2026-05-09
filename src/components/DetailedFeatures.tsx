@@ -35,10 +35,10 @@ export function DetailedFeatures() {
     <section className="py-32 border-t border-white/5 relative overflow-hidden">
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-20">
-          <h2 className="text-3xl md:text-5xl font-semibold tracking-tight text-white/90 mb-6 leading-tight">
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-tight">
             Bekerja lebih cerdas
           </h2>
-          <p className="text-neutral-400 text-lg">
+          <p className="text-neutral-400 text-lg font-normal leading-relaxed">
             Kami menyisipkan puluhan jam kerja teknis ke dalam setiap baris kode Apps Script, supaya Anda tidak perlu lagi melakukan hal yang sama berulang kali.
           </p>
         </div>

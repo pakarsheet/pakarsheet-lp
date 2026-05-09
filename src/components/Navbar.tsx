@@ -67,7 +67,7 @@ export function Navbar() {
             <Magnetic>
               <Link
                 href="/shop"
-                className="hidden md:block bg-white text-black px-6 py-2 rounded-full text-[12px] font-semibold tracking-tight hover:bg-neutral-200 transition-all active:scale-95 shadow-lg shadow-white/5"
+                className="hidden md:block bg-white text-black px-6 py-2 rounded-xl text-[12px] font-semibold tracking-tight hover:bg-neutral-200 transition-all active:scale-95 shadow-lg shadow-white/5"
               >
                 Lihat Template
               </Link>
