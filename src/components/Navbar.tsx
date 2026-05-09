@@ -32,12 +32,12 @@ export function Navbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 pt-4 px-4 pointer-events-none">
       <motion.div className="scroll-progress" style={{ scaleX }} />
-      <div className="container mx-auto max-w-4xl pointer-events-auto">
+      <div className="container mx-auto max-w-5xl pointer-events-auto">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className={`mx-auto rounded-full border transition-all duration-300 backdrop-blur-2xl flex items-center justify-between ${
-            scrolled ? 'bg-black/80 border-white/10 px-4 py-2' : 'bg-white/[0.03] border-white/5 px-6 py-3'
+            scrolled ? 'bg-black/80 border-white/10 px-5 py-2.5' : 'bg-white/[0.03] border-white/5 px-7 py-3.5'
           }`}
         >
           {/* Brand / Logo */}
@@ -50,13 +50,13 @@ export function Navbar() {
                 <div className="w-2 h-2 rounded-[2px] bg-black"></div>
               </div>
             </div>
-            <span className="font-semibold text-xl tracking-tight text-white/90">
+            <span className="font-semibold text-base tracking-tight text-white/90">
               Pakarsheet
             </span>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium text-neutral-400 tracking-tight">
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-400 tracking-tight">
             <Link href="/#fitur" className="hover:text-white transition-colors">Fitur</Link>
             <Link href="/#testimoni" className="hover:text-white transition-colors">Testimoni</Link>
             <Link href="/#faq" className="hover:text-white transition-colors">FAQ</Link>
@@ -67,7 +67,7 @@ export function Navbar() {
             <Magnetic>
               <Link
                 href="/shop"
-                className="hidden md:block bg-white text-black px-6 py-2 rounded-xl text-[12px] font-semibold tracking-tight hover:bg-neutral-200 transition-all active:scale-95 shadow-lg shadow-white/5"
+                className="hidden md:block bg-white text-black px-6 py-2.5 rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all active:scale-95 shadow-lg shadow-white/5"
               >
                 Lihat Template
               </Link>
