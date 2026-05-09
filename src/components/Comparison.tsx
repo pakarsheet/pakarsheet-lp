@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 
 const comparisons = [
@@ -13,7 +12,7 @@ const comparisons = [
 
 export function Comparison() {
   return (
-    <section className="py-32 bg-background relative overflow-hidden">
+    <section className="py-32 bg-background">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-2xl mx-auto mb-20">
           <h2 className="text-4xl md:text-6xl font-semibold tracking-tight mb-6 text-white/90">
@@ -35,12 +34,8 @@ export function Comparison() {
           </div>
 
           {comparisons.map((item, i) => (
-            <motion.div
+            <div
               key={i}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
               className="grid grid-cols-3 border-b border-white/5 last:border-b-0 items-center group"
             >
               <div className="p-4 md:p-6 text-neutral-300 font-medium">
@@ -50,11 +45,11 @@ export function Comparison() {
                 </p>
               </div>
               <div className="p-4 md:p-6 flex justify-center bg-white/[0.015] group-hover:bg-white/[0.03] transition-colors">
-                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 border border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 border border-green-500/30">
                   <Check size={16} />
                 </div>
               </div>
-              <div className="p-4 md:p-6 flex justify-center opacity-40 grayscale group-hover:grayscale-0 transition-all">
+              <div className="p-4 md:p-6 flex justify-center opacity-40">
                 {item.manual ? (
                   <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/10 flex items-center justify-center text-white/40 border border-white/10">
                     <Check size={16} />
@@ -65,7 +60,7 @@ export function Comparison() {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

@@ -53,6 +53,17 @@ body::before {
   .scroll-progress {
     @apply fixed top-0 left-0 right-0 h-[2px] bg-white z-[1000] origin-left;
   }
+
+  /* Reveal: CSS-only scroll animation — no Framer Motion overhead */
+  .reveal-section {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+  .reveal-section[data-visible="true"] {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Custom Scrollbar */

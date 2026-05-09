@@ -1,7 +1,7 @@
 "use client"
 
-import { motion } from "framer-motion";
 import { Download, Edit3, CheckCircle2 } from "lucide-react";
+import { SpotlightCard } from "./SpotlightCard";
 
 const steps = [
   {
@@ -24,8 +24,6 @@ const steps = [
   }
 ];
 
-import { SpotlightCard } from "./SpotlightCard";
-
 export function HowItWorks() {
   return (
     <section id="cara-kerja" className="py-32 bg-white/[0.01]">
@@ -39,24 +37,14 @@ export function HowItWorks() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto relative">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {steps.map((step, i) => (
             <SpotlightCard key={i} className="p-8 rounded-[32px] border border-white/5 bg-white/[0.02] flex flex-col items-center text-center">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.2 }}
-                className="flex flex-col items-center"
-              >
-                <div className={`w-16 h-16 rounded-2xl ${step.color} flex items-center justify-center mb-6 border border-white/5`}>
-                  <step.icon size={28} />
-                </div>
-                <h3 className="text-xl font-medium text-white mb-3">{step.title}</h3>
-                <p className="text-neutral-400 text-sm leading-relaxed">
-                  {step.description}
-                </p>
-              </motion.div>
+              <div className={`w-16 h-16 rounded-2xl ${step.color} flex items-center justify-center mb-6 border border-white/5`}>
+                <step.icon size={28} />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3">{step.title}</h3>
+              <p className="text-neutral-400 text-sm leading-relaxed">{step.description}</p>
             </SpotlightCard>
           ))}
         </div>

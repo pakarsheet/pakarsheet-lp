@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion";
 import { MessageCircle, Check } from "lucide-react";
 import { SpotlightCard } from "./SpotlightCard";
 import { useData } from "@/hooks/useData";
@@ -90,13 +89,7 @@ export function Testimonials() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {testimonials.map((t, i) => (
               <SpotlightCard key={i} className="rounded-[32px] border border-white/5 bg-[#0a0a0a]">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="p-10"
-                >
+                <div className="p-10">
                   <div className="flex items-center gap-4 mb-8">
                     <div className={`w-12 h-12 rounded-full ${t.color} flex items-center justify-center font-semibold text-lg border border-white/10`}>
                       {t.avatar}
@@ -112,7 +105,7 @@ export function Testimonials() {
                   <p className="text-neutral-400 leading-relaxed font-normal">
                     &quot;{t.content}&quot;
                   </p>
-                </motion.div>
+                </div>
               </SpotlightCard>
             ))}
           </div>

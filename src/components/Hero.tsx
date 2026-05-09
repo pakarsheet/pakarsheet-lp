@@ -12,7 +12,7 @@ export function Hero() {
     <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
       {/* Background elements */}
       <CodeBackground />
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-white/[0.03] blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-white/[0.03] blur-[80px] rounded-full pointer-events-none" />
       
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
@@ -80,7 +80,7 @@ export function Hero() {
           className="mt-20 relative mx-auto max-w-5xl"
           style={{ willChange: "transform, opacity" }}
         >
-          <div className="rounded-[32px] border border-white/10 bg-white/[0.02] p-2 md:p-3 shadow-2xl overflow-hidden relative backdrop-blur-2xl">
+          <div className="rounded-[32px] border border-white/10 bg-white/[0.02] p-2 md:p-3 shadow-2xl overflow-hidden relative">
             {/* Top bar of mock browser/window */}
             <div className="flex items-center gap-2 mb-3 px-4 py-2 opacity-80">
               <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
@@ -165,7 +165,7 @@ export function Hero() {
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 1.2, type: 'spring', stiffness: 200, damping: 20 }}
-                className="absolute top-1/4 right-8 w-40 bg-black/40 border border-white/5 rounded-2xl p-4 shadow-2xl backdrop-blur-xl z-20"
+                className="absolute top-1/4 right-8 w-40 bg-black/60 border border-white/5 rounded-2xl p-4 shadow-2xl z-20"
               >
                 <div className="text-[9px] text-neutral-500 mb-2 tracking-widest font-medium">Analytics</div>
                 <div className="text-lg font-semibold text-white mb-2 flex items-baseline gap-1">
