@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Magnetic } from "./Magnetic";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,7 +31,7 @@ export function Navbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 pt-4 px-4 pointer-events-none">
       <motion.div className="scroll-progress" style={{ scaleX }} />
-      <div className="container mx-auto max-w-5xl pointer-events-auto">
+      <div className="container mx-auto max-w-3xl pointer-events-auto">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -64,14 +63,12 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center gap-4">
-            <Magnetic>
-              <Link
-                href="/shop"
-                className="hidden md:block bg-white text-black px-6 py-2.5 rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all active:scale-95 shadow-lg shadow-white/5"
-              >
-                Lihat Template
-              </Link>
-            </Magnetic>
+            <Link
+              href="/shop"
+              className="hidden md:block bg-white text-black px-6 py-2.5 rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-colors shadow-lg shadow-white/5"
+            >
+              Lihat Template
+            </Link>
 
             {/* Mobile Toggle */}
             <button

@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useData } from "@/hooks/useData";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Plus, Trash2, CheckCircle2, Lock, Edit3,
-  Package, X, MousePointerClick, MessageSquare,
-  BookOpen, Settings as SettingsIcon, Mail,
-  LayoutDashboard, Globe, Star, Send, Check,
-  AlertCircle, Save, ExternalLink, Video,
+  Plus, Trash2, Lock, Edit3, Package, X,
+  MousePointerClick, MessageSquare, BookOpen,
+  Settings as SettingsIcon, Mail, LayoutDashboard,
+  Globe, Star, Check, AlertCircle, Save,
+  ExternalLink, Video, ChevronRight,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,170 +17,253 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 
+// ─── Constants ────────────────────────────────────────────────────────────────
 const CATEGORIES = ["Keuangan", "Marketing", "Inventory", "HR & Admin", "Lainnya"];
+type Tab = "dashboard" | "products" | "testimonials" | "academy" | "requests" | "settings";
+const NAV_ITEMS: { id: Tab; label: string; icon: React.ElementType }[] = [
+  { id: "dashboard",    label: "Dashboard",  icon: LayoutDashboard },
+  { id: "products",     label: "Produk",     icon: Package },
+  { id: "testimonials", label: "Testimoni",  icon: MessageSquare },
+  { id: "academy",      label: "Academy",    icon: BookOpen },
+  { id: "requests",     label: "Requests",   icon: Mail },
+  { id: "settings",     label: "Settings",   icon: SettingsIcon },
+];
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-function StatCard({ title, value, icon: Icon, color }: { title: string; value: string | number; icon: React.ElementType; color: string }) {
+// ─── Shared Primitives ────────────────────────────────────────────────────────
+const inputCls = "w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition-colors";
+const labelCls = "block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2";
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div><label className={labelCls}>{label}</label>{children}</div>;
+}
+
+function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: React.ReactNode }) {
   return (
-    <div className="bg-white/[0.03] border border-white/5 p-6 rounded-[24px] relative overflow-hidden group">
-      <div className={`absolute top-0 right-0 w-24 h-24 blur-[60px] opacity-20 transition-opacity group-hover:opacity-30 ${color}`} />
-      <div className="flex items-start justify-between relative z-10">
-        <div>
-          <p className="text-neutral-500 text-sm font-medium mb-1">{title}</p>
-          <h3 className="text-3xl font-bold text-white tracking-tight">{value}</h3>
+    <div className="flex items-start justify-between mb-8 gap-4">
+      <div>
+        <h1 className="text-xl font-bold text-white tracking-tight">{title}</h1>
+        {subtitle && <p className="text-sm text-neutral-500 mt-0.5">{subtitle}</p>}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+function AddButton({ onClick, label = "Tambah" }: { onClick: () => void; label?: string }) {
+  return (
+    <button onClick={onClick} className="flex items-center gap-2 bg-white text-black text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-neutral-100 transition-colors flex-shrink-0">
+      <Plus size={15} /> {label}
+    </button>
+  );
+}
+
+function StatCard({ title, value, icon: Icon, sub }: { title: string; value: string | number; icon: React.ElementType; sub?: string }) {
+  return (
+    <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">{title}</span>
+        <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-neutral-500">
+          <Icon size={14} />
         </div>
-        <div className="p-3 rounded-2xl bg-white/5 border border-white/10 text-neutral-400 group-hover:text-white transition-colors">
-          <Icon size={20} />
+      </div>
+      <div className="text-2xl font-bold text-white tracking-tight">{value}</div>
+      {sub && <p className="text-xs text-neutral-600 mt-1">{sub}</p>}
+    </div>
+  );
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-white/8 rounded-2xl">
+      <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center mb-3">
+        <Package size={18} className="text-neutral-700" />
+      </div>
+      <p className="text-neutral-600 text-sm">{message}</p>
+    </div>
+  );
+}
+
+function LoadingRows() {
+  return (
+    <div className="space-y-2">
+      {[1, 2, 3].map((i) => <div key={i} className="h-16 rounded-xl bg-white/[0.02] animate-pulse" />)}
+    </div>
+  );
+}
+
+function SubmitBtn({ loading, success, label }: { loading: boolean; success: boolean; label: string }) {
+  return (
+    <button type="submit" disabled={loading} className="w-full bg-white text-black text-sm font-bold py-3.5 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+      {loading ? <><div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />Menyimpan...</>
+        : success ? <><Check size={15} />Tersimpan!</>
+        : label}
+    </button>
+  );
+}
+
+// ─── Drawer ───────────────────────────────────────────────────────────────────
+function Drawer({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/70 z-50" />
+          <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 28, stiffness: 280 }} className="fixed top-0 right-0 h-full w-full max-w-md bg-[#0a0a0a] border-l border-white/8 z-[60] flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/8 flex-shrink-0">
+              <h2 className="text-sm font-semibold text-white">{title}</h2>
+              <button onClick={onClose} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition-colors">
+                <X size={15} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar">{children}</div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// ─── Login ────────────────────────────────────────────────────────────────────
+function LoginScreen({ onLogin }: { onLogin: () => void }) {
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true); setErr("");
+    try {
+      const res = await fetch("/api/admin/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: pw }) });
+      if (res.ok) onLogin(); else setErr("Password salah.");
+    } catch { setErr("Gagal terhubung."); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-black font-black">P</div>
+          <span className="font-bold text-white">Pakarsheet Admin</span>
+        </div>
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-7">
+          <h2 className="text-base font-bold text-white mb-1">Masuk ke Dashboard</h2>
+          <p className="text-sm text-neutral-500 mb-6">Masukkan password admin untuk melanjutkan.</p>
+          <form onSubmit={submit} className="space-y-4">
+            <input type="password" placeholder="Password" value={pw} onChange={(e) => setPw(e.target.value)} className={inputCls} autoFocus />
+            {err && <div className="flex items-center gap-2 text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2.5"><AlertCircle size={12} />{err}</div>}
+            <button type="submit" disabled={loading || !pw} className="w-full bg-white text-black text-sm font-bold py-3.5 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+              {loading ? <><div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />Memverifikasi...</> : "Masuk"}
+            </button>
+          </form>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Login Screen ─────────────────────────────────────────────────────────────
-function LoginScreen({ onLogin }: { onLogin: () => void }) {
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/admin/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-      if (res.ok) {
-        onLogin();
-      } else {
-        setError("Password salah. Coba lagi.");
-      }
-    } catch {
-      setError("Gagal terhubung ke server.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center px-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-white/5 p-8 rounded-3xl border border-white/10 w-full max-w-sm"
-      >
-        <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-black font-black text-2xl mx-auto mb-6">P</div>
-        <h2 className="text-2xl font-bold text-white mb-2 text-center tracking-tight">Admin Login</h2>
-        <p className="text-neutral-500 text-sm text-center mb-8">Masukkan password untuk melanjutkan</p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="password"
-            placeholder="Password..."
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-white/30 transition-all"
-            autoFocus
-          />
-          {error && (
-            <div className="flex items-center gap-2 text-red-400 text-sm">
-              <AlertCircle size={14} /> {error}
-            </div>
-          )}
-          <button
-            type="submit"
-            disabled={loading || !password}
-            className="w-full bg-white text-black font-bold py-4 rounded-xl hover:bg-neutral-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {loading ? <><div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" /> Memverifikasi...</> : "Masuk"}
-          </button>
-        </form>
-      </motion.div>
-    </div>
-  );
-}
-
-// ─── Main Admin Page ──────────────────────────────────────────────────────────
+// ─── Main Layout ──────────────────────────────────────────────────────────────
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "products" | "testimonials" | "academy" | "requests" | "settings">("dashboard");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
-
+  const [tab, setTab] = useState<Tab>("dashboard");
+  const [authed, setAuthed] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { products, testimonials, tutorials, userRequests, settings, isLoading, saveToSupabase, deleteFromSupabase, fetchData } = useData();
 
-  // Verify auth by checking the httpOnly cookie server-side via GET
   useEffect(() => {
     fetch("/api/admin/auth", { method: "GET" })
-      .then((res) => {
-        if (res.ok) {
-          setIsAuthenticated(true);
-        }
-      })
+      .then((r) => { if (r.ok) setAuthed(true); })
       .catch(() => {})
-      .finally(() => setAuthChecked(true));
+      .finally(() => setChecked(true));
   }, []);
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-  };
+  const logout = async () => { await fetch("/api/admin/auth", { method: "DELETE" }); setAuthed(false); };
 
-  const handleLogout = async () => {
-    await fetch("/api/admin/auth", { method: "DELETE" });
-    sessionStorage.removeItem("admin_auth");
-    setIsAuthenticated(false);
-  };
+  if (!checked) return null;
+  if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
 
-  if (!authChecked) return null;
-  if (!isAuthenticated) return <LoginScreen onLogin={handleLogin} />;
+  const pending = userRequests.filter((r) => r.status === "pending").length;
+
+  const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
+    <div className={mobile ? "flex flex-col h-full" : "flex flex-col h-full"}>
+      <div className="px-5 py-4 border-b border-white/8 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black font-black text-sm flex-shrink-0">P</div>
+          <div><div className="text-sm font-bold text-white leading-tight">Pakarsheet</div><div className="text-[10px] text-neutral-600">Admin Panel</div></div>
+        </Link>
+        {mobile && <button onClick={() => setMobileOpen(false)} className="text-neutral-500 hover:text-white"><X size={18} /></button>}
+      </div>
+      <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+        {NAV_ITEMS.map((item) => {
+          const active = tab === item.id;
+          return (
+            <button key={item.id} onClick={() => { setTab(item.id); if (mobile) setMobileOpen(false); }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${active ? "bg-white/10 text-white font-medium" : "text-neutral-500 hover:text-white hover:bg-white/5"}`}>
+              <div className="flex items-center gap-3">
+                <item.icon size={15} className={active ? "text-white" : "text-neutral-600"} />
+                {item.label}
+              </div>
+              <div className="flex items-center gap-1.5">
+                {item.id === "requests" && pending > 0 && (
+                  <span className="text-[10px] font-bold bg-orange-500/15 text-orange-400 border border-orange-500/25 px-1.5 py-0.5 rounded-full">{pending}</span>
+                )}
+                {active && <ChevronRight size={13} className="text-neutral-600" />}
+              </div>
+            </button>
+          );
+        })}
+      </nav>
+      <div className="px-3 py-3 border-t border-white/8 space-y-0.5">
+        <Link href="/" target="_blank" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:text-white hover:bg-white/5 transition-colors">
+          <Globe size={15} className="text-neutral-600" />Lihat Website
+        </Link>
+        <button onClick={logout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:text-red-400 hover:bg-red-500/5 transition-colors">
+          <Lock size={15} className="text-neutral-600" />Logout
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex">
-      {/* Sidebar */}
-      <aside className="w-20 md:w-64 border-r border-white/5 bg-black/40 backdrop-blur-xl flex flex-col fixed h-full z-40">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-black font-black text-xl flex-shrink-0">P</div>
-          <span className="font-bold text-lg hidden md:block tracking-tight text-white/90">Admin Hub</span>
-        </div>
-        <nav className="flex-1 px-4 mt-6 space-y-2">
-          {[
-            { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-            { id: "products", label: "Produk", icon: Package },
-            { id: "testimonials", label: "Testimoni", icon: MessageSquare },
-            { id: "academy", label: "Academy", icon: BookOpen },
-            { id: "requests", label: "Requests", icon: Mail },
-            { id: "settings", label: "Settings", icon: SettingsIcon },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id as typeof activeTab)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === item.id ? "bg-white/10 text-white border border-white/10" : "text-neutral-500 hover:text-white hover:bg-white/5"}`}
-            >
-              <item.icon size={20} className={activeTab === item.id ? "text-blue-400" : ""} />
-              <span className="font-medium hidden md:block">{item.label}</span>
-            </button>
-          ))}
-        </nav>
-        <div className="p-4 border-t border-white/5">
-          <Link href="/" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-500 hover:text-white hover:bg-white/5 transition-all">
-            <Globe size={18} /><span className="font-medium hidden md:block">Buka Website</span>
-          </Link>
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-600 hover:text-red-400 transition-all">
-            <Lock size={18} /><span className="font-medium hidden md:block">Logout</span>
-          </button>
-        </div>
+    <div className="min-h-screen bg-[#080808] text-white flex">
+      {/* Desktop Sidebar */}
+      <aside className="w-56 border-r border-white/8 bg-[#0a0a0a] fixed h-full z-40 hidden md:block">
+        <Sidebar />
       </aside>
 
-      <main className="flex-1 ml-20 md:ml-64 p-6 md:p-12 min-h-screen">
-        <div className="max-w-6xl mx-auto">
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#0a0a0a] border-b border-white/8 px-4 h-14 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-black font-black text-xs">P</div>
+          <span className="text-sm font-bold text-white">Admin</span>
+        </div>
+        <button onClick={() => setMobileOpen(true)} className="p-2 rounded-lg bg-white/5 text-neutral-400 hover:text-white transition-colors">
+          <LayoutDashboard size={17} />
+        </button>
+      </div>
+
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileOpen(false)} className="md:hidden fixed inset-0 bg-black/60 z-50" />
+            <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "spring", damping: 28, stiffness: 280 }} className="md:hidden fixed top-0 left-0 h-full w-60 bg-[#0a0a0a] border-r border-white/8 z-[60]">
+              <Sidebar mobile />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Main */}
+      <main className="flex-1 md:ml-56 pt-14 md:pt-0 min-h-screen">
+        <div className="max-w-4xl mx-auto px-5 md:px-8 py-8">
           <AnimatePresence mode="wait">
-            {activeTab === "dashboard" && <DashboardTab key="dashboard" products={products} userRequests={userRequests} testimonials={testimonials} />}
-            {activeTab === "products" && <ProductsTab key="products" products={products} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} fetchData={fetchData} />}
-            {activeTab === "testimonials" && <TestimonialsTab key="testimonials" testimonials={testimonials} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} />}
-            {activeTab === "academy" && <AcademyTab key="academy" tutorials={tutorials} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} />}
-            {activeTab === "requests" && <RequestsTab key="requests" userRequests={userRequests} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} />}
-            {activeTab === "settings" && <SettingsTab key="settings" settings={settings} saveToSupabase={saveToSupabase} />}
+            {tab === "dashboard"    && <DashboardTab    key="d" products={products} userRequests={userRequests} testimonials={testimonials} />}
+            {tab === "products"     && <ProductsTab     key="p" products={products} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} fetchData={fetchData} />}
+            {tab === "testimonials" && <TestimonialsTab key="t" testimonials={testimonials} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} />}
+            {tab === "academy"      && <AcademyTab      key="a" tutorials={tutorials} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} />}
+            {tab === "requests"     && <RequestsTab     key="r" userRequests={userRequests} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} />}
+            {tab === "settings"     && <SettingsTab     key="s" settings={settings} saveToSupabase={saveToSupabase} />}
           </AnimatePresence>
         </div>
       </main>
@@ -190,75 +273,70 @@ export default function AdminPage() {
 
 // ─── Dashboard Tab ────────────────────────────────────────────────────────────
 function DashboardTab({ products, userRequests, testimonials }: { products: any[]; userRequests: any[]; testimonials: any[] }) {
-  // Build click chart from real product data
-  const chartData = products.slice(0, 7).map((p) => ({
-    name: p.name.length > 10 ? p.name.substring(0, 10) + "…" : p.name,
+  const totalClicks = products.reduce((acc: number, p: any) => acc + (p.clicks || 0), 0);
+  const pending = userRequests.filter((r: any) => r.status === "pending").length;
+  const chartData = products.slice(0, 7).map((p: any) => ({
+    name: p.name.length > 12 ? p.name.substring(0, 12) + "…" : p.name,
     clicks: p.clicks || 0,
   }));
 
-  const totalClicks = products.reduce((acc, p) => acc + (p.clicks || 0), 0);
-  const pendingRequests = userRequests.filter((r) => r.status === "pending").length;
-
   return (
-    <motion.div key="dashboard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <h1 className="text-4xl font-bold text-white mb-8 tracking-tight">Dashboard Insights</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-        <StatCard title="Total Produk" value={products.length} icon={Package} color="bg-blue-500" />
-        <StatCard title="Total Klik" value={totalClicks} icon={MousePointerClick} color="bg-green-500" />
-        <StatCard title="Pending Requests" value={pendingRequests} icon={Mail} color="bg-orange-500" />
+    <motion.div key="dashboard" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+      <PageHeader title="Dashboard" subtitle="Ringkasan performa toko" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <StatCard title="Total Produk"    value={products.length} icon={Package}          sub="Produk aktif di toko" />
+        <StatCard title="Total Klik"      value={totalClicks}     icon={MousePointerClick} sub="Akumulasi semua produk" />
+        <StatCard title="Pending Request" value={pending}         icon={Mail}             sub="Menunggu ditinjau" />
       </div>
 
       {chartData.length > 0 && (
-        <div className="bg-white/[0.02] border border-white/5 rounded-[32px] p-8 mb-8">
-          <h2 className="text-lg font-bold text-white mb-6 tracking-tight">Klik per Produk</h2>
-          <ResponsiveContainer width="100%" height={220}>
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 mb-6">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-sm font-semibold text-white">Klik per Produk</h2>
+            <span className="text-xs text-neutral-600">{products.length} produk</span>
+          </div>
+          <ResponsiveContainer width="100%" height={180}>
             <AreaChart data={chartData}>
               <defs>
-                <linearGradient id="clickGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#3b82f6" stopOpacity={0.2} />
                   <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="name" stroke="#555" tick={{ fontSize: 11 }} />
-              <YAxis stroke="#555" tick={{ fontSize: 11 }} />
-              <Tooltip contentStyle={{ background: "#111", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fff" }} />
-              <Area type="monotone" dataKey="clicks" stroke="#3b82f6" fill="url(#clickGrad)" strokeWidth={2} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+              <XAxis dataKey="name" stroke="#444" tick={{ fontSize: 11, fill: "#555" }} />
+              <YAxis stroke="#444" tick={{ fontSize: 11, fill: "#555" }} />
+              <Tooltip contentStyle={{ background: "#111", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, color: "#fff", fontSize: 12 }} />
+              <Area type="monotone" dataKey="clicks" stroke="#3b82f6" fill="url(#cg)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white/[0.02] border border-white/5 rounded-[32px] p-8">
-          <h2 className="text-lg font-bold text-white mb-4 tracking-tight">Produk Terpopuler</h2>
-          {products.length === 0 ? (
-            <p className="text-neutral-600 text-sm">Belum ada produk.</p>
-          ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-5">
+          <h2 className="text-sm font-semibold text-white mb-4">Produk Terpopuler</h2>
+          {products.length === 0 ? <p className="text-neutral-600 text-sm">Belum ada produk.</p> : (
             <div className="space-y-3">
-              {[...products].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5).map((p) => (
-                <div key={p.id} className="flex items-center justify-between">
-                  <span className="text-neutral-300 text-sm truncate max-w-[200px]">{p.name}</span>
-                  <span className="text-blue-400 text-sm font-bold">{p.clicks || 0} klik</span>
+              {[...products].sort((a: any, b: any) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5).map((p: any) => (
+                <div key={p.id} className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-neutral-300 truncate">{p.name}</span>
+                  <span className="text-xs font-semibold text-blue-400 flex-shrink-0">{p.clicks || 0} klik</span>
                 </div>
               ))}
             </div>
           )}
         </div>
-        <div className="bg-white/[0.02] border border-white/5 rounded-[32px] p-8">
-          <h2 className="text-lg font-bold text-white mb-4 tracking-tight">Testimoni Terbaru</h2>
-          {testimonials.length === 0 ? (
-            <p className="text-neutral-600 text-sm">Belum ada testimoni.</p>
-          ) : (
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-5">
+          <h2 className="text-sm font-semibold text-white mb-4">Testimoni Terbaru</h2>
+          {testimonials.length === 0 ? <p className="text-neutral-600 text-sm">Belum ada testimoni.</p> : (
             <div className="space-y-3">
-              {testimonials.slice(0, 3).map((t) => (
+              {testimonials.slice(0, 3).map((t: any) => (
                 <div key={t.id} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                    {t.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-white text-sm font-medium">{t.name}</p>
-                    <p className="text-neutral-500 text-xs line-clamp-1">{t.content}</p>
+                  <div className="w-7 h-7 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-bold flex-shrink-0">{t.name.charAt(0)}</div>
+                  <div className="min-w-0">
+                    <p className="text-sm text-white font-medium truncate">{t.name}</p>
+                    <p className="text-xs text-neutral-500 line-clamp-1">{t.content}</p>
                   </div>
                 </div>
               ))}
@@ -270,645 +348,317 @@ function DashboardTab({ products, userRequests, testimonials }: { products: any[
   );
 }
 
+// ─── Image Slot Type ──────────────────────────────────────────────────────────
+type ImageSlot = { type: "existing"; url: string } | { type: "new"; preview: string; file: File };
+
 // ─── Products Tab ─────────────────────────────────────────────────────────────
-// Each image slot is either:
-//   { type: "existing", url: string }  — already uploaded to Supabase (keep as-is)
-//   { type: "new", preview: string, file: File }  — local file, needs uploading
-type ImageSlot =
-  | { type: "existing"; url: string }
-  | { type: "new"; preview: string; file: File };
-
 function ProductsTab({ products, isLoading, saveToSupabase, deleteFromSupabase, fetchData }: any) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [formData, setFormData] = useState({ name: "", description: "", price: "", lynkUrl: "", category: "Keuangan" });
-  // Single source of truth for images — no more parallel arrays
-  const [imageSlots, setImageSlots] = useState<ImageSlot[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [uploadErr, setUploadErr] = useState<string | null>(null);
+  const [ok, setOk] = useState(false);
+  const [form, setForm] = useState({ name: "", description: "", price: "", lynkUrl: "", category: "Keuangan" });
+  const [slots, setSlots] = useState<ImageSlot[]>([]);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const closeDrawer = () => {
-    setIsDrawerOpen(false);
-    setEditingItem(null);
-    setFormData({ name: "", description: "", price: "", lynkUrl: "", category: "Keuangan" });
-    setImageSlots([]);
-    setUploadError(null);
-  };
+  const reset = () => { setOpen(false); setEditing(null); setForm({ name: "", description: "", price: "", lynkUrl: "", category: "Keuangan" }); setSlots([]); setUploadErr(null); };
 
-  const handleEdit = (item: any) => {
-    setEditingItem(item);
-    setFormData({
-      name: item.name,
-      description: item.description,
-      price: item.price.toString(),
-      lynkUrl: item.lynkUrl || "",
-      category: item.category,
-    });
-    // Load existing images as "existing" slots
-    const existingUrls: string[] = item.images || (item.image ? [item.image] : []);
-    setImageSlots(existingUrls.map((url) => ({ type: "existing", url })));
-    setUploadError(null);
-    setIsDrawerOpen(true);
+  const openEdit = (p: any) => {
+    setEditing(p);
+    setForm({ name: p.name, description: p.description, price: p.price.toString(), lynkUrl: p.lynkUrl || "", category: p.category });
+    const urls: string[] = p.images || (p.image ? [p.image] : []);
+    setSlots(urls.map((url) => ({ type: "existing" as const, url })));
+    setUploadErr(null); setOpen(true);
   };
 
   const addFiles = (files: FileList) => {
     Array.from(files).forEach((file) => {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageSlots((prev) => [
-          ...prev,
-          { type: "new", preview: reader.result as string, file },
-        ]);
-      };
+      reader.onloadend = () => setSlots((prev) => [...prev, { type: "new" as const, preview: reader.result as string, file }]);
       reader.readAsDataURL(file);
     });
   };
 
-  const removeSlot = (index: number) => {
-    setImageSlots((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleProductSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (imageSlots.length === 0) return alert("Pilih minimal satu gambar.");
-    setIsSubmitting(true);
-    setUploadError(null);
-
-    const finalUrls: string[] = [];
-
-    for (const slot of imageSlots) {
-      if (slot.type === "existing") {
-        // Already on Supabase — keep the URL directly
-        finalUrls.push(slot.url);
-      } else {
-        // New file — upload to Supabase Storage
-        if (supabase) {
-          const fileExt = slot.file.name.split(".").pop() || "jpg";
-          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-          const filePath = `product-images/${fileName}`;
-
-          const { error: storageError } = await supabase.storage
-            .from("products")
-            .upload(filePath, slot.file, { upsert: false });
-
-          if (storageError) {
-            console.error("Upload error:", storageError);
-            setUploadError(`Gagal upload gambar: ${storageError.message}`);
-            setIsSubmitting(false);
-            return;
-          }
-
-          const { data: urlData } = supabase.storage
-            .from("products")
-            .getPublicUrl(filePath);
-
-          finalUrls.push(urlData.publicUrl);
-        } else {
-          // No Supabase — store base64 locally (dev/fallback mode)
-          finalUrls.push(slot.preview);
-        }
-      }
+    if (slots.length === 0) return alert("Pilih minimal satu gambar.");
+    setSubmitting(true); setUploadErr(null);
+    const urls: string[] = [];
+    for (const slot of slots) {
+      if (slot.type === "existing") { urls.push(slot.url); continue; }
+      if (!supabase) { urls.push(slot.preview); continue; }
+      const ext = slot.file.name.split(".").pop() || "jpg";
+      const path = `product-images/${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
+      const { error: se } = await supabase.storage.from("products").upload(path, slot.file, { upsert: false });
+      if (se) { setUploadErr(`Gagal upload: ${se.message}`); setSubmitting(false); return; }
+      const { data: ud } = supabase.storage.from("products").getPublicUrl(path);
+      urls.push(ud.publicUrl);
     }
-
-    const productData = {
-      id: editingItem?.id || Math.random().toString(36).substring(2, 9),
-      name: formData.name,
-      description: formData.description,
-      price: parseInt(formData.price || "0", 10),
-      images: finalUrls,
-      lynkUrl: formData.lynkUrl,
-      category: formData.category,
-      createdAt: editingItem?.createdAt || Date.now(),
-      clicks: editingItem?.clicks || 0,
-    };
-
-    const result = await saveToSupabase("products", productData);
+    const data = { id: editing?.id || Math.random().toString(36).substring(2, 9), name: form.name, description: form.description, price: parseInt(form.price || "0", 10), images: urls, lynkUrl: form.lynkUrl, category: form.category, createdAt: editing?.createdAt || Date.now(), clicks: editing?.clicks || 0 };
+    const result = await saveToSupabase("products", data);
     await fetchData();
-
-    setIsSubmitting(false);
-
-    if (result?.ok === false) {
-      setUploadError(`Gagal menyimpan produk: ${result.error}`);
-      return;
-    }
-
-    setShowSuccess(true);
-    setTimeout(() => {
-      setShowSuccess(false);
-      closeDrawer();
-    }, 1500);
+    setSubmitting(false);
+    if (result?.ok === false) { setUploadErr(`Gagal simpan: ${result.error}`); return; }
+    setOk(true); setTimeout(() => { setOk(false); reset(); }, 1200);
   };
 
   return (
-    <motion.div key="products" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold text-white tracking-tight">Koleksi Produk</h1>
-        <button onClick={() => { setEditingItem(null); setIsDrawerOpen(true); }} className="bg-white text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-neutral-200 transition-all">
-          <Plus size={18} /> Tambah
-        </button>
-      </div>
-      <div className="grid grid-cols-1 gap-4">
-        {isLoading ? (
-          <div className="text-center py-20 text-neutral-500 animate-pulse font-bold uppercase tracking-widest">Sinkronisasi Database...</div>
-        ) : products.length === 0 ? (
-          <div className="text-center py-24 text-neutral-600 bg-white/[0.01] rounded-[40px] border border-white/5 border-dashed">Belum ada produk.</div>
-        ) : (
-          products.map((p: any) => (
-            <div key={p.id} className="bg-white/[0.02] border border-white/5 p-5 rounded-[32px] flex items-center gap-5 group hover:bg-white/[0.04] transition-all">
-              <div className="w-16 h-16 rounded-2xl bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/10">
-                {(p.images?.[0] || p.image) && (
-                  <Image src={p.images?.[0] || p.image} alt={p.name} fill className="object-cover" unoptimized />
-                )}
+    <motion.div key="products" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+      <PageHeader title="Produk" subtitle={`${products.length} produk tersedia`} action={<AddButton onClick={() => { setEditing(null); setOpen(true); }} />} />
+      {isLoading ? <LoadingRows /> : products.length === 0 ? <EmptyState message="Belum ada produk. Tambah produk pertama kamu." /> : (
+        <div className="space-y-2">
+          {products.map((p: any) => (
+            <div key={p.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 flex items-center gap-4 group hover:border-white/15 transition-colors">
+              <div className="w-12 h-12 rounded-lg bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/8">
+                {(p.images?.[0] || p.image) && <Image src={p.images?.[0] || p.image} alt={p.name} fill className="object-cover" unoptimized />}
               </div>
-              <div className="flex-1">
-                <h4 className="font-bold text-white text-lg leading-tight">{p.name}</h4>
-                <p className="text-xs text-neutral-500 uppercase tracking-widest font-bold mt-1">{p.category} • Rp {p.price.toLocaleString("id-ID")} • {p.clicks || 0} klik</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">{p.name}</p>
+                <p className="text-xs text-neutral-500 mt-0.5">{p.category} · Rp {p.price.toLocaleString("id-ID")} · {p.clicks || 0} klik</p>
               </div>
-              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-                <button onClick={() => handleEdit(p)} className="p-3 rounded-2xl bg-white/5 text-white hover:bg-white/10"><Edit3 size={18} /></button>
-                <button onClick={() => window.confirm("Hapus produk ini?") && deleteFromSupabase("products", p.id)} className="p-3 rounded-2xl bg-red-500/10 text-red-400 hover:bg-red-500/20"><Trash2 size={18} /></button>
+              <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => openEdit(p)} className="p-2 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"><Edit3 size={14} /></button>
+                <button onClick={() => window.confirm("Hapus produk ini?") && deleteFromSupabase("products", p.id)} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"><Trash2 size={14} /></button>
               </div>
             </div>
-          ))
-        )}
-      </div>
-
-      {/* Drawer */}
-      <AnimatePresence>
-        {isDrawerOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeDrawer} className="fixed inset-0 bg-black/80 backdrop-blur-md z-50" />
-            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#080808] border-l border-white/10 z-[60] shadow-2xl flex flex-col">
-              <div className="p-8 border-b border-white/5 flex items-center justify-between bg-black/40 backdrop-blur-xl">
-                <h2 className="text-2xl font-bold text-white tracking-tight">{editingItem ? "Edit Produk" : "Tambah Produk"}</h2>
-                <button onClick={closeDrawer} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition-all"><X size={20} /></button>
-              </div>
-              <div className="flex-1 overflow-y-auto overflow-x-hidden p-8 custom-scrollbar">
-                <form onSubmit={handleProductSubmit} className="space-y-8 pb-12">
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">
-                      Foto Produk ({imageSlots.length} dipilih)
-                    </label>
-                    {uploadError && (
-                      <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-2xl px-4 py-3">
-                        <AlertCircle size={14} className="flex-shrink-0" /> {uploadError}
-                      </div>
-                    )}
-                    <div className="grid grid-cols-2 gap-3">
-                      {imageSlots.map((slot, idx) => (
-                        <div key={idx} className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group bg-neutral-900">
-                          <Image
-                            src={slot.type === "existing" ? slot.url : slot.preview}
-                            alt={`Preview ${idx + 1}`}
-                            fill
-                            className="object-cover"
-                            unoptimized
-                          />
-                          <span className={`absolute top-2 left-2 text-[9px] font-black px-2 py-0.5 rounded-full ${slot.type === "existing" ? "bg-blue-500/80 text-white" : "bg-green-500/80 text-white"}`}>
-                            {slot.type === "existing" ? "SAVED" : "NEW"}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeSlot(idx)}
-                            className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="aspect-video rounded-2xl border-2 border-dashed border-white/10 hover:border-white/30 bg-white/[0.02] flex flex-col items-center justify-center text-neutral-600 hover:text-white transition-all group"
-                      >
-                        <Plus size={32} className="group-hover:scale-110 transition-transform" />
-                        <span className="text-[10px] mt-2 font-black tracking-widest uppercase">Pilih Foto</span>
-                      </button>
-                    </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      multiple
-                      onChange={(e) => e.target.files && addFiles(e.target.files)}
-                    />
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Nama Produk</label>
-                    <input required type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all font-medium" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-3">
-                      <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Kategori</label>
-                      <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:border-white/30 transition-all font-medium appearance-none">
-                        {CATEGORIES.map((cat) => <option key={cat} value={cat} className="bg-black">{cat}</option>)}
-                      </select>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Harga (Rp)</label>
-                      <input required type="text" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value.replace(/\D/g, "") })} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all font-medium" />
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Link Lynk.id</label>
-                    <input required type="url" value={formData.lynkUrl} onChange={(e) => setFormData({ ...formData, lynkUrl: e.target.value })} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all font-medium" />
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Deskripsi</label>
-                    <textarea required rows={6} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white resize-none focus:outline-none focus:border-white/30 transition-all font-medium" />
-                  </div>
-                  <div className="sticky bottom-0 pt-4 bg-[#080808]">
-                    <button disabled={isSubmitting} type="submit" className="w-full bg-white text-black font-black py-5 rounded-2xl hover:bg-neutral-200 active:scale-[0.98] transition-all disabled:opacity-50 shadow-2xl shadow-white/5 flex items-center justify-center gap-3">
-                      {isSubmitting ? <><div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" /> Menyimpan...</> : showSuccess ? <><Check size={18} /> Berhasil!</> : (editingItem ? "Update Produk" : "Simpan ke Database")}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+          ))}
+        </div>
+      )}
+      <Drawer open={open} onClose={reset} title={editing ? "Edit Produk" : "Tambah Produk"}>
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <Field label={`Foto Produk (${slots.length})`}>
+            {uploadErr && <div className="flex items-center gap-2 text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2.5 mb-3"><AlertCircle size={12} />{uploadErr}</div>}
+            <div className="grid grid-cols-3 gap-2">
+              {slots.map((slot, i) => (
+                <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-neutral-900 border border-white/8 group/img">
+                  <Image src={slot.type === "existing" ? slot.url : slot.preview} alt="" fill className="object-cover" unoptimized />
+                  <span className={`absolute top-1 left-1 text-[8px] font-bold px-1.5 py-0.5 rounded-full text-white ${slot.type === "existing" ? "bg-blue-500/80" : "bg-green-500/80"}`}>{slot.type === "existing" ? "SAVED" : "NEW"}</span>
+                  <button type="button" onClick={() => setSlots((prev) => prev.filter((_, j) => j !== i))} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity"><X size={10} /></button>
+                </div>
+              ))}
+              <button type="button" onClick={() => fileRef.current?.click()} className="aspect-square rounded-lg border-2 border-dashed border-white/10 hover:border-white/25 bg-white/[0.02] flex flex-col items-center justify-center text-neutral-600 hover:text-neutral-400 transition-colors">
+                <Plus size={18} /><span className="text-[9px] mt-1 font-semibold uppercase tracking-wider">Foto</span>
+              </button>
+            </div>
+            <input ref={fileRef} type="file" className="hidden" accept="image/*" multiple onChange={(e) => e.target.files && addFiles(e.target.files)} />
+          </Field>
+          <Field label="Nama Produk"><input required type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} placeholder="Finance Tracker Pro" /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Kategori">
+              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={inputCls + " appearance-none"}>
+                {CATEGORIES.map((c) => <option key={c} value={c} className="bg-black">{c}</option>)}
+              </select>
+            </Field>
+            <Field label="Harga (Rp)"><input required type="text" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value.replace(/\D/g, "") })} className={inputCls} placeholder="250000" /></Field>
+          </div>
+          <Field label="Link Lynk.id"><input required type="url" value={form.lynkUrl} onChange={(e) => setForm({ ...form, lynkUrl: e.target.value })} className={inputCls} placeholder="https://lynk.id/..." /></Field>
+          <Field label="Deskripsi"><textarea required rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputCls + " resize-none"} placeholder="Deskripsi singkat produk..." /></Field>
+          <div className="pt-1"><SubmitBtn loading={submitting} success={ok} label={editing ? "Update Produk" : "Simpan Produk"} /></div>
+        </form>
+      </Drawer>
     </motion.div>
   );
 }
 
 // ─── Testimonials Tab ─────────────────────────────────────────────────────────
 function TestimonialsTab({ testimonials, isLoading, saveToSupabase, deleteFromSupabase }: any) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [formData, setFormData] = useState({ name: "", role: "", content: "", rating: "5" });
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [ok, setOk] = useState(false);
+  const [form, setForm] = useState({ name: "", role: "", content: "", rating: "5" });
 
-  const closeDrawer = () => {
-    setIsDrawerOpen(false);
-    setEditingItem(null);
-    setFormData({ name: "", role: "", content: "", rating: "5" });
-  };
-
-  const handleEdit = (item: any) => {
-    setEditingItem(item);
-    setFormData({ name: item.name, role: item.role, content: item.content, rating: String(item.rating || 5) });
-    setIsDrawerOpen(true);
-  };
+  const reset = () => { setOpen(false); setEditing(null); setForm({ name: "", role: "", content: "", rating: "5" }); };
+  const openEdit = (t: any) => { setEditing(t); setForm({ name: t.name, role: t.role, content: t.content, rating: String(t.rating || 5) }); setOpen(true); };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    const data = {
-      id: editingItem?.id || Math.random().toString(36).substring(2, 9),
-      name: formData.name,
-      role: formData.role,
-      content: formData.content,
-      rating: parseInt(formData.rating, 10),
-      createdAt: editingItem?.createdAt || Date.now(),
-    };
-    await saveToSupabase("testimonials", data);
-    setIsSubmitting(false);
-    setShowSuccess(true);
-    setTimeout(() => { setShowSuccess(false); closeDrawer(); }, 1500);
+    e.preventDefault(); setSubmitting(true);
+    await saveToSupabase("testimonials", { id: editing?.id || Math.random().toString(36).substring(2, 9), name: form.name, role: form.role, content: form.content, rating: parseInt(form.rating, 10), createdAt: editing?.createdAt || Date.now() });
+    setSubmitting(false); setOk(true); setTimeout(() => { setOk(false); reset(); }, 1200);
   };
 
   return (
-    <motion.div key="testimonials" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold text-white tracking-tight">Testimoni</h1>
-        <button onClick={() => { setEditingItem(null); setIsDrawerOpen(true); }} className="bg-white text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-neutral-200 transition-all">
-          <Plus size={18} /> Tambah
-        </button>
-      </div>
-      <div className="grid grid-cols-1 gap-4">
-        {isLoading ? (
-          <div className="text-center py-20 text-neutral-500 animate-pulse font-bold uppercase tracking-widest">Memuat...</div>
-        ) : testimonials.length === 0 ? (
-          <div className="text-center py-24 text-neutral-600 bg-white/[0.01] rounded-[40px] border border-white/5 border-dashed">Belum ada testimoni.</div>
-        ) : (
-          testimonials.map((t: any) => (
-            <div key={t.id} className="bg-white/[0.02] border border-white/5 p-6 rounded-[32px] flex items-start gap-5 group hover:bg-white/[0.04] transition-all">
-              <div className="w-12 h-12 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-lg flex-shrink-0">
-                {t.name.charAt(0)}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-bold text-white">{t.name}</h4>
-                  <span className="text-xs text-neutral-500">• {t.role}</span>
-                  <div className="flex items-center gap-0.5 ml-auto">
-                    {Array.from({ length: t.rating || 5 }).map((_, i) => (
-                      <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />
-                    ))}
-                  </div>
+    <motion.div key="testimonials" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+      <PageHeader title="Testimoni" subtitle={`${testimonials.length} testimoni`} action={<AddButton onClick={() => { setEditing(null); setOpen(true); }} />} />
+      {isLoading ? <LoadingRows /> : testimonials.length === 0 ? <EmptyState message="Belum ada testimoni." /> : (
+        <div className="space-y-2">
+          {testimonials.map((t: any) => (
+            <div key={t.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 flex items-start gap-4 group hover:border-white/15 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-purple-500/15 text-purple-400 flex items-center justify-center font-bold text-sm flex-shrink-0">{t.name.charAt(0)}</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-sm font-semibold text-white">{t.name}</p>
+                  <span className="text-xs text-neutral-600">· {t.role}</span>
+                  <div className="flex items-center gap-0.5 ml-auto">{Array.from({ length: t.rating || 5 }).map((_, i) => <Star key={i} size={11} className="text-yellow-400 fill-yellow-400" />)}</div>
                 </div>
-                <p className="text-neutral-400 text-sm line-clamp-2">{t.content}</p>
+                <p className="text-xs text-neutral-500 line-clamp-2">{t.content}</p>
               </div>
-              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                <button onClick={() => handleEdit(t)} className="p-3 rounded-2xl bg-white/5 text-white hover:bg-white/10"><Edit3 size={16} /></button>
-                <button onClick={() => window.confirm("Hapus testimoni ini?") && deleteFromSupabase("testimonials", t.id)} className="p-3 rounded-2xl bg-red-500/10 text-red-400 hover:bg-red-500/20"><Trash2 size={16} /></button>
+              <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                <button onClick={() => openEdit(t)} className="p-2 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"><Edit3 size={14} /></button>
+                <button onClick={() => window.confirm("Hapus?") && deleteFromSupabase("testimonials", t.id)} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"><Trash2 size={14} /></button>
               </div>
             </div>
-          ))
-        )}
-      </div>
-
-      <AnimatePresence>
-        {isDrawerOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeDrawer} className="fixed inset-0 bg-black/80 backdrop-blur-md z-50" />
-            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#080808] border-l border-white/10 z-[60] shadow-2xl flex flex-col">
-              <div className="p-8 border-b border-white/5 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white">{editingItem ? "Edit Testimoni" : "Tambah Testimoni"}</h2>
-                <button onClick={closeDrawer} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center"><X size={20} /></button>
-              </div>
-              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                <form onSubmit={handleSubmit} className="space-y-6 pb-12">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Nama</label>
-                    <input required type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all" />
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Jabatan / Role</label>
-                    <input required type="text" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all" />
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Rating (1-5)</label>
-                    <select value={formData.rating} onChange={(e) => setFormData({ ...formData, rating: e.target.value })} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:border-white/30 transition-all appearance-none">
-                      {[5, 4, 3, 2, 1].map((r) => <option key={r} value={r} className="bg-black">{r} Bintang</option>)}
-                    </select>
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Isi Testimoni</label>
-                    <textarea required rows={6} value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white resize-none focus:outline-none focus:border-white/30 transition-all" />
-                  </div>
-                  <div className="sticky bottom-0 pt-4 bg-[#080808]">
-                    <button disabled={isSubmitting} type="submit" className="w-full bg-white text-black font-black py-5 rounded-2xl hover:bg-neutral-200 transition-all disabled:opacity-50 flex items-center justify-center gap-3">
-                      {isSubmitting ? <><div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" /> Menyimpan...</> : showSuccess ? <><Check size={18} /> Berhasil!</> : (editingItem ? "Update" : "Simpan")}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+          ))}
+        </div>
+      )}
+      <Drawer open={open} onClose={reset} title={editing ? "Edit Testimoni" : "Tambah Testimoni"}>
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <Field label="Nama"><input required type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} placeholder="Budi Santoso" /></Field>
+          <Field label="Jabatan / Role"><input required type="text" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className={inputCls} placeholder="Digital Marketer" /></Field>
+          <Field label="Rating">
+            <select value={form.rating} onChange={(e) => setForm({ ...form, rating: e.target.value })} className={inputCls + " appearance-none"}>
+              {[5, 4, 3, 2, 1].map((r) => <option key={r} value={r} className="bg-black">{r} Bintang</option>)}
+            </select>
+          </Field>
+          <Field label="Isi Testimoni"><textarea required rows={5} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className={inputCls + " resize-none"} placeholder="Cerita pengalaman pengguna..." /></Field>
+          <div className="pt-1"><SubmitBtn loading={submitting} success={ok} label={editing ? "Update" : "Simpan"} /></div>
+        </form>
+      </Drawer>
     </motion.div>
   );
 }
 
 // ─── Academy Tab ──────────────────────────────────────────────────────────────
 function AcademyTab({ tutorials, isLoading, saveToSupabase, deleteFromSupabase }: any) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [formData, setFormData] = useState({ title: "", content: "", videoUrl: "", category: "Keuangan" });
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [ok, setOk] = useState(false);
+  const [form, setForm] = useState({ title: "", content: "", videoUrl: "", category: "Keuangan" });
 
-  const closeDrawer = () => {
-    setIsDrawerOpen(false);
-    setEditingItem(null);
-    setFormData({ title: "", content: "", videoUrl: "", category: "Keuangan" });
-  };
-
-  const handleEdit = (item: any) => {
-    setEditingItem(item);
-    setFormData({ title: item.title, content: item.content, videoUrl: item.videoUrl || "", category: item.category });
-    setIsDrawerOpen(true);
-  };
+  const reset = () => { setOpen(false); setEditing(null); setForm({ title: "", content: "", videoUrl: "", category: "Keuangan" }); };
+  const openEdit = (t: any) => { setEditing(t); setForm({ title: t.title, content: t.content, videoUrl: t.videoUrl || "", category: t.category }); setOpen(true); };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    const data = {
-      id: editingItem?.id || Math.random().toString(36).substring(2, 9),
-      title: formData.title,
-      content: formData.content,
-      videoUrl: formData.videoUrl || null,
-      category: formData.category,
-      createdAt: editingItem?.createdAt || Date.now(),
-    };
-    await saveToSupabase("tutorials", data);
-    setIsSubmitting(false);
-    setShowSuccess(true);
-    setTimeout(() => { setShowSuccess(false); closeDrawer(); }, 1500);
+    e.preventDefault(); setSubmitting(true);
+    await saveToSupabase("tutorials", { id: editing?.id || Math.random().toString(36).substring(2, 9), title: form.title, content: form.content, videoUrl: form.videoUrl || null, category: form.category, createdAt: editing?.createdAt || Date.now() });
+    setSubmitting(false); setOk(true); setTimeout(() => { setOk(false); reset(); }, 1200);
   };
 
   return (
-    <motion.div key="academy" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold text-white tracking-tight">Academy</h1>
-        <button onClick={() => { setEditingItem(null); setIsDrawerOpen(true); }} className="bg-white text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-neutral-200 transition-all">
-          <Plus size={18} /> Tambah Tutorial
-        </button>
-      </div>
-      <div className="grid grid-cols-1 gap-4">
-        {isLoading ? (
-          <div className="text-center py-20 text-neutral-500 animate-pulse font-bold uppercase tracking-widest">Memuat...</div>
-        ) : tutorials.length === 0 ? (
-          <div className="text-center py-24 text-neutral-600 bg-white/[0.01] rounded-[40px] border border-white/5 border-dashed">Belum ada tutorial.</div>
-        ) : (
-          tutorials.map((t: any) => (
-            <div key={t.id} className="bg-white/[0.02] border border-white/5 p-6 rounded-[32px] flex items-start gap-5 group hover:bg-white/[0.04] transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center flex-shrink-0">
-                {t.videoUrl ? <Video size={20} /> : <BookOpen size={20} />}
+    <motion.div key="academy" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+      <PageHeader title="Academy" subtitle={`${tutorials.length} tutorial`} action={<AddButton onClick={() => { setEditing(null); setOpen(true); }} label="Tambah Tutorial" />} />
+      {isLoading ? <LoadingRows /> : tutorials.length === 0 ? <EmptyState message="Belum ada tutorial." /> : (
+        <div className="space-y-2">
+          {tutorials.map((t: any) => (
+            <div key={t.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 flex items-start gap-4 group hover:border-white/15 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center flex-shrink-0">
+                {t.videoUrl ? <Video size={16} /> : <BookOpen size={16} />}
               </div>
-              <div className="flex-1">
-                <h4 className="font-bold text-white mb-1">{t.title}</h4>
-                <p className="text-xs text-neutral-500 uppercase tracking-widest">{t.category}</p>
-                {t.videoUrl && (
-                  <a href={t.videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 flex items-center gap-1 mt-1 hover:underline">
-                    <ExternalLink size={10} /> Lihat Video
-                  </a>
-                )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">{t.title}</p>
+                <p className="text-xs text-neutral-500 mt-0.5">{t.category}</p>
+                {t.videoUrl && <a href={t.videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 flex items-center gap-1 mt-1 hover:underline"><ExternalLink size={10} />Lihat Video</a>}
               </div>
-              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                <button onClick={() => handleEdit(t)} className="p-3 rounded-2xl bg-white/5 text-white hover:bg-white/10"><Edit3 size={16} /></button>
-                <button onClick={() => window.confirm("Hapus tutorial ini?") && deleteFromSupabase("tutorials", t.id)} className="p-3 rounded-2xl bg-red-500/10 text-red-400 hover:bg-red-500/20"><Trash2 size={16} /></button>
+              <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                <button onClick={() => openEdit(t)} className="p-2 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"><Edit3 size={14} /></button>
+                <button onClick={() => window.confirm("Hapus?") && deleteFromSupabase("tutorials", t.id)} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"><Trash2 size={14} /></button>
               </div>
             </div>
-          ))
-        )}
-      </div>
-
-      <AnimatePresence>
-        {isDrawerOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeDrawer} className="fixed inset-0 bg-black/80 backdrop-blur-md z-50" />
-            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#080808] border-l border-white/10 z-[60] shadow-2xl flex flex-col">
-              <div className="p-8 border-b border-white/5 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white">{editingItem ? "Edit Tutorial" : "Tambah Tutorial"}</h2>
-                <button onClick={closeDrawer} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center"><X size={20} /></button>
-              </div>
-              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                <form onSubmit={handleSubmit} className="space-y-6 pb-12">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Judul Tutorial</label>
-                    <input required type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all" />
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Kategori</label>
-                    <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:border-white/30 transition-all appearance-none">
-                      {CATEGORIES.map((cat) => <option key={cat} value={cat} className="bg-black">{cat}</option>)}
-                    </select>
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Link Video (opsional)</label>
-                    <input type="url" value={formData.videoUrl} onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })} placeholder="https://youtube.com/..." className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all placeholder:text-neutral-700" />
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Konten (Markdown)</label>
-                    <textarea required rows={10} value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} placeholder="## Cara Penggunaan&#10;&#10;1. Buka template...&#10;2. ..." className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white resize-none focus:outline-none focus:border-white/30 transition-all font-mono text-sm placeholder:text-neutral-700" />
-                  </div>
-                  <div className="sticky bottom-0 pt-4 bg-[#080808]">
-                    <button disabled={isSubmitting} type="submit" className="w-full bg-white text-black font-black py-5 rounded-2xl hover:bg-neutral-200 transition-all disabled:opacity-50 flex items-center justify-center gap-3">
-                      {isSubmitting ? <><div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" /> Menyimpan...</> : showSuccess ? <><Check size={18} /> Berhasil!</> : (editingItem ? "Update Tutorial" : "Simpan Tutorial")}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+          ))}
+        </div>
+      )}
+      <Drawer open={open} onClose={reset} title={editing ? "Edit Tutorial" : "Tambah Tutorial"}>
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <Field label="Judul Tutorial"><input required type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inputCls} placeholder="Cara Pakai Finance Tracker" /></Field>
+          <Field label="Kategori">
+            <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={inputCls + " appearance-none"}>
+              {CATEGORIES.map((c) => <option key={c} value={c} className="bg-black">{c}</option>)}
+            </select>
+          </Field>
+          <Field label="Link Video (opsional)"><input type="url" value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} className={inputCls} placeholder="https://youtube.com/..." /></Field>
+          <Field label="Konten (Markdown)"><textarea required rows={8} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className={inputCls + " resize-none font-mono text-xs"} placeholder="## Cara Penggunaan..." /></Field>
+          <div className="pt-1"><SubmitBtn loading={submitting} success={ok} label={editing ? "Update Tutorial" : "Simpan Tutorial"} /></div>
+        </form>
+      </Drawer>
     </motion.div>
   );
 }
 
 // ─── Requests Tab ─────────────────────────────────────────────────────────────
 function RequestsTab({ userRequests, isLoading, saveToSupabase, deleteFromSupabase }: any) {
-  const statusColors: Record<string, string> = {
-    pending: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-    reviewed: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  const statusStyle: Record<string, string> = {
+    pending:   "bg-orange-500/10 text-orange-400 border-orange-500/20",
+    reviewed:  "bg-blue-500/10 text-blue-400 border-blue-500/20",
     completed: "bg-green-500/10 text-green-400 border-green-500/20",
   };
 
-  const updateStatus = async (req: any, status: string) => {
-    await saveToSupabase("user_requests", { ...req, status });
-  };
-
   return (
-    <motion.div key="requests" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold text-white tracking-tight">User Requests</h1>
-        <div className="text-sm text-neutral-500">
-          {userRequests.filter((r: any) => r.status === "pending").length} pending
-        </div>
-      </div>
-      <div className="grid grid-cols-1 gap-4">
-        {isLoading ? (
-          <div className="text-center py-20 text-neutral-500 animate-pulse font-bold uppercase tracking-widest">Memuat...</div>
-        ) : userRequests.length === 0 ? (
-          <div className="text-center py-24 text-neutral-600 bg-white/[0.01] rounded-[40px] border border-white/5 border-dashed">Belum ada request masuk.</div>
-        ) : (
-          userRequests.map((req: any) => (
-            <div key={req.id} className="bg-white/[0.02] border border-white/5 p-6 rounded-[32px] group hover:bg-white/[0.04] transition-all">
-              <div className="flex items-start justify-between gap-4 mb-3">
+    <motion.div key="requests" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+      <PageHeader title="User Requests" subtitle={`${userRequests.filter((r: any) => r.status === "pending").length} pending`} />
+      {isLoading ? <LoadingRows /> : userRequests.length === 0 ? <EmptyState message="Belum ada request masuk." /> : (
+        <div className="space-y-3">
+          {userRequests.map((req: any) => (
+            <div key={req.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 group hover:border-white/15 transition-colors">
+              <div className="flex items-start justify-between gap-3 mb-3">
                 <div>
-                  <p className="font-bold text-white">{req.email}</p>
-                  <p className="text-xs text-neutral-500 mt-0.5">{new Date(req.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
+                  <p className="text-sm font-semibold text-white">{req.email}</p>
+                  <p className="text-xs text-neutral-600 mt-0.5">{new Date(req.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${statusColors[req.status] || statusColors.pending}`}>
-                  {req.status}
-                </span>
+                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border flex-shrink-0 ${statusStyle[req.status] || statusStyle.pending}`}>{req.status}</span>
               </div>
-              <p className="text-neutral-400 text-sm mb-4">{req.request}</p>
+              <p className="text-sm text-neutral-400 mb-4 leading-relaxed">{req.request}</p>
               <div className="flex items-center gap-2 flex-wrap">
                 {["pending", "reviewed", "completed"].map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => updateStatus(req, s)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${req.status === s ? statusColors[s] : "bg-white/5 text-neutral-500 border-white/10 hover:bg-white/10"}`}
-                  >
+                  <button key={s} onClick={() => saveToSupabase("user_requests", { ...req, status: s })}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${req.status === s ? statusStyle[s] : "bg-white/5 text-neutral-500 border-white/8 hover:bg-white/10 hover:text-white"}`}>
                     {s}
                   </button>
                 ))}
-                <button onClick={() => window.confirm("Hapus request ini?") && deleteFromSupabase("user_requests", req.id)} className="ml-auto p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 opacity-0 group-hover:opacity-100 transition-all">
-                  <Trash2 size={14} />
+                <button onClick={() => window.confirm("Hapus request ini?") && deleteFromSupabase("user_requests", req.id)} className="ml-auto p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors opacity-0 group-hover:opacity-100">
+                  <Trash2 size={13} />
                 </button>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }
 
 // ─── Settings Tab ─────────────────────────────────────────────────────────────
 function SettingsTab({ settings, saveToSupabase }: any) {
-  const [formData, setFormData] = useState({
-    metaTitle: "",
-    metaDescription: "",
-    metaKeywords: "",
-    whatsappNumber: "",
-    mainLynkUrl: "",
-  });
-  const [isSaving, setIsSaving] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [form, setForm] = useState({ metaTitle: "", metaDescription: "", metaKeywords: "", whatsappNumber: "", mainLynkUrl: "" });
+  const [saving, setSaving] = useState(false);
+  const [ok, setOk] = useState(false);
 
-  // Populate form when settings load from DB
   useEffect(() => {
-    if (settings) {
-      setFormData({
-        metaTitle: settings.metaTitle || "",
-        metaDescription: settings.metaDescription || "",
-        metaKeywords: settings.metaKeywords || "",
-        whatsappNumber: settings.whatsappNumber || "",
-        mainLynkUrl: settings.mainLynkUrl || "",
-      });
-    }
+    if (settings) setForm({ metaTitle: settings.metaTitle || "", metaDescription: settings.metaDescription || "", metaKeywords: settings.metaKeywords || "", whatsappNumber: settings.whatsappNumber || "", mainLynkUrl: settings.mainLynkUrl || "" });
   }, [settings]);
 
   const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    await saveToSupabase("site_settings", {
-      id: settings?.id || "main",
-      ...formData,
-    });
-    setIsSaving(false);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 2000);
+    e.preventDefault(); setSaving(true);
+    await saveToSupabase("site_settings", { id: settings?.id || "main", ...form });
+    setSaving(false); setOk(true); setTimeout(() => setOk(false), 2000);
   };
 
   return (
-    <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <h1 className="text-4xl font-bold text-white mb-8 tracking-tight">Settings</h1>
-      <form onSubmit={handleSave} className="space-y-8 max-w-2xl">
-        <div className="bg-white/[0.02] border border-white/5 rounded-[32px] p-8 space-y-6">
-          <h2 className="text-lg font-bold text-white tracking-tight">SEO & Meta</h2>
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Meta Title</label>
-            <input type="text" value={formData.metaTitle} onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })} placeholder="Pakarsheet - Template Google Sheets..." className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all placeholder:text-neutral-700" />
-          </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Meta Description</label>
-            <textarea rows={3} value={formData.metaDescription} onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })} placeholder="Deskripsi singkat untuk mesin pencari..." className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white resize-none focus:outline-none focus:border-white/30 transition-all placeholder:text-neutral-700" />
-          </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Keywords (pisah koma)</label>
-            <input type="text" value={formData.metaKeywords} onChange={(e) => setFormData({ ...formData, metaKeywords: e.target.value })} placeholder="google sheets, template, otomasi..." className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all placeholder:text-neutral-700" />
-          </div>
+    <motion.div key="settings" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+      <PageHeader title="Settings" subtitle="Konfigurasi website dan kontak" />
+      <form onSubmit={handleSave} className="space-y-6 max-w-xl">
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 space-y-5">
+          <h2 className="text-sm font-semibold text-white">SEO & Meta</h2>
+          <Field label="Meta Title"><input type="text" value={form.metaTitle} onChange={(e) => setForm({ ...form, metaTitle: e.target.value })} className={inputCls} placeholder="Pakarsheet - Template Google Sheets..." /></Field>
+          <Field label="Meta Description"><textarea rows={3} value={form.metaDescription} onChange={(e) => setForm({ ...form, metaDescription: e.target.value })} className={inputCls + " resize-none"} placeholder="Deskripsi singkat untuk mesin pencari..." /></Field>
+          <Field label="Keywords (pisah koma)"><input type="text" value={form.metaKeywords} onChange={(e) => setForm({ ...form, metaKeywords: e.target.value })} className={inputCls} placeholder="google sheets, template, otomasi..." /></Field>
         </div>
-
-        <div className="bg-white/[0.02] border border-white/5 rounded-[32px] p-8 space-y-6">
-          <h2 className="text-lg font-bold text-white tracking-tight">Kontak & Link</h2>
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Nomor WhatsApp</label>
-            <div className="flex items-center gap-3">
-              <span className="text-neutral-500 text-sm font-mono">+62</span>
-              <input type="text" value={formData.whatsappNumber} onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value.replace(/\D/g, "") })} placeholder="81234567890" className="flex-1 bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all placeholder:text-neutral-700 font-mono" />
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 space-y-5">
+          <h2 className="text-sm font-semibold text-white">Kontak & Link</h2>
+          <Field label="Nomor WhatsApp">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-neutral-500 font-mono flex-shrink-0">+62</span>
+              <input type="text" value={form.whatsappNumber} onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value.replace(/\D/g, "") })} className={inputCls + " font-mono"} placeholder="81234567890" />
             </div>
-            <p className="text-xs text-neutral-600">Tanpa tanda + atau 0 di depan. Contoh: 81234567890</p>
-          </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Main Lynk.id URL</label>
-            <input type="url" value={formData.mainLynkUrl} onChange={(e) => setFormData({ ...formData, mainLynkUrl: e.target.value })} placeholder="https://lynk.id/pakarsheet" className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all placeholder:text-neutral-700" />
-          </div>
+            <p className="text-xs text-neutral-600 mt-1.5">Tanpa tanda + atau 0 di depan.</p>
+          </Field>
+          <Field label="Main Lynk.id URL"><input type="url" value={form.mainLynkUrl} onChange={(e) => setForm({ ...form, mainLynkUrl: e.target.value })} className={inputCls} placeholder="https://lynk.id/pakarsheet" /></Field>
         </div>
-
-        <button type="submit" disabled={isSaving} className="bg-white text-black font-black px-10 py-5 rounded-2xl hover:bg-neutral-200 transition-all disabled:opacity-50 flex items-center gap-3">
-          {isSaving ? <><div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" /> Menyimpan...</> : showSuccess ? <><Check size={18} /> Tersimpan!</> : <><Save size={18} /> Simpan Pengaturan</>}
+        <button type="submit" disabled={saving} className="flex items-center gap-2 bg-white text-black text-sm font-bold px-6 py-3 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50">
+          {saving ? <><div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />Menyimpan...</>
+            : ok ? <><Check size={15} />Tersimpan!</>
+            : <><Save size={15} />Simpan Pengaturan</>}
         </button>
       </form>
     </motion.div>

@@ -2,6 +2,7 @@ import { Hero } from "@/components/Hero";
 import { SocialProof } from "@/components/SocialProof";
 import { StatsCounter } from "@/components/StatsCounter";
 import { HowItWorks } from "@/components/HowItWorks";
+import { NeuralGraph } from "@/components/NeuralGraph";
 import { Comparison } from "@/components/Comparison";
 import { DetailedFeatures } from "@/components/DetailedFeatures";
 import { Features } from "@/components/Features";
@@ -24,6 +25,9 @@ export default function Home() {
       </Reveal>
       <Reveal>
         <HowItWorks />
+      </Reveal>
+      <Reveal>
+        <NeuralGraph />
       </Reveal>
       <Reveal>
         <DetailedFeatures />
