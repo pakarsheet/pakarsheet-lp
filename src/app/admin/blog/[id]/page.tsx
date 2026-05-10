@@ -81,9 +81,9 @@ export default function BlogEditorPage({
     checkAdminAuth().then((ok) => {
       setAuthed(ok);
       setChecked(true);
-      if (!ok) router.replace("/admin");
+      if (!ok) router.replace(`/admin/login?next=/admin/blog/${id}`);
     });
-  }, [router]);
+  }, [id, router]);
 
   // Load existing post
   useEffect(() => {
@@ -91,24 +91,21 @@ export default function BlogEditorPage({
     const post = blogPosts.find((x) => x.id === id);
     if (!post) { router.replace("/admin?tab=blog"); return; }
 
-    setEditingId(post.id);
-    setSlugManuallyEdited(true); // don't auto-update slug for existing posts
-
     // Handle Markdown → HTML conversion for legacy content
     let content = post.content || "";
+    let nextContentLoadErr: string | null = null;
     if (looksLikeMarkdown(content)) {
       const html = markdownToHtml(content);
       if (html === null) {
-        setContentLoadErr(
-          "Konten artikel ini menggunakan format Markdown yang tidak dapat dikonversi secara otomatis. Silakan edit konten secara manual."
-        );
+        nextContentLoadErr =
+          "Konten artikel ini menggunakan format Markdown yang tidak dapat dikonversi secara otomatis. Silakan edit konten secara manual.";
         content = "";
       } else {
         content = html;
       }
     }
 
-    setForm({
+    const nextForm = {
       title: post.title,
       slug: post.slug,
       excerpt: post.excerpt,
@@ -118,8 +115,15 @@ export default function BlogEditorPage({
       tags: (post.tags || []).join(", "),
       status: post.status,
       relatedProductId: post.relatedProductId || "",
+    };
+
+    queueMicrotask(() => {
+      setEditingId(post.id);
+      setSlugManuallyEdited(true);
+      setContentLoadErr(nextContentLoadErr);
+      setForm(nextForm);
+      setCoverPreview(post.coverImage || "");
     });
-    if (post.coverImage) setCoverPreview(post.coverImage);
   }, [id, isNew, isLoading, blogPosts, router]);
 
   // Auto-generate slug from title (new posts only)
@@ -179,7 +183,7 @@ export default function BlogEditorPage({
     const readingTime = Math.max(1, Math.ceil(words / 200));
     const now = Date.now();
 
-    const data = {
+    const data: Record<string, unknown> = {
       id: editingId || crypto.randomUUID(),
       title: form.title.trim(),
       slug: form.slug.trim(),
@@ -203,7 +207,7 @@ export default function BlogEditorPage({
       updatedAt: now,
     };
 
-    const result = await saveToSupabase("blog_posts", data as any);
+    const result = await saveToSupabase("blog_posts", data);
     await fetchData();
     setSubmitting(false);
 
@@ -443,7 +447,7 @@ export default function BlogEditorPage({
                     <option value="" className="bg-[#111]">
                       — Tidak ada —
                     </option>
-                    {products.map((p: any) => (
+                    {products.map((p) => (
                       <option key={p.id} value={p.id} className="bg-[#111]">
                         {p.name}
                       </option>

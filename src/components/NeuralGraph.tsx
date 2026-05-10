@@ -93,7 +93,6 @@ function Connectors({
     if (!containerRef.current || !centerRef.current) return;
     const base = containerRef.current.getBoundingClientRect();
     const center = centerRef.current.getBoundingClientRect();
-    const cx = center.left - base.left + center.width / 2;
     const cy = center.top - base.top + center.height / 2;
     const newEdges: typeof edges = [];
 
@@ -127,7 +126,7 @@ function Connectors({
     const obs = new ResizeObserver(compute);
     if (containerRef.current) obs.observe(containerRef.current);
     return () => obs.disconnect();
-  }, [compute]);
+  }, [compute, containerRef]);
 
   const dotColors = ["#60a5fa", "#f59e0b", "#4ade80"];
 

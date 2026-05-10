@@ -8,12 +8,17 @@ export type Product = {
   name: string;
   description: string;
   price: number;
-  originalPrice?: number;
+  originalPrice?: number | null;
+  salePrice?: number | null;
+  salePriceUntil?: number | null;
+  socialProofCount?: number | null;
   images: string[];
+  image?: string;
   lynkUrl: string;
   category: string;
   createdAt: number;
   clicks?: number;
+  features?: ShopFeature[] | null;
 };
 
 export type Testimonial = {
@@ -100,12 +105,13 @@ export function useData() {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
+    await Promise.resolve();
     setIsLoading(true);
     
     if (!supabase) {
       const stored = localStorage.getItem("pakarsheet_products");
       if (stored) {
-        setProducts(JSON.parse(stored));
+        setProducts(JSON.parse(stored) as Product[]);
       } else {
         // Fallback to empty or initial products if needed
         setProducts([]);
@@ -138,7 +144,7 @@ export function useData() {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    queueMicrotask(() => void fetchData());
   }, [fetchData]);
 
   // --- CRUD Operations ---

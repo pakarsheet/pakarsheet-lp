@@ -1,7 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useData } from "@/hooks/useData";
+import type {
+  BlogPost,
+  Product,
+  SiteSettings,
+  Testimonial,
+  Tutorial,
+  UserRequest,
+} from "@/hooks/useData";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -15,15 +23,12 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const CATEGORIES = ["Keuangan", "Marketing", "Inventory", "HR & Admin", "Lainnya"];
-const BLOG_CATEGORIES = ["Tutorial", "Tips & Trik", "Use Case", "Update", "Lainnya"];
 type Tab = "dashboard" | "products" | "testimonials" | "academy" | "requests" | "settings" | "blog" | "custom_orders";
 const NAV_ITEMS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "dashboard",     label: "Dashboard",      icon: LayoutDashboard },
@@ -35,6 +40,33 @@ const NAV_ITEMS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "requests",      label: "Requests",       icon: Mail },
   { id: "settings",      label: "Settings",       icon: SettingsIcon },
 ];
+
+type SaveResult = { ok: boolean; error?: string };
+type SaveToSupabase = (table: string, data: Record<string, unknown>) => Promise<SaveResult>;
+type DeleteFromSupabase = (table: string, id: string) => Promise<SaveResult>;
+
+type CustomOrder = {
+  id: string;
+  name: string;
+  email: string;
+  business: string;
+  package: string;
+  deadline?: string | null;
+  createdAt: number;
+  description: string;
+  teamSize: string;
+  hasMigration?: boolean | null;
+  status: string;
+};
+
+type AdminSidebarProps = {
+  tab: Tab;
+  pending: number;
+  mobile?: boolean;
+  onTabChange: (tab: Tab) => void;
+  onMobileClose: () => void;
+  onLogout: () => void;
+};
 
 // ─── Shared Primitives ────────────────────────────────────────────────────────
 const inputCls = "w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-[15px] text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition-colors";
@@ -204,54 +236,35 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-// ─── Main Layout ──────────────────────────────────────────────────────────────
-function AdminPageInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [tab, setTab] = useState<Tab>(() => {
-    const t = searchParams?.get("tab") as Tab | null;
-    return t && NAV_ITEMS.some((n) => n.id === t) ? t : "dashboard";
-  });
-  const [authed, setAuthed] = useState(false);
-  const [checked, setChecked] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const { products, testimonials, tutorials, userRequests, settings, blogPosts, isLoading, saveToSupabase, deleteFromSupabase, fetchData } = useData();
-
-  // Sync tab from URL query param (e.g. when returning from editor pages)
-  useEffect(() => {
-    const t = searchParams?.get("tab") as Tab | null;
-    if (t && NAV_ITEMS.some((n) => n.id === t)) setTab(t);
-  }, [searchParams]);
-
-  useEffect(() => {
-    fetch("/api/admin/auth", { method: "GET" })
-      .then((r) => { if (r.ok) setAuthed(true); })
-      .catch(() => {})
-      .finally(() => setChecked(true));
-  }, []);
-
-  const logout = async () => { await fetch("/api/admin/auth", { method: "DELETE" }); setAuthed(false); };
-
-  if (!checked) return null;
-  if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
-
-  const pending = userRequests.filter((r) => r.status === "pending").length;
-
-  const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
-    <div className={mobile ? "flex flex-col h-full" : "flex flex-col h-full"}>
+function AdminSidebar({
+  tab,
+  pending,
+  mobile = false,
+  onTabChange,
+  onMobileClose,
+  onLogout,
+}: AdminSidebarProps) {
+  return (
+    <div className="flex flex-col h-full">
       <div className="px-6 py-5 border-b border-white/8 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-black font-black text-base flex-shrink-0">P</div>
           <div><div className="text-[15px] font-bold text-white leading-tight">Pakarsheet</div><div className="text-[11px] text-neutral-600 mt-0.5">Admin Panel</div></div>
         </Link>
-        {mobile && <button onClick={() => setMobileOpen(false)} className="text-neutral-500 hover:text-white"><X size={20} /></button>}
+        {mobile && <button onClick={onMobileClose} className="text-neutral-500 hover:text-white"><X size={20} /></button>}
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
           const active = tab === item.id;
           return (
-            <button key={item.id} onClick={() => { setTab(item.id); if (mobile) setMobileOpen(false); }}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-[14px] transition-colors ${active ? "bg-white/10 text-white font-medium" : "text-neutral-500 hover:text-white hover:bg-white/5"}`}>
+            <button
+              key={item.id}
+              onClick={() => {
+                onTabChange(item.id);
+                if (mobile) onMobileClose();
+              }}
+              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-[14px] transition-colors ${active ? "bg-white/10 text-white font-medium" : "text-neutral-500 hover:text-white hover:bg-white/5"}`}
+            >
               <div className="flex items-center gap-3">
                 <item.icon size={17} className={active ? "text-white" : "text-neutral-600"} />
                 {item.label}
@@ -270,18 +283,65 @@ function AdminPageInner() {
         <Link href="/" target="_blank" className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[14px] text-neutral-500 hover:text-white hover:bg-white/5 transition-colors">
           <Globe size={17} className="text-neutral-600" />Lihat Website
         </Link>
-        <button onClick={logout} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[14px] text-neutral-500 hover:text-red-400 hover:bg-red-500/5 transition-colors">
+        <button onClick={onLogout} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[14px] text-neutral-500 hover:text-red-400 hover:bg-red-500/5 transition-colors">
           <Lock size={17} className="text-neutral-600" />Logout
         </button>
       </div>
     </div>
   );
+}
+
+// ─── Main Layout ──────────────────────────────────────────────────────────────
+function AdminPageInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState<Tab>(() => {
+    const t = searchParams?.get("tab") as Tab | null;
+    return t && NAV_ITEMS.some((n) => n.id === t) ? t : "dashboard";
+  });
+  const [authed, setAuthed] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const { products, testimonials, tutorials, userRequests, settings, blogPosts, isLoading, saveToSupabase, deleteFromSupabase, fetchData } = useData();
+
+  // Sync tab from URL query param (e.g. when returning from editor pages)
+  useEffect(() => {
+    const t = searchParams?.get("tab") as Tab | null;
+    if (t && NAV_ITEMS.some((n) => n.id === t)) {
+      queueMicrotask(() => setTab(t));
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    fetch("/api/admin/auth", { method: "GET" })
+      .then((r) => { if (r.ok) setAuthed(true); })
+      .catch(() => {})
+      .finally(() => {
+        setChecked(true);
+      });
+  }, [router]);
+
+  const logout = async () => {
+    await fetch("/api/admin/auth", { method: "DELETE" });
+    router.replace("/admin/login");
+  };
+
+  if (!checked) return null;
+  if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
+
+  const pending = userRequests.filter((r) => r.status === "pending").length;
 
   return (
     <div className="min-h-screen bg-[#080808] text-white flex">
       {/* Desktop Sidebar */}
       <aside className="w-64 border-r border-white/8 bg-[#0a0a0a] fixed h-full z-40 hidden md:block">
-        <Sidebar />
+        <AdminSidebar
+          tab={tab}
+          pending={pending}
+          onTabChange={setTab}
+          onMobileClose={() => setMobileOpen(false)}
+          onLogout={logout}
+        />
       </aside>
 
       {/* Mobile Top Bar */}
@@ -301,7 +361,14 @@ function AdminPageInner() {
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileOpen(false)} className="md:hidden fixed inset-0 bg-black/60 z-50" />
             <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "spring", damping: 28, stiffness: 280 }} className="md:hidden fixed top-0 left-0 h-full w-72 bg-[#0a0a0a] border-r border-white/8 z-[60]">
-              <Sidebar mobile />
+              <AdminSidebar
+                tab={tab}
+                pending={pending}
+                mobile
+                onTabChange={setTab}
+                onMobileClose={() => setMobileOpen(false)}
+                onLogout={logout}
+              />
             </motion.div>
           </>
         )}
@@ -335,10 +402,18 @@ export default function AdminPage() {
 }
 
 // ─── Dashboard Tab ────────────────────────────────────────────────────────────
-function DashboardTab({ products, userRequests, testimonials }: { products: any[]; userRequests: any[]; testimonials: any[] }) {
-  const totalClicks = products.reduce((acc: number, p: any) => acc + (p.clicks || 0), 0);
-  const pending = userRequests.filter((r: any) => r.status === "pending").length;
-  const chartData = products.slice(0, 7).map((p: any) => ({
+function DashboardTab({
+  products,
+  userRequests,
+  testimonials,
+}: {
+  products: Product[];
+  userRequests: UserRequest[];
+  testimonials: Testimonial[];
+}) {
+  const totalClicks = products.reduce((acc, p) => acc + (p.clicks || 0), 0);
+  const pending = userRequests.filter((r) => r.status === "pending").length;
+  const chartData = products.slice(0, 7).map((p) => ({
     name: p.name.length > 12 ? p.name.substring(0, 12) + "…" : p.name,
     clicks: p.clicks || 0,
   }));
@@ -381,7 +456,7 @@ function DashboardTab({ products, userRequests, testimonials }: { products: any[
           <h2 className="text-base font-semibold text-white mb-5">Produk Terpopuler</h2>
           {products.length === 0 ? <p className="text-neutral-600 text-[14px]">Belum ada produk.</p> : (
             <div className="space-y-3.5">
-              {[...products].sort((a: any, b: any) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5).map((p: any) => (
+              {[...products].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5).map((p) => (
                 <div key={p.id} className="flex items-center justify-between gap-3">
                   <span className="text-[14px] text-neutral-300 truncate">{p.name}</span>
                   <span className="text-[13px] font-semibold text-blue-400 flex-shrink-0">{p.clicks || 0} klik</span>
@@ -394,7 +469,7 @@ function DashboardTab({ products, userRequests, testimonials }: { products: any[
           <h2 className="text-base font-semibold text-white mb-5">Testimoni Terbaru</h2>
           {testimonials.length === 0 ? <p className="text-neutral-600 text-[14px]">Belum ada testimoni.</p> : (
             <div className="space-y-3.5">
-              {testimonials.slice(0, 3).map((t: any) => (
+              {testimonials.slice(0, 3).map((t) => (
                 <div key={t.id} className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[13px] font-bold flex-shrink-0">{t.name.charAt(0)}</div>
                   <div className="min-w-0">
@@ -411,11 +486,17 @@ function DashboardTab({ products, userRequests, testimonials }: { products: any[
   );
 }
 
-// ─── Image Slot Type ──────────────────────────────────────────────────────────
-type ImageSlot = { type: "existing"; url: string } | { type: "new"; preview: string; file: File };
-
 // ─── Products Tab ─────────────────────────────────────────────────────────────
-function ProductsTab({ products, isLoading, deleteFromSupabase, fetchData }: any) {
+function ProductsTab({
+  products,
+  isLoading,
+  deleteFromSupabase,
+}: {
+  products: Product[];
+  isLoading: boolean;
+  deleteFromSupabase: DeleteFromSupabase;
+  fetchData: () => Promise<void>;
+}) {
   const router = useRouter();
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
@@ -435,10 +516,10 @@ function ProductsTab({ products, isLoading, deleteFromSupabase, fetchData }: any
       />
       {isLoading ? <LoadingRows /> : products.length === 0 ? <EmptyState message="Belum ada produk. Tambah produk pertama kamu." /> : (
         <div className="space-y-2.5">
-          {products.map((p: any) => (
+          {products.map((p) => (
             <div key={p.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 flex items-center gap-5 group hover:border-white/15 transition-colors">
               <div className="w-16 h-16 rounded-xl bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/8">
-                {(p.images?.[0] || p.image) && <Image src={p.images?.[0] || p.image} alt={p.name} fill className="object-cover" unoptimized />}
+                {(p.images?.[0] || p.image) && <Image src={p.images?.[0] || p.image || ""} alt={p.name} fill className="object-cover" unoptimized />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-base font-semibold text-white truncate">{p.name}</p>
@@ -463,16 +544,26 @@ function ProductsTab({ products, isLoading, deleteFromSupabase, fetchData }: any
 }
 
 // ─── Testimonials Tab ─────────────────────────────────────────────────────────
-function TestimonialsTab({ testimonials, isLoading, saveToSupabase, deleteFromSupabase }: any) {
+function TestimonialsTab({
+  testimonials,
+  isLoading,
+  saveToSupabase,
+  deleteFromSupabase,
+}: {
+  testimonials: Testimonial[];
+  isLoading: boolean;
+  saveToSupabase: SaveToSupabase;
+  deleteFromSupabase: DeleteFromSupabase;
+}) {
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<Testimonial | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [ok, setOk] = useState(false);
   const [form, setForm] = useState({ name: "", role: "", content: "", rating: "5" });
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const reset = () => { setOpen(false); setEditing(null); setForm({ name: "", role: "", content: "", rating: "5" }); };
-  const openEdit = (t: any) => { setEditing(t); setForm({ name: t.name, role: t.role, content: t.content, rating: String(t.rating || 5) }); setOpen(true); };
+  const openEdit = (t: Testimonial) => { setEditing(t); setForm({ name: t.name, role: t.role, content: t.content, rating: String(t.rating || 5) }); setOpen(true); };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setSubmitting(true);
@@ -485,7 +576,7 @@ function TestimonialsTab({ testimonials, isLoading, saveToSupabase, deleteFromSu
       <PageHeader title="Testimoni" subtitle={`${testimonials.length} testimoni`} action={<AddButton onClick={() => { setEditing(null); setOpen(true); }} />} />
       {isLoading ? <LoadingRows /> : testimonials.length === 0 ? <EmptyState message="Belum ada testimoni." /> : (
         <div className="space-y-2.5">
-          {testimonials.map((t: any) => (
+          {testimonials.map((t) => (
             <div key={t.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 flex items-start gap-5 group hover:border-white/15 transition-colors">
               <div className="w-12 h-12 rounded-full bg-purple-500/15 text-purple-400 flex items-center justify-center font-bold text-[15px] flex-shrink-0">{t.name.charAt(0)}</div>
               <div className="flex-1 min-w-0">
@@ -528,16 +619,26 @@ function TestimonialsTab({ testimonials, isLoading, saveToSupabase, deleteFromSu
 }
 
 // ─── Academy Tab ──────────────────────────────────────────────────────────────
-function AcademyTab({ tutorials, isLoading, saveToSupabase, deleteFromSupabase }: any) {
+function AcademyTab({
+  tutorials,
+  isLoading,
+  saveToSupabase,
+  deleteFromSupabase,
+}: {
+  tutorials: Tutorial[];
+  isLoading: boolean;
+  saveToSupabase: SaveToSupabase;
+  deleteFromSupabase: DeleteFromSupabase;
+}) {
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<Tutorial | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [ok, setOk] = useState(false);
   const [form, setForm] = useState({ title: "", content: "", videoUrl: "", category: "Keuangan" });
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const reset = () => { setOpen(false); setEditing(null); setForm({ title: "", content: "", videoUrl: "", category: "Keuangan" }); };
-  const openEdit = (t: any) => { setEditing(t); setForm({ title: t.title, content: t.content, videoUrl: t.videoUrl || "", category: t.category }); setOpen(true); };
+  const openEdit = (t: Tutorial) => { setEditing(t); setForm({ title: t.title, content: t.content, videoUrl: t.videoUrl || "", category: t.category }); setOpen(true); };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setSubmitting(true);
@@ -550,7 +651,7 @@ function AcademyTab({ tutorials, isLoading, saveToSupabase, deleteFromSupabase }
       <PageHeader title="Academy" subtitle={`${tutorials.length} tutorial`} action={<AddButton onClick={() => { setEditing(null); setOpen(true); }} label="Tambah Tutorial" />} />
       {isLoading ? <LoadingRows /> : tutorials.length === 0 ? <EmptyState message="Belum ada tutorial." /> : (
         <div className="space-y-2.5">
-          {tutorials.map((t: any) => (
+          {tutorials.map((t) => (
             <div key={t.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 flex items-start gap-5 group hover:border-white/15 transition-colors">
               <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center flex-shrink-0">
                 {t.videoUrl ? <Video size={18} /> : <BookOpen size={18} />}
@@ -592,7 +693,17 @@ function AcademyTab({ tutorials, isLoading, saveToSupabase, deleteFromSupabase }
 }
 
 // ─── Requests Tab ─────────────────────────────────────────────────────────────
-function RequestsTab({ userRequests, isLoading, saveToSupabase, deleteFromSupabase }: any) {
+function RequestsTab({
+  userRequests,
+  isLoading,
+  saveToSupabase,
+  deleteFromSupabase,
+}: {
+  userRequests: UserRequest[];
+  isLoading: boolean;
+  saveToSupabase: SaveToSupabase;
+  deleteFromSupabase: DeleteFromSupabase;
+}) {
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const statusStyle: Record<string, string> = {
     pending:   "bg-orange-500/10 text-orange-400 border-orange-500/20",
@@ -602,10 +713,10 @@ function RequestsTab({ userRequests, isLoading, saveToSupabase, deleteFromSupaba
 
   return (
     <motion.div key="requests" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-      <PageHeader title="User Requests" subtitle={`${userRequests.filter((r: any) => r.status === "pending").length} pending`} />
+      <PageHeader title="User Requests" subtitle={`${userRequests.filter((r) => r.status === "pending").length} pending`} />
       {isLoading ? <LoadingRows /> : userRequests.length === 0 ? <EmptyState message="Belum ada request masuk." /> : (
         <div className="space-y-3">
-          {userRequests.map((req: any) => (
+          {userRequests.map((req) => (
             <div key={req.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-6 group hover:border-white/15 transition-colors">
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div>
@@ -616,7 +727,7 @@ function RequestsTab({ userRequests, isLoading, saveToSupabase, deleteFromSupaba
               </div>
               <p className="text-[14px] text-neutral-400 mb-5 leading-relaxed">{req.request}</p>
               <div className="flex items-center gap-2 flex-wrap">
-                {["pending", "reviewed", "completed"].map((s) => (
+                {(["pending", "reviewed", "completed"] satisfies UserRequest["status"][]).map((s) => (
                   <button key={s} onClick={() => saveToSupabase("user_requests", { ...req, status: s })}
                     className={`px-3.5 py-2 rounded-lg text-[13px] font-semibold border transition-colors ${req.status === s ? statusStyle[s] : "bg-white/5 text-neutral-500 border-white/8 hover:bg-white/10 hover:text-white"}`}>
                     {s}
@@ -639,7 +750,13 @@ function RequestsTab({ userRequests, isLoading, saveToSupabase, deleteFromSupaba
     </motion.div>
   );
 }
-function SettingsTab({ settings, saveToSupabase }: any) {
+function SettingsTab({
+  settings,
+  saveToSupabase,
+}: {
+  settings: SiteSettings | null;
+  saveToSupabase: SaveToSupabase;
+}) {
   const [form, setForm] = useState({
     metaTitle: "", metaDescription: "", metaKeywords: "",
     whatsappNumber: "", mainLynkUrl: "",
@@ -658,7 +775,7 @@ function SettingsTab({ settings, saveToSupabase }: any) {
 
   useEffect(() => {
     if (settings) {
-      setForm({
+      const nextForm = {
         metaTitle: settings.metaTitle || "",
         metaDescription: settings.metaDescription || "",
         metaKeywords: settings.metaKeywords || "",
@@ -670,9 +787,12 @@ function SettingsTab({ settings, saveToSupabase }: any) {
         shopCategories: (settings.shopCategories || []).join(", "),
         shopCtaText: settings.shopCtaText || "",
         shopPaymentNote: settings.shopPaymentNote || "",
+      };
+      queueMicrotask(() => {
+        setForm(nextForm);
+        setTrustBadges(settings.shopTrustBadges || []);
+        setShopFeatures(settings.shopFeatures || []);
       });
-      setTrustBadges(settings.shopTrustBadges || []);
-      setShopFeatures(settings.shopFeatures || []);
     }
   }, [settings]);
 
@@ -824,12 +944,20 @@ function SettingsTab({ settings, saveToSupabase }: any) {
 }
 
 // ─── Blog Tab ─────────────────────────────────────────────────────────────────
-function BlogTab({ blogPosts, isLoading, deleteFromSupabase }: any) {
+function BlogTab({
+  blogPosts,
+  isLoading,
+  deleteFromSupabase,
+}: {
+  blogPosts: BlogPost[];
+  isLoading: boolean;
+  deleteFromSupabase: DeleteFromSupabase;
+}) {
   const router = useRouter();
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
-  const published = blogPosts.filter((p: any) => p.status === "published").length;
-  const drafts = blogPosts.filter((p: any) => p.status === "draft").length;
+  const published = blogPosts.filter((p) => p.status === "published").length;
+  const drafts = blogPosts.filter((p) => p.status === "draft").length;
 
   const statusStyle: Record<string, string> = {
     published: "bg-green-500/10 text-green-400 border-green-500/20",
@@ -873,14 +1001,14 @@ function BlogTab({ blogPosts, isLoading, deleteFromSupabase }: any) {
         <EmptyState message="Belum ada artikel. Mulai tulis artikel pertama kamu." />
       ) : (
         <div className="space-y-2.5">
-          {blogPosts.map((post: any) => (
+          {blogPosts.map((post) => (
             <div
               key={post.id}
               className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 flex items-start gap-5 group hover:border-white/15 transition-colors"
             >
               <div className="w-16 h-16 rounded-xl bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/8">
                 {post.coverImage ? (
-                  <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
+                  <Image src={post.coverImage} alt={post.title} fill className="object-cover" unoptimized />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <ImageIcon size={18} className="text-neutral-700" />
@@ -931,18 +1059,31 @@ function BlogTab({ blogPosts, isLoading, deleteFromSupabase }: any) {
 }
 
 // ─── Custom Orders Tab ────────────────────────────────────────────────────────
-function CustomOrdersTab({ isLoading: _isLoading, deleteFromSupabase, saveToSupabase }: any) {
-  const [orders, setOrders] = useState<any[]>([]);
+function CustomOrdersTab({
+  deleteFromSupabase,
+  saveToSupabase,
+}: {
+  isLoading: boolean;
+  deleteFromSupabase: DeleteFromSupabase;
+  saveToSupabase: SaveToSupabase;
+}) {
+  const [orders, setOrders] = useState<CustomOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!supabase) { setLoading(false); return; }
-    supabase
-      .from("custom_orders")
-      .select("*")
-      .order("createdAt", { ascending: false })
-      .then(({ data }) => { setOrders(data ?? []); setLoading(false); });
+    void Promise.resolve().then(async () => {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+      const { data } = await supabase
+        .from("custom_orders")
+        .select("*")
+        .order("createdAt", { ascending: false });
+      setOrders((data ?? []) as CustomOrder[]);
+      setLoading(false);
+    });
   }, []);
 
   const STATUS_OPTIONS = ["new", "reviewing", "in_progress", "delivered", "completed", "cancelled"];
@@ -960,7 +1101,7 @@ function CustomOrdersTab({ isLoading: _isLoading, deleteFromSupabase, saveToSupa
     enterprise: "text-purple-400",
   };
 
-  const updateStatus = async (order: any, newStatus: string) => {
+  const updateStatus = async (order: CustomOrder, newStatus: string) => {
     await saveToSupabase("custom_orders", { ...order, status: newStatus });
     setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status: newStatus } : o));
   };

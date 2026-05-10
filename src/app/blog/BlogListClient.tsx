@@ -161,7 +161,7 @@ export default function BlogListClient({ initialPosts }: { initialPosts: BlogPos
 
   useEffect(() => {
     const q = searchParams.get("q") ?? "";
-    setQuery(q);
+    queueMicrotask(() => setQuery(q));
   }, [searchParams]);
 
   const handleQueryChange = (val: string) => {

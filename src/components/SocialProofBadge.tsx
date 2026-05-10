@@ -24,8 +24,8 @@ function timeAgo(): string {
 }
 
 export function SocialProofBadge({ clicks = 0, socialProofCount, compact = false }: SocialProofBadgeProps) {
-  const [viewers, setViewers] = useState(0);
-  const [lastBought, setLastBought] = useState("");
+  const [viewers, setViewers] = useState(() => pseudoRandom(8, 24));
+  const [lastBought] = useState(() => timeAgo());
 
   // Estimate buyer count: use socialProofCount if set, else estimate from clicks
   // Don't show anything if clicks is 0 and no manual count set
@@ -34,9 +34,6 @@ export function SocialProofBadge({ clicks = 0, socialProofCount, compact = false
     : clicks > 0 ? Math.max(1, Math.floor(clicks * 0.15)) : null;
 
   useEffect(() => {
-    setViewers(pseudoRandom(8, 24));
-    setLastBought(timeAgo());
-
     // Refresh viewers count every 30 seconds for realism
     const id = setInterval(() => {
       setViewers(pseudoRandom(8, 24));

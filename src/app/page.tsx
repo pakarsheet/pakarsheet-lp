@@ -11,6 +11,7 @@ import { FAQ } from "@/components/FAQ";
 import { Pricing } from "@/components/Pricing";
 import { RequestForm } from "@/components/RequestForm";
 import { CTA } from "@/components/CTA";
+import { FloatingWhatsAppButton } from "@/components/FloatingWhatsAppButton";
 
 import { Reveal } from "@/components/Reveal";
 
@@ -54,6 +55,7 @@ export default function Home() {
       <Reveal>
         <CTA />
       </Reveal>
+      <FloatingWhatsAppButton />
     </>
   );
 }

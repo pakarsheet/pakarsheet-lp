@@ -98,6 +98,7 @@ export default function CustomOrderClient() {
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [lastWaHref, setLastWaHref] = useState("");
 
   const selectedPkg = PACKAGES.find((p) => p.id === selectedPackage)!;
 
@@ -108,9 +109,6 @@ export default function CustomOrderClient() {
       setErrorMsg("Deskripsi terlalu singkat. Ceritakan lebih detail kebutuhan kamu (min. 30 karakter).");
       return;
     }
-    setStatus("loading");
-    setErrorMsg("");
-
     const entry = {
       id: crypto.randomUUID(),
       name: form.name.trim(),
@@ -125,29 +123,45 @@ export default function CustomOrderClient() {
       createdAt: Date.now(),
     };
 
+    const waText = encodeURIComponent(
+      `Halo Pakarsheet! Saya ingin order template custom.\n\n` +
+      `*Nama:* ${entry.name}\n` +
+      `*Email:* ${entry.email}\n` +
+      `*Bisnis:* ${entry.business}\n` +
+      `*Paket:* ${selectedPkg.name} (${selectedPkg.price})\n` +
+      `*Tim:* ${teamSize}\n` +
+      `*Migrasi data:* ${hasMigration ? "Ya" : "Tidak"}\n` +
+      `*Deadline:* ${entry.deadline || "Fleksibel"}\n\n` +
+      `*Kebutuhan:*\n${entry.description}`
+    );
+    const waHref = `${waUrl}?text=${waText}`;
+    const waWindow = window.open("about:blank", "_blank");
+
+    setStatus("loading");
+    setErrorMsg("");
+    setLastWaHref(waHref);
+
     try {
       if (supabase) {
         const { error } = await supabase.from("custom_orders").insert([entry]);
-        if (error) throw error;
+        if (error) {
+          console.warn("Custom order was not saved to Supabase:", error.message);
+        }
       }
-      // Always redirect to WA with pre-filled summary
-      const waText = encodeURIComponent(
-        `Halo Pakarsheet! Saya ingin order template custom.\n\n` +
-        `*Nama:* ${entry.name}\n` +
-        `*Bisnis:* ${entry.business}\n` +
-        `*Paket:* ${selectedPkg.name} (${selectedPkg.price})\n` +
-        `*Tim:* ${teamSize}\n` +
-        `*Deadline:* ${entry.deadline || "Fleksibel"}\n\n` +
-        `*Kebutuhan:*\n${entry.description}`
-      );
       setStatus("success");
-      setTimeout(() => {
-        const base = waUrl ?? "https://wa.me/62";
-        window.open(`${base}?text=${waText}`, "_blank");
-      }, 800);
-    } catch {
-      setStatus("error");
-      setErrorMsg("Gagal mengirim. Coba lagi atau hubungi kami langsung via WhatsApp.");
+      if (waWindow) {
+        waWindow.location.href = waHref;
+      } else {
+        window.location.href = waHref;
+      }
+    } catch (error) {
+      console.warn("Custom order submit failed before redirect:", error);
+      setStatus("success");
+      if (waWindow) {
+        waWindow.location.href = waHref;
+      } else {
+        window.location.href = waHref;
+      }
     }
   };
 
@@ -275,7 +289,10 @@ export default function CustomOrderClient() {
               <p className="text-neutral-500 text-sm mb-6 leading-relaxed">
                 WhatsApp kami akan terbuka sebentar lagi. Kalau tidak otomatis terbuka,{" "}
                 <button
-                  onClick={() => setStatus("idle")}
+                  onClick={() => {
+                    if (lastWaHref) window.open(lastWaHref, "_blank");
+                    else setStatus("idle");
+                  }}
                   className="text-white/60 underline underline-offset-2 hover:text-white transition-colors"
                 >
                   klik di sini untuk kirim ulang

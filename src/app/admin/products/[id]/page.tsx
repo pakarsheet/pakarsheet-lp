@@ -4,6 +4,7 @@ import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useData } from "@/hooks/useData";
+import type { Product } from "@/hooks/useData";
 import { checkAdminAuth } from "@/lib/adminAuth";
 import {
   EditorTopBar,
@@ -83,13 +84,16 @@ export default function ProductEditorPage({
     checkAdminAuth().then((ok) => {
       setAuthed(ok);
       setChecked(true);
-      if (!ok) router.replace("/admin");
+      if (!ok) router.replace(`/admin/login?next=/admin/products/${id}`);
     });
-  }, [router]);
+  }, [id, router]);
 
   // Probe whether the features column exists in Supabase
   useEffect(() => {
-    if (!supabase) { setFeaturesSupported(false); return; }
+    if (!supabase) {
+      queueMicrotask(() => setFeaturesSupported(false));
+      return;
+    }
     supabase
       .from("products")
       .select("features")
@@ -108,23 +112,26 @@ export default function ProductEditorPage({
     if (isNew || isLoading || !products.length) return;
     const p = products.find((x) => x.id === id);
     if (!p) { router.replace("/admin?tab=products"); return; }
-    setEditingId(p.id);
-    setForm({
+    const nextForm = {
       name: p.name,
       description: p.description,
       price: p.price.toString(),
-      originalPrice: (p as any).originalPrice ? (p as any).originalPrice.toString() : "",
-      lynkUrl: (p as any).lynkUrl || "",
+      originalPrice: p.originalPrice ? p.originalPrice.toString() : "",
+      lynkUrl: p.lynkUrl || "",
       category: p.category,
-      salePrice: (p as any).salePrice ? (p as any).salePrice.toString() : "",
-      salePriceUntil: (p as any).salePriceUntil
-        ? new Date((p as any).salePriceUntil).toISOString().slice(0, 16)
+      salePrice: p.salePrice ? p.salePrice.toString() : "",
+      salePriceUntil: p.salePriceUntil
+        ? new Date(p.salePriceUntil).toISOString().slice(0, 16)
         : "",
-      socialProofCount: (p as any).socialProofCount ? (p as any).socialProofCount.toString() : "",
+      socialProofCount: p.socialProofCount ? p.socialProofCount.toString() : "",
+    };
+    const urls: string[] = p.images || (p.image ? [p.image] : []);
+    queueMicrotask(() => {
+      setEditingId(p.id);
+      setForm(nextForm);
+      setSlots(urls.map((url) => ({ type: "existing" as const, url })));
+      setFeatures(p.features || []);
     });
-    const urls: string[] = (p as any).images || ((p as any).image ? [(p as any).image] : []);
-    setSlots(urls.map((url) => ({ type: "existing" as const, url })));
-    setFeatures((p as any).features || []);
   }, [id, isNew, isLoading, products, router]);
 
   const addFiles = (files: FileList) => {
@@ -173,7 +180,9 @@ export default function ProductEditorPage({
       urls.push(ud.publicUrl);
     }
 
-    const existingProduct = !isNew ? products.find((x) => x.id === id) : null;
+    const existingProduct: Product | null = !isNew
+      ? products.find((x) => x.id === id) ?? null
+      : null;
 
     const data: Record<string, unknown> = {
       id: editingId || crypto.randomUUID(),
@@ -185,8 +194,8 @@ export default function ProductEditorPage({
       lynkUrl: form.lynkUrl.trim(),
       category: form.category,
       // Always send createdAt — use existing value for updates, new timestamp for new products
-      createdAt: isNew ? Date.now() : ((existingProduct as any)?.createdAt ?? Date.now()),
-      clicks: isNew ? 0 : ((existingProduct as any)?.clicks ?? 0),
+      createdAt: isNew ? Date.now() : (existingProduct?.createdAt ?? Date.now()),
+      clicks: isNew ? 0 : (existingProduct?.clicks ?? 0),
       salePrice: form.salePrice ? parseInt(form.salePrice, 10) : null,
       salePriceUntil: form.salePriceUntil
         ? new Date(form.salePriceUntil).getTime()

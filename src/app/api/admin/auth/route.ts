@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  ADMIN_SESSION_COOKIE,
+  ADMIN_SESSION_MAX_AGE_SECONDS,
+  createAdminSessionToken,
+  verifyAdminSessionToken,
+} from "@/lib/adminSession";
 
 // Simple in-memory rate limiter: max 10 attempts per IP per 15 minutes
 const attempts = new Map<string, { count: number; resetAt: number }>();
@@ -43,12 +49,17 @@ export async function POST(req: NextRequest) {
   // Reset attempts on successful login
   attempts.delete(ip);
 
+  const token = createAdminSessionToken();
+  if (!token) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+
   const response = NextResponse.json({ ok: true });
-  response.cookies.set("admin_session", "1", {
+  response.cookies.set(ADMIN_SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: 60 * 60 * 8, // 8 hours
+    maxAge: ADMIN_SESSION_MAX_AGE_SECONDS,
     path: "/",
   });
   return response;
@@ -56,14 +67,14 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE() {
   const response = NextResponse.json({ ok: true });
-  response.cookies.delete("admin_session");
+  response.cookies.delete(ADMIN_SESSION_COOKIE);
   return response;
 }
 
 // Verify endpoint — called on admin page mount to check if cookie is valid
 export async function GET(req: NextRequest) {
-  const cookie = req.cookies.get("admin_session");
-  if (cookie?.value === "1") {
+  const cookie = req.cookies.get(ADMIN_SESSION_COOKIE);
+  if (verifyAdminSessionToken(cookie?.value)) {
     return NextResponse.json({ authenticated: true });
   }
   return NextResponse.json({ authenticated: false }, { status: 401 });

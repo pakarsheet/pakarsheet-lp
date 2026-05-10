@@ -1,19 +1,19 @@
 "use client";
 
-import { useProducts, type Product } from "@/hooks/useProducts";
+import { useProducts } from "@/hooks/useProducts";
 import { useSettings } from "@/hooks/useSettings";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, Zap, ChevronRight, Star, Clock, Globe,
-  ArrowRight, ChevronLeft, LayoutDashboard, Edit3,
-  MessageSquare, LucideIcon, CheckCircle2, Sparkles,
+  ArrowLeft, Zap, ChevronRight,
+  ArrowRight, ChevronLeft,
+  LucideIcon, CheckCircle2, Sparkles,
   Package, Lock, BadgeCheck, Download, ShieldCheck,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, use, useRef } from "react";
+import { useState, useEffect, use, useMemo, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import { PriceTimer } from "@/components/PriceTimer";
@@ -124,17 +124,16 @@ export default function ProductDetailPage({
 
   const { products, isLoading, trackClick } = useProducts();
   const { settings } = useSettings();
-  const [product, setProduct] = useState<Product | null>(null);
   const [activeImg, setActiveImg] = useState(0);
   const swiperRef = useRef<{ slideTo: (i: number) => void } | null>(null);
+  const product = useMemo(
+    () => products.find((p) => p.id === id) ?? null,
+    [id, products]
+  );
 
   useEffect(() => {
-    if (!isLoading && products.length > 0) {
-      const found = products.find((p) => p.id === id);
-      if (found) setProduct(found);
-      else router.push("/shop");
-    }
-  }, [id, products, isLoading, router]);
+    if (!isLoading && products.length > 0 && !product) router.push("/shop");
+  }, [product, products.length, isLoading, router]);
 
   if (isLoading || !product) {
     return (

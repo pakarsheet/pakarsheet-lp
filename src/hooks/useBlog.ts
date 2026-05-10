@@ -50,6 +50,7 @@ export function useBlog() {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchPosts = useCallback(async () => {
+    await Promise.resolve();
     setIsLoading(true);
     if (!supabase) {
       setIsLoading(false);
@@ -69,7 +70,7 @@ export function useBlog() {
   }, []);
 
   useEffect(() => {
-    fetchPosts();
+    queueMicrotask(() => void fetchPosts());
   }, [fetchPosts]);
 
   const savePost = async (

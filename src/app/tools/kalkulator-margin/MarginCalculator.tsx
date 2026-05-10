@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { ToolLayout, Field, ResultCard, Divider, inputCls, inputWrapCls } from "@/components/tools/ToolLayout";
-import { TrendingUp, TrendingDown } from "lucide-react";
 
 function fmt(n: number) { return "Rp " + Math.round(n).toLocaleString("id-ID"); }
 function pct(n: number) { return n.toFixed(1) + "%"; }

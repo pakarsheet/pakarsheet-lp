@@ -58,6 +58,7 @@ export function useProducts() {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchProducts = useCallback(async () => {
+    await Promise.resolve();
     setIsLoading(true);
 
     if (!supabase) {
@@ -91,7 +92,7 @@ export function useProducts() {
   }, []);
 
   useEffect(() => {
-    fetchProducts();
+    queueMicrotask(() => void fetchProducts());
   }, [fetchProducts]);
 
   // ── Upload helper ──────────────────────────────────────────────────────────
