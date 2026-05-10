@@ -173,6 +173,8 @@ export default function ProductEditorPage({
       urls.push(ud.publicUrl);
     }
 
+    const existingProduct = !isNew ? products.find((x) => x.id === id) : null;
+
     const data: Record<string, unknown> = {
       id: editingId || crypto.randomUUID(),
       name: form.name.trim(),
@@ -182,8 +184,9 @@ export default function ProductEditorPage({
       images: urls,
       lynkUrl: form.lynkUrl.trim(),
       category: form.category,
-      createdAt: isNew ? Date.now() : undefined,
-      clicks: isNew ? 0 : undefined,
+      // Always send createdAt — use existing value for updates, new timestamp for new products
+      createdAt: isNew ? Date.now() : ((existingProduct as any)?.createdAt ?? Date.now()),
+      clicks: isNew ? 0 : ((existingProduct as any)?.clicks ?? 0),
       salePrice: form.salePrice ? parseInt(form.salePrice, 10) : null,
       salePriceUntil: form.salePriceUntil
         ? new Date(form.salePriceUntil).getTime()

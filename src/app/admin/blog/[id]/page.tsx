@@ -173,6 +173,8 @@ export default function BlogEditorPage({
       }
     }
 
+    const existingPost = !isNew ? blogPosts.find((x) => x.id === id) : null;
+
     const words = form.content.replace(/<[^>]+>/g, "").trim().split(/\s+/).length;
     const readingTime = Math.max(1, Math.ceil(words / 200));
     const now = Date.now();
@@ -192,9 +194,12 @@ export default function BlogEditorPage({
       status: form.status,
       relatedProductId: form.relatedProductId || null,
       readingTime,
-      views: isNew ? 0 : undefined,
-      publishedAt: form.status === "published" ? now : undefined,
-      createdAt: isNew ? now : undefined,
+      // Always send non-null values — preserve existing for updates
+      views: isNew ? 0 : (existingPost?.views ?? 0),
+      publishedAt: form.status === "published"
+        ? (existingPost?.publishedAt || now)
+        : (existingPost?.publishedAt ?? 0),
+      createdAt: isNew ? now : (existingPost?.createdAt ?? now),
       updatedAt: now,
     };
 
