@@ -223,51 +223,64 @@ function GraphLayout({ inView }: { inView: boolean }) {
   const Icon = CENTER_NODE.icon;
 
   return (
-    <div ref={containerRef} className="relative w-full py-8 px-3 md:py-10 md:px-10">
-      {/* ── Desktop: 3-column grid ── */}
-      <div className="hidden md:grid relative grid-cols-[1fr_auto_1fr] items-center gap-12">
-        {/* SVG connectors inside the same container as the refs */}
-        <Connectors leftRefs={leftRefs} centerRef={centerRef} rightRefs={rightRefs} containerRef={containerRef} inView={inView} />
-        <div className="flex flex-col gap-3">
-          {LEFT_NODES.map((node, i) => (
-            <SideNode key={node.id} node={node} nodeRef={leftRefs[i]} index={i} inView={inView} />
-          ))}
-        </div>
+    <>
+      {/* ── Desktop layout (md+): single container with SVG overlay ── */}
+      <div ref={containerRef} className="relative hidden md:block w-full py-10 px-10">
+        {/* SVG connectors — absolute, fills containerRef */}
+        <Connectors
+          leftRefs={leftRefs}
+          centerRef={centerRef}
+          rightRefs={rightRefs}
+          containerRef={containerRef}
+          inView={inView}
+        />
 
-        <motion.div
-          ref={centerRef}
-          initial={{ opacity: 0, scale: 0.7 }}
-          animate={inView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="relative flex flex-col items-center justify-center w-36 h-36 rounded-3xl bg-[#111] border border-white/[0.15] shadow-[0_0_60px_rgba(255,255,255,0.05)] flex-shrink-0"
-        >
-          {[1.14, 1.28].map((scale, i) => (
-            <motion.div key={i} className="absolute inset-0 rounded-3xl border border-white/[0.08]"
-              animate={{ scale: [1, scale, 1], opacity: [0.4, 0, 0.4] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.6 }}
-            />
-          ))}
-          <div className="w-12 h-12 rounded-2xl bg-white/[0.08] border border-white/[0.12] flex items-center justify-center mb-2.5">
-            <Icon size={24} className="text-white/80" />
+        {/* 3-column grid */}
+        <div className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-12">
+          {/* Left nodes */}
+          <div className="flex flex-col gap-3">
+            {LEFT_NODES.map((node, i) => (
+              <SideNode key={node.id} node={node} nodeRef={leftRefs[i]} index={i} inView={inView} />
+            ))}
           </div>
-          <span className="text-[12px] font-bold text-white/90 tracking-tight">{CENTER_NODE.label}</span>
-          <span className="text-[9px] text-neutral-500 mt-0.5">{CENTER_NODE.sub}</span>
-        </motion.div>
 
-        <div className="flex flex-col gap-3">
-          {RIGHT_NODES.map((node, i) => (
-            <SideNode key={node.id} node={node} nodeRef={rightRefs[i]} index={i} inView={inView} />
-          ))}
+          {/* Center node */}
+          <motion.div
+            ref={centerRef}
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={inView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="relative flex flex-col items-center justify-center w-36 h-36 rounded-3xl bg-[#111] border border-white/[0.15] shadow-[0_0_60px_rgba(255,255,255,0.05)] flex-shrink-0"
+          >
+            {[1.14, 1.28].map((scale, i) => (
+              <motion.div key={i} className="absolute inset-0 rounded-3xl border border-white/[0.08]"
+                animate={{ scale: [1, scale, 1], opacity: [0.4, 0, 0.4] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.6 }}
+              />
+            ))}
+            <div className="w-12 h-12 rounded-2xl bg-white/[0.08] border border-white/[0.12] flex items-center justify-center mb-2.5">
+              <Icon size={24} className="text-white/80" />
+            </div>
+            <span className="text-[12px] font-bold text-white/90 tracking-tight">{CENTER_NODE.label}</span>
+            <span className="text-[9px] text-neutral-500 mt-0.5">{CENTER_NODE.sub}</span>
+          </motion.div>
+
+          {/* Right nodes */}
+          <div className="flex flex-col gap-3">
+            {RIGHT_NODES.map((node, i) => (
+              <SideNode key={node.id} node={node} nodeRef={rightRefs[i]} index={i} inView={inView} />
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* ── Mobile: vertical stack ── */}
-      <div className="md:hidden flex flex-col gap-5">
+      {/* ── Mobile layout (<md): vertical stack, no SVG ── */}
+      <div className="md:hidden flex flex-col gap-5 px-4 py-6">
         <div>
-          <p className="text-[10px] font-semibold text-white/20 uppercase tracking-widest mb-2 px-1">Input</p>
+          <p className="text-[10px] font-semibold text-white/20 uppercase tracking-widest mb-2">Input</p>
           <div className="flex flex-col gap-2">
             {LEFT_NODES.map((node, i) => (
-              <SideNode key={node.id} node={node} nodeRef={leftRefs[i]} index={i} inView={inView} />
+              <SideNode key={node.id} node={node} nodeRef={{ current: null }} index={i} inView={inView} />
             ))}
           </div>
         </div>
@@ -293,15 +306,15 @@ function GraphLayout({ inView }: { inView: boolean }) {
         </div>
 
         <div>
-          <p className="text-[10px] font-semibold text-white/20 uppercase tracking-widest mb-2 px-1">Output</p>
+          <p className="text-[10px] font-semibold text-white/20 uppercase tracking-widest mb-2">Output</p>
           <div className="flex flex-col gap-2">
             {RIGHT_NODES.map((node, i) => (
-              <SideNode key={node.id} node={node} nodeRef={rightRefs[i]} index={i} inView={inView} />
+              <SideNode key={node.id} node={node} nodeRef={{ current: null }} index={i} inView={inView} />
             ))}
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
