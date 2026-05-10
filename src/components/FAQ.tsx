@@ -49,8 +49,10 @@ export function FAQ() {
         <div className="max-w-3xl mx-auto space-y-4">
           {faqs.map((faq, i) => (
             <SpotlightCard key={i} className="rounded-[24px] border border-white/5 bg-[#0a0a0a]">
-              <div 
-                className="p-6 cursor-pointer flex items-center justify-between gap-4"
+              <button
+                type="button"
+                aria-expanded={activeIndex === i}
+                className="w-full p-6 flex items-center justify-between gap-4 text-left"
                 onClick={() => setActiveIndex(activeIndex === i ? null : i)}
               >
                 <h3 className="text-lg font-semibold text-white/90 tracking-tight">{faq.q}</h3>
@@ -61,7 +63,7 @@ export function FAQ() {
                 >
                   <ChevronDown size={20} />
                 </motion.div>
-              </div>
+              </button>
               <AnimatePresence mode="wait">
                 {activeIndex === i && (
                   <motion.div

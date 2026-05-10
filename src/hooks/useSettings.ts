@@ -1,52 +1,47 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-
-export type SiteSettings = {
-  id: string;
-  metaTitle?: string;
-  metaDescription?: string;
-  metaKeywords?: string;
-  whatsappNumber?: string;
-  mainLynkUrl?: string;
-};
-
-// Fallback defaults — GANTI dengan nilai asli kamu sebelum deploy
-// Nilai ini dipakai saat Supabase belum dikonfigurasi atau settings belum diisi
-const DEFAULTS: SiteSettings = {
-  id: "main",
-  whatsappNumber: "", // Isi di Supabase: Settings tab → Nomor WhatsApp
-  mainLynkUrl: "",    // Isi di Supabase: Settings tab → Main Lynk.id URL
-};
+import type { SiteSettings } from "./useData";
 
 export function useSettings() {
-  const [settings, setSettings] = useState<SiteSettings>(DEFAULTS);
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
-      if (!supabase) {
-        setIsLoading(false);
-        return;
+  const fetchSettings = useCallback(async () => {
+    setIsLoading(true);
+
+    if (!supabase) {
+      const stored = localStorage.getItem("pakarsheet_settings");
+      if (stored) {
+        try { setSettings(JSON.parse(stored)); } catch { /* ignore */ }
       }
-      try {
-        const { data } = await supabase.from("site_settings").select("*").single();
-        if (data) {
-          setSettings({ ...DEFAULTS, ...data });
-        }
-      } catch {
-        // silently fall back to defaults
-      } finally {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
+      return;
     }
-    load();
+
+    try {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("*")
+        .eq("id", "main")
+        .single();
+      setSettings(data ?? null);
+    } catch {
+      // silently fail
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const waUrl = settings.whatsappNumber
-    ? `https://wa.me/${settings.whatsappNumber.replace(/\D/g, "")}`
-    : "#";
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
-  return { settings, isLoading, waUrl };
+  // Derived convenience value used by CustomOrderClient
+  const waUrl = settings?.whatsappNumber
+    ? `https://wa.me/62${settings.whatsappNumber}`
+    : "https://wa.me/6281234567890";
+
+  return { settings, isLoading, refresh: fetchSettings, waUrl };
 }

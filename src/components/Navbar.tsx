@@ -27,6 +27,7 @@ export function Navbar() {
 
   // Conditional return AFTER all hooks
   if (pathname.startsWith('/admin')) return null;
+  if (pathname.startsWith('/shop/')) return null;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 pt-4 px-4 pointer-events-none">
@@ -57,9 +58,9 @@ export function Navbar() {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-400 tracking-tight">
             <Link href="/#fitur" className="hover:text-white transition-colors">Fitur</Link>
-            <Link href="/#testimoni" className="hover:text-white transition-colors">Testimoni</Link>
-            <Link href="/#faq" className="hover:text-white transition-colors">FAQ</Link>
-            <Link href="/academy" className="hover:text-white transition-colors">Academy</Link>
+            <Link href="/tools" className="hover:text-white transition-colors">Tools</Link>
+            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
+            <Link href="/custom" className="hover:text-white transition-colors">Custom</Link>
             <Link href="/shop" className="hover:text-white transition-colors">Toko</Link>
           </nav>
 
@@ -73,6 +74,8 @@ export function Navbar() {
 
             {/* Mobile Toggle */}
             <button
+              aria-label={isOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+              aria-expanded={isOpen}
               className="md:hidden text-white/70 p-2.5 hover:bg-white/10 rounded-xl transition-all active:scale-90"
               onClick={() => setIsOpen(!isOpen)}
             >
@@ -93,8 +96,9 @@ export function Navbar() {
             className="md:hidden absolute top-24 left-4 right-4 bg-black/95 backdrop-blur-3xl border border-white/10 rounded-[32px] p-8 flex flex-col gap-6 shadow-2xl pointer-events-auto z-[1001]"
           >
             <Link href="/#fitur" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Fitur</Link>
-            <Link href="/#testimoni" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Testimoni</Link>
-            <Link href="/#faq" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">FAQ</Link>
+            <Link href="/tools" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Tools Gratis</Link>
+            <Link href="/blog" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Blog</Link>
+            <Link href="/custom" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Custom Order</Link>
             <Link href="/academy" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Academy</Link>
             <Link href="/shop" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Toko</Link>
             <Link

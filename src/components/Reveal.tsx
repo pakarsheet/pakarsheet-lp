@@ -14,7 +14,7 @@ export function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: n
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          el.style.animationDelay = `${delay}s`;
+          el.style.transitionDelay = `${delay}s`;
           el.setAttribute("data-visible", "true");
           observer.disconnect();
         }

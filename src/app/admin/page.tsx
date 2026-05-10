@@ -1,32 +1,39 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useData } from "@/hooks/useData";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Plus, Trash2, Lock, Edit3, Package, X,
   MousePointerClick, MessageSquare, BookOpen,
   Settings as SettingsIcon, Mail, LayoutDashboard,
   Globe, Star, Check, AlertCircle, Save,
-  ExternalLink, Video, ChevronRight,
+  ExternalLink, Video, ChevronRight, FileText,
+  Eye, Tag, Image as ImageIcon, AlignLeft,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const CATEGORIES = ["Keuangan", "Marketing", "Inventory", "HR & Admin", "Lainnya"];
-type Tab = "dashboard" | "products" | "testimonials" | "academy" | "requests" | "settings";
+const BLOG_CATEGORIES = ["Tutorial", "Tips & Trik", "Use Case", "Update", "Lainnya"];
+type Tab = "dashboard" | "products" | "testimonials" | "academy" | "requests" | "settings" | "blog" | "custom_orders";
 const NAV_ITEMS: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: "dashboard",    label: "Dashboard",  icon: LayoutDashboard },
-  { id: "products",     label: "Produk",     icon: Package },
-  { id: "testimonials", label: "Testimoni",  icon: MessageSquare },
-  { id: "academy",      label: "Academy",    icon: BookOpen },
-  { id: "requests",     label: "Requests",   icon: Mail },
-  { id: "settings",     label: "Settings",   icon: SettingsIcon },
+  { id: "dashboard",     label: "Dashboard",      icon: LayoutDashboard },
+  { id: "products",      label: "Produk",         icon: Package },
+  { id: "testimonials",  label: "Testimoni",      icon: MessageSquare },
+  { id: "academy",       label: "Academy",        icon: BookOpen },
+  { id: "blog",          label: "Blog",           icon: FileText },
+  { id: "custom_orders", label: "Custom Orders",  icon: Star },
+  { id: "requests",      label: "Requests",       icon: Mail },
+  { id: "settings",      label: "Settings",       icon: SettingsIcon },
 ];
 
 // ─── Shared Primitives ────────────────────────────────────────────────────────
@@ -198,12 +205,23 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 }
 
 // ─── Main Layout ──────────────────────────────────────────────────────────────
-export default function AdminPage() {
-  const [tab, setTab] = useState<Tab>("dashboard");
+function AdminPageInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState<Tab>(() => {
+    const t = searchParams?.get("tab") as Tab | null;
+    return t && NAV_ITEMS.some((n) => n.id === t) ? t : "dashboard";
+  });
   const [authed, setAuthed] = useState(false);
   const [checked, setChecked] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { products, testimonials, tutorials, userRequests, settings, isLoading, saveToSupabase, deleteFromSupabase, fetchData } = useData();
+  const { products, testimonials, tutorials, userRequests, settings, blogPosts, isLoading, saveToSupabase, deleteFromSupabase, fetchData } = useData();
+
+  // Sync tab from URL query param (e.g. when returning from editor pages)
+  useEffect(() => {
+    const t = searchParams?.get("tab") as Tab | null;
+    if (t && NAV_ITEMS.some((n) => n.id === t)) setTab(t);
+  }, [searchParams]);
 
   useEffect(() => {
     fetch("/api/admin/auth", { method: "GET" })
@@ -294,15 +312,25 @@ export default function AdminPage() {
         <div className="max-w-4xl mx-auto px-5 md:px-8 py-8">
           <AnimatePresence mode="wait">
             {tab === "dashboard"    && <DashboardTab    key="d" products={products} userRequests={userRequests} testimonials={testimonials} />}
-            {tab === "products"     && <ProductsTab     key="p" products={products} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} fetchData={fetchData} />}
-            {tab === "testimonials" && <TestimonialsTab key="t" testimonials={testimonials} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} />}
-            {tab === "academy"      && <AcademyTab      key="a" tutorials={tutorials} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} />}
-            {tab === "requests"     && <RequestsTab     key="r" userRequests={userRequests} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} />}
-            {tab === "settings"     && <SettingsTab     key="s" settings={settings} saveToSupabase={saveToSupabase} />}
+            {tab === "products"     && <ProductsTab     key="p" products={products} isLoading={isLoading} deleteFromSupabase={deleteFromSupabase} fetchData={fetchData} />}
+            {tab === "testimonials"  && <TestimonialsTab  key="t"  testimonials={testimonials} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} />}
+            {tab === "academy"       && <AcademyTab       key="a"  tutorials={tutorials} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} />}
+            {tab === "blog"          && <BlogTab          key="b"  blogPosts={blogPosts} isLoading={isLoading} deleteFromSupabase={deleteFromSupabase} />}
+            {tab === "custom_orders" && <CustomOrdersTab  key="co" isLoading={isLoading} deleteFromSupabase={deleteFromSupabase} saveToSupabase={saveToSupabase} />}
+            {tab === "requests"      && <RequestsTab      key="r"  userRequests={userRequests} isLoading={isLoading} saveToSupabase={saveToSupabase} deleteFromSupabase={deleteFromSupabase} />}
+            {tab === "settings"      && <SettingsTab      key="s"  settings={settings} saveToSupabase={saveToSupabase} />}
           </AnimatePresence>
         </div>
       </main>
     </div>
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminPageInner />
+    </Suspense>
   );
 }
 
@@ -387,61 +415,24 @@ function DashboardTab({ products, userRequests, testimonials }: { products: any[
 type ImageSlot = { type: "existing"; url: string } | { type: "new"; preview: string; file: File };
 
 // ─── Products Tab ─────────────────────────────────────────────────────────────
-function ProductsTab({ products, isLoading, saveToSupabase, deleteFromSupabase, fetchData }: any) {
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [uploadErr, setUploadErr] = useState<string | null>(null);
-  const [ok, setOk] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", price: "", originalPrice: "", lynkUrl: "", category: "Keuangan" });
-  const [slots, setSlots] = useState<ImageSlot[]>([]);
+function ProductsTab({ products, isLoading, deleteFromSupabase, fetchData }: any) {
+  const router = useRouter();
   const [confirmId, setConfirmId] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const reset = () => { setOpen(false); setEditing(null); setForm({ name: "", description: "", price: "", originalPrice: "", lynkUrl: "", category: "Keuangan" }); setSlots([]); setUploadErr(null); };
-
-  const openEdit = (p: any) => {
-    setEditing(p);
-    setForm({ name: p.name, description: p.description, price: p.price.toString(), originalPrice: p.originalPrice ? p.originalPrice.toString() : "", lynkUrl: p.lynkUrl || "", category: p.category });
-    const urls: string[] = p.images || (p.image ? [p.image] : []);
-    setSlots(urls.map((url) => ({ type: "existing" as const, url })));
-    setUploadErr(null); setOpen(true);
-  };
-
-  const addFiles = (files: FileList) => {
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => setSlots((prev) => [...prev, { type: "new" as const, preview: reader.result as string, file }]);
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (slots.length === 0) return alert("Pilih minimal satu gambar.");
-    setSubmitting(true); setUploadErr(null);
-    const urls: string[] = [];
-    for (const slot of slots) {
-      if (slot.type === "existing") { urls.push(slot.url); continue; }
-      if (!supabase) { urls.push(slot.preview); continue; }
-      const ext = slot.file.name.split(".").pop() || "jpg";
-      const path = `product-images/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-      const { error: se } = await supabase.storage.from("products").upload(path, slot.file, { upsert: false });
-      if (se) { setUploadErr(`Gagal upload: ${se.message}`); setSubmitting(false); return; }
-      const { data: ud } = supabase.storage.from("products").getPublicUrl(path);
-      urls.push(ud.publicUrl);
-    }
-    const data = { id: editing?.id || crypto.randomUUID(), name: form.name, description: form.description, price: parseInt(form.price || "0", 10), originalPrice: form.originalPrice ? parseInt(form.originalPrice, 10) : null, images: urls, lynkUrl: form.lynkUrl, category: form.category, createdAt: editing?.createdAt || Date.now(), clicks: editing?.clicks || 0 };
-    const result = await saveToSupabase("products", data);
-    await fetchData();
-    setSubmitting(false);
-    if (result?.ok === false) { setUploadErr(`Gagal simpan: ${result.error}`); return; }
-    setOk(true); setTimeout(() => { setOk(false); reset(); }, 1200);
-  };
 
   return (
     <motion.div key="products" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-      <PageHeader title="Produk" subtitle={`${products.length} produk tersedia`} action={<AddButton onClick={() => { setEditing(null); setOpen(true); }} />} />
+      <PageHeader
+        title="Produk"
+        subtitle={`${products.length} produk tersedia`}
+        action={
+          <button
+            onClick={() => router.push("/admin/products/new")}
+            className="flex items-center gap-2 bg-white text-black text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-neutral-100 transition-colors flex-shrink-0"
+          >
+            <Plus size={15} /> Tambah Produk
+          </button>
+        }
+      />
       {isLoading ? <LoadingRows /> : products.length === 0 ? <EmptyState message="Belum ada produk. Tambah produk pertama kamu." /> : (
         <div className="space-y-2">
           {products.map((p: any) => (
@@ -454,46 +445,13 @@ function ProductsTab({ products, isLoading, saveToSupabase, deleteFromSupabase, 
                 <p className="text-xs text-neutral-500 mt-0.5">{p.category} · Rp {p.price.toLocaleString("id-ID")} · {p.clicks || 0} klik</p>
               </div>
               <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => openEdit(p)} className="p-2 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"><Edit3 size={14} /></button>
+                <button onClick={() => router.push(`/admin/products/${p.id}`)} className="p-2 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"><Edit3 size={14} /></button>
                 <button onClick={() => setConfirmId(p.id)} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"><Trash2 size={14} /></button>
               </div>
             </div>
           ))}
         </div>
       )}
-      <Drawer open={open} onClose={reset} title={editing ? "Edit Produk" : "Tambah Produk"}>
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          <Field label={`Foto Produk (${slots.length})`}>
-            {uploadErr && <div className="flex items-center gap-2 text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2.5 mb-3"><AlertCircle size={12} />{uploadErr}</div>}
-            <div className="grid grid-cols-3 gap-2">
-              {slots.map((slot, i) => (
-                <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-neutral-900 border border-white/8 group/img">
-                  <Image src={slot.type === "existing" ? slot.url : slot.preview} alt="" fill className="object-cover" unoptimized />
-                  <span className={`absolute top-1 left-1 text-[8px] font-bold px-1.5 py-0.5 rounded-full text-white ${slot.type === "existing" ? "bg-blue-500/80" : "bg-green-500/80"}`}>{slot.type === "existing" ? "SAVED" : "NEW"}</span>
-                  <button type="button" onClick={() => setSlots((prev) => prev.filter((_, j) => j !== i))} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity"><X size={10} /></button>
-                </div>
-              ))}
-              <button type="button" onClick={() => fileRef.current?.click()} className="aspect-square rounded-lg border-2 border-dashed border-white/10 hover:border-white/25 bg-white/[0.02] flex flex-col items-center justify-center text-neutral-600 hover:text-neutral-400 transition-colors">
-                <Plus size={18} /><span className="text-[9px] mt-1 font-semibold uppercase tracking-wider">Foto</span>
-              </button>
-            </div>
-            <input ref={fileRef} type="file" className="hidden" accept="image/*" multiple onChange={(e) => e.target.files && addFiles(e.target.files)} />
-          </Field>
-          <Field label="Nama Produk"><input required type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} placeholder="Finance Tracker Pro" /></Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Kategori">
-              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={inputCls + " appearance-none"}>
-                {CATEGORIES.map((c) => <option key={c} value={c} className="bg-black">{c}</option>)}
-              </select>
-            </Field>
-            <Field label="Harga (Rp)"><input required type="text" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value.replace(/\D/g, "") })} className={inputCls} placeholder="99000" /></Field>
-          </div>
-          <Field label="Harga Coret / Asli (Rp) — opsional"><input type="text" value={form.originalPrice} onChange={(e) => setForm({ ...form, originalPrice: e.target.value.replace(/\D/g, "") })} className={inputCls} placeholder="249000" /></Field>
-          <Field label="Link Lynk.id"><input required type="url" value={form.lynkUrl} onChange={(e) => setForm({ ...form, lynkUrl: e.target.value })} className={inputCls} placeholder="https://lynk.id/..." /></Field>
-          <Field label="Deskripsi"><textarea required rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputCls + " resize-none"} placeholder="Deskripsi singkat produk..." /></Field>
-          <div className="pt-1"><SubmitBtn loading={submitting} success={ok} label={editing ? "Update Produk" : "Simpan Produk"} /></div>
-        </form>
-      </Drawer>
       <ConfirmModal
         open={!!confirmId}
         message="Produk ini akan dihapus permanen beserta semua gambarnya."
@@ -682,30 +640,84 @@ function RequestsTab({ userRequests, isLoading, saveToSupabase, deleteFromSupaba
   );
 }
 function SettingsTab({ settings, saveToSupabase }: any) {
-  const [form, setForm] = useState({ metaTitle: "", metaDescription: "", metaKeywords: "", whatsappNumber: "", mainLynkUrl: "" });
+  const [form, setForm] = useState({
+    metaTitle: "", metaDescription: "", metaKeywords: "",
+    whatsappNumber: "", mainLynkUrl: "",
+    // Shop page
+    shopTitle: "", shopSubtitle: "", shopBadgeText: "",
+    shopCategories: "", // comma-separated
+    shopCtaText: "", shopPaymentNote: "",
+  });
   const [saving, setSaving] = useState(false);
   const [ok, setOk] = useState(false);
 
+  // Trust badges state: array of {label, icon}
+  const [trustBadges, setTrustBadges] = useState<{ label: string; icon: string }[]>([]);
+  // Global shop features state
+  const [shopFeatures, setShopFeatures] = useState<{ title: string; desc: string; icon: string }[]>([]);
+
   useEffect(() => {
-    if (settings) setForm({ metaTitle: settings.metaTitle || "", metaDescription: settings.metaDescription || "", metaKeywords: settings.metaKeywords || "", whatsappNumber: settings.whatsappNumber || "", mainLynkUrl: settings.mainLynkUrl || "" });
+    if (settings) {
+      setForm({
+        metaTitle: settings.metaTitle || "",
+        metaDescription: settings.metaDescription || "",
+        metaKeywords: settings.metaKeywords || "",
+        whatsappNumber: settings.whatsappNumber || "",
+        mainLynkUrl: settings.mainLynkUrl || "",
+        shopTitle: settings.shopTitle || "",
+        shopSubtitle: settings.shopSubtitle || "",
+        shopBadgeText: settings.shopBadgeText || "",
+        shopCategories: (settings.shopCategories || []).join(", "),
+        shopCtaText: settings.shopCtaText || "",
+        shopPaymentNote: settings.shopPaymentNote || "",
+      });
+      setTrustBadges(settings.shopTrustBadges || []);
+      setShopFeatures(settings.shopFeatures || []);
+    }
   }, [settings]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true);
-    await saveToSupabase("site_settings", { id: settings?.id || "main", ...form });
+    const cats = form.shopCategories
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    await saveToSupabase("site_settings", {
+      id: settings?.id || "main",
+      ...form,
+      shopCategories: cats,
+      shopTrustBadges: trustBadges,
+      shopFeatures: shopFeatures,
+    });
     setSaving(false); setOk(true); setTimeout(() => setOk(false), 2000);
   };
 
+  const addTrustBadge = () => setTrustBadges((prev) => [...prev, { label: "", icon: "Star" }]);
+  const removeTrustBadge = (i: number) => setTrustBadges((prev) => prev.filter((_, j) => j !== i));
+  const updateTrustBadge = (i: number, key: "label" | "icon", val: string) =>
+    setTrustBadges((prev) => prev.map((b, j) => j === i ? { ...b, [key]: val } : b));
+
+  const addShopFeature = () => setShopFeatures((prev) => [...prev, { title: "", desc: "", icon: "Zap" }]);
+  const removeShopFeature = (i: number) => setShopFeatures((prev) => prev.filter((_, j) => j !== i));
+  const updateShopFeature = (i: number, key: "title" | "desc" | "icon", val: string) =>
+    setShopFeatures((prev) => prev.map((f, j) => j === i ? { ...f, [key]: val } : f));
+
+  const ICON_OPTIONS = ["Zap", "Clock", "Globe", "Star", "Shield", "Check", "LayoutDashboard", "Edit3", "MessageSquare", "Package", "Sparkles", "Heart", "Lock", "Rocket", "Layers"];
+
   return (
     <motion.div key="settings" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-      <PageHeader title="Settings" subtitle="Konfigurasi website dan kontak" />
+      <PageHeader title="Settings" subtitle="Konfigurasi website, toko, dan kontak" />
       <form onSubmit={handleSave} className="space-y-6 max-w-xl">
+
+        {/* SEO */}
         <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 space-y-5">
           <h2 className="text-sm font-semibold text-white">SEO & Meta</h2>
           <Field label="Meta Title"><input type="text" value={form.metaTitle} onChange={(e) => setForm({ ...form, metaTitle: e.target.value })} className={inputCls} placeholder="Pakarsheet - Template Google Sheets..." /></Field>
           <Field label="Meta Description"><textarea rows={3} value={form.metaDescription} onChange={(e) => setForm({ ...form, metaDescription: e.target.value })} className={inputCls + " resize-none"} placeholder="Deskripsi singkat untuk mesin pencari..." /></Field>
           <Field label="Keywords (pisah koma)"><input type="text" value={form.metaKeywords} onChange={(e) => setForm({ ...form, metaKeywords: e.target.value })} className={inputCls} placeholder="google sheets, template, otomasi..." /></Field>
         </div>
+
+        {/* Kontak */}
         <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 space-y-5">
           <h2 className="text-sm font-semibold text-white">Kontak & Link</h2>
           <Field label="Nomor WhatsApp">
@@ -717,12 +729,320 @@ function SettingsTab({ settings, saveToSupabase }: any) {
           </Field>
           <Field label="Main Lynk.id URL"><input type="url" value={form.mainLynkUrl} onChange={(e) => setForm({ ...form, mainLynkUrl: e.target.value })} className={inputCls} placeholder="https://lynk.id/pakarsheet" /></Field>
         </div>
+
+        {/* Shop Header */}
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 space-y-5">
+          <h2 className="text-sm font-semibold text-white">Shop — Header</h2>
+          <Field label="Badge Text">
+            <input type="text" value={form.shopBadgeText} onChange={(e) => setForm({ ...form, shopBadgeText: e.target.value })} className={inputCls} placeholder="Koleksi Template Premium" />
+          </Field>
+          <Field label="Judul Halaman">
+            <textarea rows={2} value={form.shopTitle} onChange={(e) => setForm({ ...form, shopTitle: e.target.value })} className={inputCls + " resize-none"} placeholder="Senjata Rahasia Operasional Bisnis." />
+            <p className="text-xs text-neutral-600 mt-1.5">Gunakan baris baru (\n) untuk memisah baris. Baris ke-2 akan tampil abu-abu.</p>
+          </Field>
+          <Field label="Subtitle">
+            <textarea rows={3} value={form.shopSubtitle} onChange={(e) => setForm({ ...form, shopSubtitle: e.target.value })} className={inputCls + " resize-none"} placeholder="Pilih sistem siap pakai yang telah dioptimasi..." />
+          </Field>
+          <Field label="Kategori Produk (pisah koma)">
+            <input type="text" value={form.shopCategories} onChange={(e) => setForm({ ...form, shopCategories: e.target.value })} className={inputCls} placeholder="Keuangan, Marketing, Inventory, HR & Admin, Lainnya" />
+            <p className="text-xs text-neutral-600 mt-1.5">&quot;Semua&quot; otomatis ditambahkan di awal.</p>
+          </Field>
+        </div>
+
+        {/* Shop CTA */}
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 space-y-5">
+          <h2 className="text-sm font-semibold text-white">Shop — Tombol & Catatan</h2>
+          <Field label="Teks Tombol Beli">
+            <input type="text" value={form.shopCtaText} onChange={(e) => setForm({ ...form, shopCtaText: e.target.value })} className={inputCls} placeholder="Beli Sekarang" />
+          </Field>
+          <Field label="Catatan Pembayaran">
+            <input type="text" value={form.shopPaymentNote} onChange={(e) => setForm({ ...form, shopPaymentNote: e.target.value })} className={inputCls} placeholder="🔒 Pembayaran aman via Lynk.id" />
+          </Field>
+        </div>
+
+        {/* Trust Badges */}
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-white">Shop — Trust Badges</h2>
+            <button type="button" onClick={addTrustBadge} className="flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-white transition-colors">
+              <Plus size={13} /> Tambah
+            </button>
+          </div>
+          <p className="text-xs text-neutral-600">Tampil di bawah gambar produk di halaman detail.</p>
+          {trustBadges.length === 0 && (
+            <p className="text-xs text-neutral-700 italic">Kosong = pakai default (Premium Quality, Lifetime Update, Cloud Sync)</p>
+          )}
+          {trustBadges.map((badge, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <select value={badge.icon} onChange={(e) => updateTrustBadge(i, "icon", e.target.value)} className={inputCls + " appearance-none w-32 flex-shrink-0"}>
+                {ICON_OPTIONS.map((ic) => <option key={ic} value={ic} className="bg-black">{ic}</option>)}
+              </select>
+              <input type="text" value={badge.label} onChange={(e) => updateTrustBadge(i, "label", e.target.value)} className={inputCls} placeholder="Premium Quality" />
+              <button type="button" onClick={() => removeTrustBadge(i)} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors flex-shrink-0">
+                <X size={13} />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Global Shop Features */}
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-white">Shop — Fitur Unggulan (Default)</h2>
+            <button type="button" onClick={addShopFeature} className="flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-white transition-colors">
+              <Plus size={13} /> Tambah
+            </button>
+          </div>
+          <p className="text-xs text-neutral-600">Dipakai untuk semua produk yang tidak punya fitur sendiri. Kosong = pakai bawaan sistem.</p>
+          {shopFeatures.map((feat, i) => (
+            <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Fitur {i + 1}</span>
+                <button type="button" onClick={() => removeShopFeature(i)} className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">
+                  <X size={12} />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <input type="text" value={feat.title} onChange={(e) => updateShopFeature(i, "title", e.target.value)} className={inputCls} placeholder="Nama Fitur" />
+                <select value={feat.icon} onChange={(e) => updateShopFeature(i, "icon", e.target.value)} className={inputCls + " appearance-none"}>
+                  {ICON_OPTIONS.map((ic) => <option key={ic} value={ic} className="bg-black">{ic}</option>)}
+                </select>
+              </div>
+              <textarea rows={2} value={feat.desc} onChange={(e) => updateShopFeature(i, "desc", e.target.value)} className={inputCls + " resize-none"} placeholder="Deskripsi singkat fitur ini..." />
+            </div>
+          ))}
+        </div>
+
         <button type="submit" disabled={saving} className="flex items-center gap-2 bg-white text-black text-sm font-bold px-6 py-3 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50">
           {saving ? <><div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />Menyimpan...</>
             : ok ? <><Check size={15} />Tersimpan!</>
             : <><Save size={15} />Simpan Pengaturan</>}
         </button>
       </form>
+    </motion.div>
+  );
+}
+
+// ─── Blog Tab ─────────────────────────────────────────────────────────────────
+function BlogTab({ blogPosts, isLoading, deleteFromSupabase }: any) {
+  const router = useRouter();
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  const published = blogPosts.filter((p: any) => p.status === "published").length;
+  const drafts = blogPosts.filter((p: any) => p.status === "draft").length;
+
+  const statusStyle: Record<string, string> = {
+    published: "bg-green-500/10 text-green-400 border-green-500/20",
+    draft: "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
+  };
+
+  return (
+    <motion.div key="blog" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+      <PageHeader
+        title="Blog"
+        subtitle={`${published} published · ${drafts} draft`}
+        action={
+          <button
+            onClick={() => router.push("/admin/blog/new")}
+            className="flex items-center gap-2 bg-white text-black text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-neutral-100 transition-colors flex-shrink-0"
+          >
+            <Plus size={15} /> Tulis Artikel
+          </button>
+        }
+      />
+
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 text-center">
+          <div className="text-xl font-bold text-white">{blogPosts.length}</div>
+          <div className="text-xs text-neutral-600 mt-0.5">Total Artikel</div>
+        </div>
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 text-center">
+          <div className="text-xl font-bold text-green-400">{published}</div>
+          <div className="text-xs text-neutral-600 mt-0.5">Published</div>
+        </div>
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 text-center">
+          <div className="text-xl font-bold text-neutral-400">{drafts}</div>
+          <div className="text-xs text-neutral-600 mt-0.5">Draft</div>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <LoadingRows />
+      ) : blogPosts.length === 0 ? (
+        <EmptyState message="Belum ada artikel. Mulai tulis artikel pertama kamu." />
+      ) : (
+        <div className="space-y-2">
+          {blogPosts.map((post: any) => (
+            <div
+              key={post.id}
+              className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 flex items-start gap-4 group hover:border-white/15 transition-colors"
+            >
+              <div className="w-14 h-14 rounded-lg bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/8">
+                {post.coverImage ? (
+                  <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon size={16} className="text-neutral-700" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm font-semibold text-white truncate">{post.title}</p>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border flex-shrink-0 ${statusStyle[post.status] || statusStyle.draft}`}>
+                    {post.status}
+                  </span>
+                </div>
+                <p className="text-xs text-neutral-500 line-clamp-1 mb-1">{post.excerpt}</p>
+                <div className="flex items-center gap-3 text-[11px] text-neutral-700">
+                  <span>{post.category}</span>
+                  <span className="flex items-center gap-1"><Eye size={10} /> {post.views || 0}</span>
+                  <span className="flex items-center gap-1"><AlignLeft size={10} /> {post.readingTime || 1} mnt</span>
+                  {post.tags?.length > 0 && (
+                    <span className="flex items-center gap-1"><Tag size={10} /> {post.tags.slice(0, 2).join(", ")}</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors">
+                  <ExternalLink size={14} />
+                </a>
+                <button onClick={() => router.push(`/admin/blog/${post.id}`)} className="p-2 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors">
+                  <Edit3 size={14} />
+                </button>
+                <button onClick={() => setConfirmId(post.id)} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <ConfirmModal
+        open={!!confirmId}
+        message="Artikel ini akan dihapus permanen."
+        onConfirm={() => { if (confirmId) deleteFromSupabase("blog_posts", confirmId); setConfirmId(null); }}
+        onCancel={() => setConfirmId(null)}
+      />
+    </motion.div>
+  );
+}
+
+// ─── Custom Orders Tab ────────────────────────────────────────────────────────
+function CustomOrdersTab({ isLoading: _isLoading, deleteFromSupabase, saveToSupabase }: any) {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!supabase) { setLoading(false); return; }
+    supabase
+      .from("custom_orders")
+      .select("*")
+      .order("createdAt", { ascending: false })
+      .then(({ data }) => { setOrders(data ?? []); setLoading(false); });
+  }, []);
+
+  const STATUS_OPTIONS = ["new", "reviewing", "in_progress", "delivered", "completed", "cancelled"];
+  const statusStyle: Record<string, string> = {
+    new:         "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    reviewing:   "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+    in_progress: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+    delivered:   "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    completed:   "bg-green-500/10 text-green-400 border-green-500/20",
+    cancelled:   "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
+  };
+  const pkgStyle: Record<string, string> = {
+    basic:      "text-yellow-400",
+    pro:        "text-blue-400",
+    enterprise: "text-purple-400",
+  };
+
+  const updateStatus = async (order: any, newStatus: string) => {
+    await saveToSupabase("custom_orders", { ...order, status: newStatus });
+    setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status: newStatus } : o));
+  };
+
+  const newCount = orders.filter((o) => o.status === "new").length;
+
+  return (
+    <motion.div key="custom_orders" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+      <PageHeader title="Custom Orders" subtitle={`${orders.length} total · ${newCount} baru`} />
+
+      {loading ? <LoadingRows /> : orders.length === 0 ? (
+        <EmptyState message="Belum ada custom order masuk." />
+      ) : (
+        <div className="space-y-4">
+          {orders.map((order) => (
+            <div key={order.id} className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-5 group hover:border-white/15 transition-colors">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <p className="text-sm font-semibold text-white">{order.name}</p>
+                    <span className={`text-[10px] font-bold uppercase ${pkgStyle[order.package] ?? "text-neutral-400"}`}>
+                      {order.package}
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-500">{order.email} · {order.business}</p>
+                  <p className="text-[11px] text-neutral-700 mt-0.5">
+                    {new Date(order.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                    {order.deadline && ` · Deadline: ${order.deadline}`}
+                  </p>
+                </div>
+                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border flex-shrink-0 ${statusStyle[order.status] ?? statusStyle.new}`}>
+                  {order.status.replace("_", " ")}
+                </span>
+              </div>
+
+              <p className="text-sm text-neutral-400 leading-relaxed mb-4 bg-white/[0.02] rounded-xl p-3 border border-white/5">
+                {order.description}
+              </p>
+
+              <div className="flex items-center gap-2 flex-wrap mb-3">
+                <span className="text-[11px] text-neutral-600">Tim: {order.teamSize}</span>
+                {order.hasMigration && <span className="text-[11px] text-neutral-600">· Ada migrasi data</span>}
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                {STATUS_OPTIONS.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => updateStatus(order, s)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                      order.status === s
+                        ? statusStyle[s]
+                        : "bg-white/5 text-neutral-500 border-white/8 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    {s.replace("_", " ")}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setConfirmId(order.id)}
+                  className="ml-auto p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <ConfirmModal
+        open={!!confirmId}
+        message="Custom order ini akan dihapus permanen."
+        onConfirm={() => {
+          if (confirmId) {
+            deleteFromSupabase("custom_orders", confirmId);
+            setOrders((prev) => prev.filter((o) => o.id !== confirmId));
+          }
+          setConfirmId(null);
+        }}
+        onCancel={() => setConfirmId(null)}
+      />
     </motion.div>
   );
 }

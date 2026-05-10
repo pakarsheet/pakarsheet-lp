@@ -3,18 +3,28 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 
+export type ProductFeature = {
+  title: string;
+  desc: string;
+  icon: string; // icon name string, e.g. "Zap", "Clock"
+};
+
 export type Product = {
   id: string;
   name: string;
   description: string;
   price: number;
   originalPrice?: number;        // Optional discounted-from price
+  salePrice?: number | null;     // Flash sale price (overrides price display)
+  salePriceUntil?: number | null; // Timestamp ms when sale ends
+  socialProofCount?: number | null; // Manual buyer count override
   images: string[];              // Canonical multi-image field
   /** @deprecated use images[] */ image?: string;
   lynkUrl: string;
   category: string;
   createdAt: number;
   clicks?: number;
+  features?: ProductFeature[] | null; // Per-product feature list
 };
 
 const dummyProducts: Product[] = [
@@ -54,9 +64,12 @@ export function useProducts() {
       const stored = localStorage.getItem("pakarsheet_products");
       if (stored) {
         setProducts((JSON.parse(stored) as Product[]).map(normalise));
-      } else {
+      } else if (process.env.NODE_ENV === "development") {
+        // Only show dummy data in development — never in production
         localStorage.setItem("pakarsheet_products", JSON.stringify(dummyProducts));
         setProducts(dummyProducts);
+      } else {
+        setProducts([]);
       }
       setIsLoading(false);
       return;
@@ -70,8 +83,8 @@ export function useProducts() {
 
       if (error) throw error;
       setProducts((data ?? []).map(normalise));
-    } catch (error) {
-      console.error("Error fetching products:", error);
+    } catch {
+      // silently fail — products stay empty, no crash
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +100,7 @@ export function useProducts() {
     const ext = file.name.split(".").pop() || "jpg";
     const path = `product-images/${crypto.randomUUID()}.${ext}`;
     const { error } = await supabase.storage.from("products").upload(path, file, { upsert: false });
-    if (error) { console.error("Upload error:", error); return null; }
+    if (error) { return null; }
     const { data } = supabase.storage.from("products").getPublicUrl(path);
     return data.publicUrl;
   }
@@ -123,7 +136,7 @@ export function useProducts() {
 
     if (supabase) {
       const { error } = await supabase.from("products").insert([newProduct]);
-      if (error) { console.error(error); return null; }
+      if (error) { return null; }
     } else {
       const updated = [newProduct, ...products];
       localStorage.setItem("pakarsheet_products", JSON.stringify(updated));
@@ -170,7 +183,7 @@ export function useProducts() {
         .from("products")
         .update(finalUpdates)
         .eq("id", id);
-      if (error) { console.error(error); return false; }
+      if (error) { return false; }
     } else {
       const updated = products.map((p) =>
         p.id === id ? { ...p, ...finalUpdates } : p
@@ -190,7 +203,7 @@ export function useProducts() {
       // Delete all associated storage files
       for (const url of product?.images ?? []) await deleteStorageFile(url);
       const { error } = await supabase.from("products").delete().eq("id", id);
-      if (error) { console.error(error); return; }
+      if (error) { return; }
     } else {
       const updated = products.filter((p) => p.id !== id);
       localStorage.setItem("pakarsheet_products", JSON.stringify(updated));

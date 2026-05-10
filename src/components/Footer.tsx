@@ -7,9 +7,9 @@ import { MessageCircle, Mail, ArrowUpRight, FileText, ShieldCheck } from "lucide
 
 const navLinks = [
   { label: "Fitur", href: "/#fitur" },
-  { label: "Cara Kerja", href: "/#cara-kerja" },
-  { label: "Testimoni", href: "/#testimoni" },
-  { label: "FAQ", href: "/#faq" },
+  { label: "Blog", href: "/blog" },
+  { label: "Tools Gratis", href: "/tools" },
+  { label: "Custom Order", href: "/custom" },
   { label: "Academy", href: "/academy" },
   { label: "Toko", href: "/shop" },
 ];

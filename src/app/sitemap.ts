@@ -1,17 +1,37 @@
 import { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 
-async function getProductIds(): Promise<string[]> {
+function getClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return [];
+  if (!url || !key) return null;
+  return createClient(url, key);
+}
+
+async function getProductIds(): Promise<{ id: string; updatedAt?: number }[]> {
+  const client = getClient();
+  if (!client) return [];
   try {
-    const client = createClient(url, key);
     const { data } = await client
       .from("products")
       .select("id, createdAt")
       .order("createdAt", { ascending: false });
-    return (data ?? []).map((p: { id: string }) => p.id);
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+async function getBlogSlugs(): Promise<{ slug: string; updatedAt?: number }[]> {
+  const client = getClient();
+  if (!client) return [];
+  try {
+    const { data } = await client
+      .from("blog_posts")
+      .select("slug, updatedAt")
+      .eq("status", "published")
+      .order("publishedAt", { ascending: false });
+    return data ?? [];
   } catch {
     return [];
   }
@@ -19,7 +39,7 @@ async function getProductIds(): Promise<string[]> {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://pakarsheet.com";
-  const productIds = await getProductIds();
+  const [products, blogPosts] = await Promise.all([getProductIds(), getBlogSlugs()]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {
@@ -35,9 +55,51 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/tools`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/tools/kalkulator-margin`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
+      url: `${baseUrl}/tools/kalkulator-hpp`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
+      url: `${baseUrl}/tools/kalkulator-harga-jual`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
+      url: `${baseUrl}/tools/kalkulator-roas`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
+      url: `${baseUrl}/custom`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/academy`,
       lastModified: new Date(),
-      changeFrequency: "weekly" as const,
+      changeFrequency: "weekly",
       priority: 0.7,
     },
     {
@@ -54,12 +116,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  const productRoutes: MetadataRoute.Sitemap = productIds.map((id) => ({
-    url: `${baseUrl}/shop/${id}`,
+  const productRoutes: MetadataRoute.Sitemap = products.map((p) => ({
+    url: `${baseUrl}/shop/${p.id}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...productRoutes];
+  const blogRoutes: MetadataRoute.Sitemap = blogPosts.map((p) => ({
+    url: `${baseUrl}/blog/${p.slug}`,
+    lastModified: p.updatedAt ? new Date(p.updatedAt) : new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.75,
+  }));
+
+  return [...staticRoutes, ...productRoutes, ...blogRoutes];
 }

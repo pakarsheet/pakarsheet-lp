@@ -1,13 +1,17 @@
 "use client";
 
 import { useProducts } from "@/hooks/useProducts";
+import { useSettings } from "@/hooks/useSettings";
 import { motion } from "framer-motion";
 import { Search, Sparkles, ArrowRight, LayoutGrid } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useMemo } from "react";
 
-const categories = ["Semua", "Keuangan", "Marketing", "Inventory", "HR & Admin", "Lainnya"];
+const DEFAULT_CATEGORIES = ["Semua", "Keuangan", "Marketing", "Inventory", "HR & Admin", "Lainnya"];
+const DEFAULT_TITLE = "Senjata Rahasia Operasional Bisnis.";
+const DEFAULT_SUBTITLE = "Pilih sistem siap pakai yang telah dioptimasi dengan Apps Script. Nggak perlu pusing mikir rumus, fokus kembangin bisnis aja.";
+const DEFAULT_BADGE = "Koleksi Template Premium";
 
 function ProductSkeleton() {
   return (
@@ -37,8 +41,21 @@ function ProductSkeleton() {
 
 export default function ShopClient() {
   const { products, isLoading, trackClick } = useProducts();
+  const { settings } = useSettings();
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Build category list: "Semua" + categories from settings (or default)
+  const categories = useMemo(() => {
+    const cats = settings?.shopCategories?.length
+      ? settings.shopCategories
+      : DEFAULT_CATEGORIES.slice(1);
+    return ["Semua", ...cats];
+  }, [settings]);
+
+  const shopTitle = settings?.shopTitle || DEFAULT_TITLE;
+  const shopSubtitle = settings?.shopSubtitle || DEFAULT_SUBTITLE;
+  const shopBadge = settings?.shopBadgeText || DEFAULT_BADGE;
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -68,7 +85,7 @@ export default function ShopClient() {
           >
             <Sparkles size={16} className="text-yellow-400" />
             <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
-              Koleksi Template Premium
+              {shopBadge}
             </span>
           </motion.div>
 
@@ -78,8 +95,16 @@ export default function ShopClient() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-5xl md:text-7xl font-semibold tracking-tight text-white mb-6 leading-[1.1]"
           >
-            Senjata Rahasia <br className="hidden md:block" />
-            <span className="text-neutral-500">Operasional Bisnis.</span>
+            {shopTitle.includes("\n") ? (
+              shopTitle.split("\n").map((line, i) => (
+                <span key={i}>
+                  {i > 0 && <br className="hidden md:block" />}
+                  {i === 1 ? <span className="text-neutral-500">{line}</span> : line}
+                </span>
+              ))
+            ) : (
+              shopTitle
+            )}
           </motion.h1>
 
           <motion.p
@@ -88,7 +113,7 @@ export default function ShopClient() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-neutral-400 text-lg md:text-xl max-w-2xl mx-auto font-normal"
           >
-            Pilih sistem siap pakai yang telah dioptimasi dengan Apps Script. Nggak perlu pusing mikir rumus, fokus kembangin bisnis aja.
+            {shopSubtitle}
           </motion.p>
         </div>
 

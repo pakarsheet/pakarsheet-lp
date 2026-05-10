@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Syarat & Ketentuan | Pakarsheet",
+  description: "Syarat dan ketentuan penggunaan template Pakarsheet. Lisensi, pembayaran, tanggung jawab, dan kebijakan update.",
+};
+
 import { Reveal } from "@/components/Reveal";
 
 export default function TermsPage() {
@@ -7,7 +14,7 @@ export default function TermsPage() {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-medium mb-8 text-white">Syarat & Ketentuan</h1>
           <div className="prose prose-invert prose-neutral max-w-none space-y-6 text-neutral-400">
-            <p className="font-normal">Terakhir diperbarui: 10 Mei 2026</p>
+            <p className="font-normal">Terakhir diperbarui: 10 Mei 2025</p>
             
             <section className="space-y-4 font-normal">
               <h2 className="text-2xl font-medium text-white">1. Lisensi Penggunaan</h2>
