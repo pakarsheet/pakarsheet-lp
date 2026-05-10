@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   Calculator, TrendingUp, ShoppingCart, Zap, ArrowRight, Wallet, Megaphone, Store, Factory,
+  BadgePercent, CircleDollarSign,
   type LucideIcon,
 } from "lucide-react";
 
@@ -60,6 +61,26 @@ const TOOLS: Tool[] = [
     tags: ["Marketing", "Iklan"],
     color: "text-purple-400",
     bg: "bg-purple-500/10 border-purple-500/20",
+  },
+  {
+    slug: "kalkulator-diskon-bertingkat",
+    icon: BadgePercent,
+    title: "Kalkulator Diskon Bertingkat",
+    desc: "Hitung harga akhir setelah diskon 20% + 10%, voucher, cashback, ongkir, dan biaya layanan.",
+    category: "Marketplace",
+    tags: ["Marketplace", "Promo"],
+    color: "text-pink-400",
+    bg: "bg-pink-500/10 border-pink-500/20",
+  },
+  {
+    slug: "kalkulator-profit-marketplace",
+    icon: CircleDollarSign,
+    title: "Kalkulator Profit Marketplace",
+    desc: "Hitung profit bersih setelah HPP, fee platform, voucher seller, subsidi ongkir, packaging, dan iklan.",
+    category: "Marketplace",
+    tags: ["Marketplace", "Profit"],
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10 border-emerald-500/20",
   },
 ];
 
