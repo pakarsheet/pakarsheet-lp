@@ -106,6 +106,11 @@ alter table public.site_settings add column if not exists "shopPaymentNote" text
 alter table public.site_settings add column if not exists "shopTrustBadges" jsonb   default null;
 alter table public.site_settings add column if not exists "shopFeatures"    jsonb   default null;
 
+-- Branding (logo, favicon, brand name) — dipakai di Navbar, Footer, dan <head>
+alter table public.site_settings add column if not exists "logoUrl"    text default null;
+alter table public.site_settings add column if not exists "faviconUrl" text default null;
+alter table public.site_settings add column if not exists "brandName"  text default null;
+
 -- Pastikan row 'main' selalu ada (upsert aman)
 insert into public.site_settings (id)
 values ('main')
