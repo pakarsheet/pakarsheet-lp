@@ -64,6 +64,7 @@ function AdminLoginInner() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-[15px] text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition-colors"
+            autoComplete="current-password"
             autoFocus
           />
 
