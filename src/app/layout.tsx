@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,19 +22,23 @@ const FALLBACK_META = {
 };
 
 // Fetch site settings server-side so metadata is dynamic and SEO-effective.
-// This runs at request time (dynamic rendering) when settings exist.
-async function getSiteSettings() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  try {
-    const client = createClient(url, key);
-    const { data } = await client.from("site_settings").select("*").single();
-    return data ?? null;
-  } catch {
-    return null;
-  }
-}
+// Cached for 1 hour to avoid a Supabase call on every request.
+const getSiteSettings = unstable_cache(
+  async () => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return null;
+    try {
+      const client = createClient(url, key);
+      const { data } = await client.from("site_settings").select("*").single();
+      return data ?? null;
+    } catch {
+      return null;
+    }
+  },
+  ["site_settings"],
+  { revalidate: 3600 } // cache for 1 hour
+);
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();

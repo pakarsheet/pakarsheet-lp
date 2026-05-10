@@ -5,7 +5,10 @@ import { Heart, ArrowRight, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useSettings } from "@/hooks/useSettings";
+
+export default function ThankYouPage() {
   const { waUrl } = useSettings();
+
   return (
     <div className="container mx-auto px-4 md:px-6 py-32 flex flex-col items-center justify-center min-h-[60vh] text-center">
       <Reveal>
@@ -17,9 +20,12 @@ import { useSettings } from "@/hooks/useSettings";
           <Heart className="text-green-400" size={48} fill="currentColor" />
         </motion.div>
 
-        <h1 className="text-4xl md:text-6xl font-medium mb-6 text-white tracking-tight">Terima kasih!</h1>
+        <h1 className="text-4xl md:text-6xl font-medium mb-6 text-white tracking-tight">
+          Terima kasih!
+        </h1>
         <p className="text-neutral-400 text-lg max-w-xl mx-auto mb-12 font-normal">
-          Akses template kamu sudah diproses. Cek email kamu untuk link template Google Sheets-nya. Kalau ada kendala, langsung hubungi kami ya.
+          Akses template kamu sudah diproses. Cek email kamu untuk link template
+          Google Sheets-nya. Kalau ada kendala, langsung hubungi kami ya.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-12">

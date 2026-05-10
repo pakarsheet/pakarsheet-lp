@@ -43,6 +43,17 @@ export type UserRequest = {
   createdAt: number;
 };
 
+export type ShopFeature = {
+  title: string;
+  desc: string;
+  icon: string; // icon name string, e.g. "Zap", "Clock"
+};
+
+export type ShopTrustBadge = {
+  label: string;
+  icon: string;
+};
+
 export type SiteSettings = {
   id: string;
   metaTitle: string;
@@ -50,6 +61,33 @@ export type SiteSettings = {
   metaKeywords: string;
   whatsappNumber: string;
   mainLynkUrl: string;
+  // Shop page settings
+  shopTitle?: string;
+  shopSubtitle?: string;
+  shopBadgeText?: string;
+  shopCategories?: string[]; // e.g. ["Keuangan","Marketing",...]
+  shopCtaText?: string;
+  shopPaymentNote?: string;
+  shopTrustBadges?: ShopTrustBadge[];
+  shopFeatures?: ShopFeature[]; // default features for all products
+};
+
+export type BlogPost = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  coverImage: string;
+  category: string;
+  tags: string[];
+  status: "draft" | "published";
+  readingTime: number;
+  views: number;
+  publishedAt: number;
+  createdAt: number;
+  updatedAt: number;
+  relatedProductId?: string | null;
 };
 
 export function useData() {
@@ -58,6 +96,7 @@ export function useData() {
   const [tutorials, setTutorials] = useState<Tutorial[]>([]);
   const [userRequests, setUserRequests] = useState<UserRequest[]>([]);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -76,12 +115,13 @@ export function useData() {
     }
 
     try {
-      const [prodRes, testRes, tutRes, reqRes, setRes] = await Promise.all([
+      const [prodRes, testRes, tutRes, reqRes, setRes, blogRes] = await Promise.all([
         supabase.from('products').select('*').order('createdAt', { ascending: false }),
         supabase.from('testimonials').select('*').order('createdAt', { ascending: false }),
         supabase.from('tutorials').select('*').order('createdAt', { ascending: false }),
         supabase.from('user_requests').select('*').order('createdAt', { ascending: false }),
-        supabase.from('site_settings').select('*').single()
+        supabase.from('site_settings').select('*').single(),
+        supabase.from('blog_posts').select('*').order('createdAt', { ascending: false }),
       ]);
 
       setProducts(prodRes.data || []);
@@ -89,8 +129,9 @@ export function useData() {
       setTutorials(tutRes.data || []);
       setUserRequests(reqRes.data || []);
       setSettings(setRes.data || null);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+      setBlogPosts(blogRes.data || []);
+    } catch {
+      // silently fail — data will be stale but app won't crash
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +144,7 @@ export function useData() {
   // --- CRUD Operations ---
 
   // Allowed tables — prevents arbitrary table injection from client code
-  const ALLOWED_TABLES = ["products", "testimonials", "tutorials", "user_requests", "site_settings"] as const;
+  const ALLOWED_TABLES = ["products", "testimonials", "tutorials", "user_requests", "site_settings", "blog_posts", "custom_orders"] as const;
   type AllowedTable = typeof ALLOWED_TABLES[number];
 
   const saveToSupabase = async (table: string, data: Record<string, unknown>): Promise<{ ok: boolean; error?: string }> => {
@@ -122,7 +163,6 @@ export function useData() {
     }
     const { error } = await supabase.from(table as AllowedTable).upsert([data]);
     if (error) {
-      console.error(`Error saving to ${table}:`, error);
       return { ok: false, error: error.message };
     }
     await fetchData();
@@ -147,7 +187,6 @@ export function useData() {
     }
     const { error } = await supabase.from(table as AllowedTable).delete().eq("id", id);
     if (error) {
-      console.error(`Error deleting from ${table}:`, error);
       return { ok: false, error: error.message };
     }
     await fetchData();
@@ -155,7 +194,7 @@ export function useData() {
   };
 
   return {
-    products, testimonials, tutorials, userRequests, settings,
+    products, testimonials, tutorials, userRequests, settings, blogPosts,
     isLoading, fetchData, saveToSupabase, deleteFromSupabase
   };
 }

@@ -279,10 +279,9 @@ interface FeatureRowProps {
   icon: React.ElementType;
   visual: React.ReactNode;
   reverse?: boolean;
-  index: number;
 }
 
-function FeatureRow({ eyebrow, title, desc, icon: Icon, visual, reverse, index }: FeatureRowProps) {
+function FeatureRow({ eyebrow, title, desc, icon: Icon, visual, reverse }: FeatureRowProps) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
@@ -384,7 +383,7 @@ export function Features() {
         {/* Feature rows */}
         <div className="space-y-20 md:space-y-40 max-w-5xl mx-auto">
           {features.map((f, i) => (
-            <FeatureRow key={i} index={i} {...f} />
+            <FeatureRow key={i} {...f} />
           ))}
         </div>
       </div>

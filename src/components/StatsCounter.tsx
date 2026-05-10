@@ -38,7 +38,7 @@ function Counter({ value, decimals = 0 }: { value: number; decimals?: number }) 
   return <motion.span ref={ref}>{display}</motion.span>;
 }
 
-// ─── Stats data ───────────────────────────────────────────────────────────────
+// ─── Stats data — UPDATE THESE VALUES to match your real numbers ──────────────
 const stats = [
   {
     icon: Users,

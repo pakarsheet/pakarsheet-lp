@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { Reveal } from "@/components/Reveal";
 import { FileQuestion, Home } from "lucide-react";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "404 — Halaman Tidak Ditemukan | Pakarsheet",
+  description: "Halaman yang kamu cari tidak ada. Kembali ke beranda Pakarsheet.",
+  robots: { index: false, follow: false },
+};
 
 export default function NotFound() {
   return (

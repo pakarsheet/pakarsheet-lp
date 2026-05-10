@@ -1,10 +1,12 @@
 @import "tailwindcss";
+@import "highlight.js/styles/github-dark.css";
+@plugin "@tailwindcss/typography";
 
 @theme {
   --color-background: #030303;
   --color-foreground: #ffffff;
   
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   
   --radius-32: 32px;
   --radius-40: 40px;
@@ -42,7 +44,7 @@ body::before {
   height: 100%;
   opacity: 0.015;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 100; /* below modals/drawers (z-[60+]) */
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
@@ -64,6 +66,15 @@ body::before {
   .reveal-section[data-visible="true"] {
     opacity: 1;
     transform: translateY(0);
+  }
+
+  /* Hide scrollbar utility — used in horizontal scroll containers */
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
 
