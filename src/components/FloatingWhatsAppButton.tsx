@@ -8,9 +8,14 @@ export function FloatingWhatsAppButton() {
 
   if (isLoading || !waUrl) return null;
 
+  const message = encodeURIComponent(
+    "Halo PakarSheet, saya ingin bertanya tentang layanan Anda."
+  );
+  const href = `${waUrl}?text=${message}`;
+
   return (
     <a
-      href={waUrl}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat WhatsApp Pakarsheet"
