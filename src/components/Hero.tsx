@@ -52,7 +52,7 @@ export function Hero() {
             className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 w-full max-w-xs sm:max-w-none mx-auto"
           >
             <Link 
-              href="#fitur" 
+              href="/shop" 
               className="flex items-center justify-center gap-2 bg-white text-black px-8 py-3.5 rounded-xl font-semibold hover:bg-neutral-200 transition-all active:scale-95 shadow-xl group"
             >
               <Sparkles size={16} className="text-black/50 group-hover:text-black transition-colors" />

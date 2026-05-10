@@ -224,18 +224,16 @@ function GraphLayout({ inView }: { inView: boolean }) {
 
   return (
     <div ref={containerRef} className="relative w-full py-8 px-3 md:py-10 md:px-10">
-      {/* SVG connectors — hidden on mobile, shown on md+ */}
-      <div className="hidden md:block">
-        <Connectors leftRefs={leftRefs} centerRef={centerRef} rightRefs={rightRefs} containerRef={containerRef} inView={inView} />
-      </div>
-
-      {/* Desktop: 3-column grid */}
+      {/* ── Desktop: 3-column grid ── */}
       <div className="hidden md:grid relative grid-cols-[1fr_auto_1fr] items-center gap-12">
+        {/* SVG connectors inside the same container as the refs */}
+        <Connectors leftRefs={leftRefs} centerRef={centerRef} rightRefs={rightRefs} containerRef={containerRef} inView={inView} />
         <div className="flex flex-col gap-3">
           {LEFT_NODES.map((node, i) => (
             <SideNode key={node.id} node={node} nodeRef={leftRefs[i]} index={i} inView={inView} />
           ))}
         </div>
+
         <motion.div
           ref={centerRef}
           initial={{ opacity: 0, scale: 0.7 }}
@@ -255,6 +253,7 @@ function GraphLayout({ inView }: { inView: boolean }) {
           <span className="text-[12px] font-bold text-white/90 tracking-tight">{CENTER_NODE.label}</span>
           <span className="text-[9px] text-neutral-500 mt-0.5">{CENTER_NODE.sub}</span>
         </motion.div>
+
         <div className="flex flex-col gap-3">
           {RIGHT_NODES.map((node, i) => (
             <SideNode key={node.id} node={node} nodeRef={rightRefs[i]} index={i} inView={inView} />
@@ -262,9 +261,8 @@ function GraphLayout({ inView }: { inView: boolean }) {
         </div>
       </div>
 
-      {/* Mobile: vertical stack */}
-      <div className="md:hidden flex flex-col gap-4">
-        {/* Inputs */}
+      {/* ── Mobile: vertical stack ── */}
+      <div className="md:hidden flex flex-col gap-5">
         <div>
           <p className="text-[10px] font-semibold text-white/20 uppercase tracking-widest mb-2 px-1">Input</p>
           <div className="flex flex-col gap-2">
@@ -274,8 +272,7 @@ function GraphLayout({ inView }: { inView: boolean }) {
           </div>
         </div>
 
-        {/* Center engine */}
-        <div className="flex items-center justify-center py-2">
+        <div className="flex items-center justify-center py-1">
           <motion.div
             initial={{ opacity: 0, scale: 0.7 }}
             animate={inView ? { opacity: 1, scale: 1 } : {}}
@@ -295,7 +292,6 @@ function GraphLayout({ inView }: { inView: boolean }) {
           </motion.div>
         </div>
 
-        {/* Outputs */}
         <div>
           <p className="text-[10px] font-semibold text-white/20 uppercase tracking-widest mb-2 px-1">Output</p>
           <div className="flex flex-col gap-2">

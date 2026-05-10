@@ -31,15 +31,22 @@ export function RequestForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.email.trim() || !form.request.trim()) return;
+    const emailTrimmed = form.email.trim();
+    const requestTrimmed = form.request.trim();
+    if (!emailTrimmed || !requestTrimmed) return;
+    if (requestTrimmed.length < 20) {
+      setStatus("error");
+      setErrorMsg("Deskripsi terlalu singkat. Ceritakan lebih detail kebutuhan kamu (min. 20 karakter).");
+      return;
+    }
 
     setStatus("loading");
     setErrorMsg("");
 
     const entry = {
       id: crypto.randomUUID(),
-      email: form.email.trim(),
-      request: form.request.trim(),
+      email: emailTrimmed,
+      request: requestTrimmed,
       status: "pending",
       createdAt: Date.now(),
     };
@@ -57,7 +64,7 @@ export function RequestForm() {
       setForm({ email: "", request: "" });
     } catch {
       setStatus("error");
-      setErrorMsg("Gagal mengirim. Coba lagi atau hubungi kami via WhatsApp.");
+      setErrorMsg("Gagal mengirim. Coba lagi beberapa saat atau hubungi kami via email.");
     }
   };
 

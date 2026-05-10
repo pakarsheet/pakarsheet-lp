@@ -1,28 +1,64 @@
+"use client"
+
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import { ShieldCheck, Zap, RefreshCw, HeartHandshake } from "lucide-react";
+
+const trustPoints = [
+  {
+    icon: ShieldCheck,
+    label: "Pembayaran aman",
+    sub: "via Lynk.id",
+  },
+  {
+    icon: Zap,
+    label: "Akses instan",
+    sub: "setelah checkout",
+  },
+  {
+    icon: RefreshCw,
+    label: "Lifetime update",
+    sub: "gratis selamanya",
+  },
+  {
+    icon: HeartHandshake,
+    label: "Support aktif",
+    sub: "via WhatsApp",
+  },
+];
+
 export function SocialProof() {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-40px" });
+
   return (
-    <section className="py-20 border-y border-white/5 bg-white/[0.01]">
+    <section className="py-14 border-y border-white/5 bg-white/[0.01]">
       <div className="container mx-auto px-4 md:px-6">
-        <p className="text-center text-sm font-medium text-neutral-500 mb-8">
-          Dirancang berdasarkan masukan praktisi handal:
-        </p>
-        
-        <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8">
-          {/* Enhanced Dummy Logos */}
-          {[
-            { name: "AdsMaster", icon: "square" },
-            { name: "ScaleUp.id", icon: "circle" },
-            { name: "GROWTH", icon: "triangle" },
-            { name: "BOSSNESIA", icon: "diamond" },
-            { name: "DataCrafter", icon: "bars" }
-          ].map((brand, i) => (
-            <div key={i} className="flex items-center gap-3 px-6 py-3 rounded-xl border border-white/5 bg-white/[0.02] grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-default backdrop-blur-sm">
-              {brand.icon === "square" && <div className="w-4 h-4 rounded bg-white/40"></div>}
-              {brand.icon === "circle" && <div className="w-4 h-4 rounded-full bg-white/40"></div>}
-              {brand.icon === "triangle" && <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[14px] border-b-white/40"></div>}
-              {brand.icon === "diamond" && <div className="w-4 h-4 rotate-45 bg-white/40"></div>}
-              {brand.icon === "bars" && <div className="flex gap-0.5"><div className="w-1 h-4 bg-white/40"></div><div className="w-1 h-3 bg-white/40"></div></div>}
-              <span className="font-semibold text-sm md:text-base tracking-tight text-white/40">{brand.name.toLowerCase()}</span>
-            </div>
+        <motion.p
+          ref={ref}
+          initial={{ opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="text-center text-xs font-medium tracking-[0.2em] uppercase text-white/20 mb-8"
+        >
+          Kenapa pilih Pakarsheet
+        </motion.p>
+
+        <div className="flex flex-wrap justify-center items-center gap-3 md:gap-6">
+          {trustPoints.map((point, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 16 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.45, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              className="flex items-center gap-3 px-5 py-3 rounded-xl border border-white/5 bg-white/[0.02]"
+            >
+              <point.icon size={15} className="text-white/30 flex-shrink-0" />
+              <div>
+                <span className="text-sm font-medium text-white/60 tracking-tight">{point.label}</span>
+                <span className="text-xs text-neutral-600 ml-1.5">{point.sub}</span>
+              </div>
+            </motion.div>
           ))}
         </div>
       </div>

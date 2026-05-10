@@ -1,32 +1,8 @@
 "use client"
 
-import { Check } from "lucide-react";
+import { Check, MessageCircle } from "lucide-react";
 import { SpotlightCard } from "./SpotlightCard";
 import { useData } from "@/hooks/useData";
-
-const fallbackTestimonials = [
-  {
-    name: "Budi Santoso",
-    role: "Pemilik Bisnis",
-    content: "Awalnya skeptis, mikir 'ah paling template biasa'. Ternyata gila, UI-nya rapi banget dan rekap bulanan yang biasanya makan waktu 3 jam sekarang cuma hitungan detik. Worth it banget!",
-    avatar: "B",
-    color: "bg-blue-500/20 text-blue-400"
-  },
-  {
-    name: "Siska Amanda",
-    role: "Digital Marketer",
-    content: "Sebagai advertiser yang tiap hari mantengin data, Pakarsheet beneran ngebantu. Nggak perlu lagi pusing bikin rumus VLOOKUP atau Pivot yang sering error. Tinggal input, dashboard langsung update otomatis.",
-    avatar: "S",
-    color: "bg-purple-500/20 text-purple-400"
-  },
-  {
-    name: "Rudi Heryanto",
-    role: "Admin Operasional",
-    content: "Bos seneng banget liat report sekarang, kelihatannya kayak pakai software mahal padahal ini cuma Google Sheets yang di-upgrade parah. Kerjaan harian jadi kerasa lebih enteng.",
-    avatar: "R",
-    color: "bg-green-500/20 text-green-400"
-  }
-];
 
 const avatarColors = [
   "bg-blue-500/20 text-blue-400",
@@ -39,17 +15,6 @@ const avatarColors = [
 
 export function Testimonials() {
   const { testimonials: dbTestimonials, isLoading } = useData();
-
-  // Use DB testimonials if available, otherwise fall back to hardcoded
-  const testimonials = dbTestimonials.length > 0
-    ? dbTestimonials.map((t, i) => ({
-        name: t.name,
-        role: t.role,
-        content: t.content,
-        avatar: t.name.charAt(0).toUpperCase(),
-        color: avatarColors[i % avatarColors.length],
-      }))
-    : fallbackTestimonials;
 
   return (
     <section id="testimoni" className="py-20 md:py-32 border-t border-white/5 bg-background">
@@ -85,21 +50,30 @@ export function Testimonials() {
               </div>
             ))}
           </div>
+        ) : dbTestimonials.length === 0 ? (
+          /* Empty state — honest, no fake testimonials */
+          <div className="max-w-md mx-auto text-center py-16 border border-dashed border-white/8 rounded-[32px]">
+            <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/8 flex items-center justify-center mx-auto mb-4">
+              <MessageCircle size={20} className="text-neutral-600" />
+            </div>
+            <p className="text-neutral-500 text-sm mb-1">Jadilah yang pertama berbagi pengalaman.</p>
+            <p className="text-neutral-600 text-xs">Testimoni dari pengguna nyata akan tampil di sini.</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
-            {testimonials.map((t, i) => (
-              <SpotlightCard key={i} className="rounded-[32px] border border-white/5 bg-[#0a0a0a]">
+            {dbTestimonials.map((t, i) => (
+              <SpotlightCard key={t.id} className="rounded-[32px] border border-white/5 bg-[#0a0a0a]">
                 <div className="p-8">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className={`w-10 h-10 rounded-full ${t.color} flex items-center justify-center font-semibold text-base border border-white/10`}>
-                      {t.avatar}
+                    <div className={`w-10 h-10 rounded-full ${avatarColors[i % avatarColors.length]} flex items-center justify-center font-semibold text-base border border-white/10`}>
+                      {t.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <div className="font-semibold text-white/90 flex items-center gap-2 tracking-tight text-sm">
                         {t.name}
                         <Check size={12} className="text-white/20" />
                       </div>
-                      <div className="text-[10px] text-neutral-600 tracking-[0.15em] font-medium uppercase">Verified Buyer</div>
+                      <div className="text-[10px] text-neutral-600 tracking-[0.15em] font-medium uppercase">{t.role}</div>
                     </div>
                   </div>
                   <p className="text-neutral-400 text-sm leading-relaxed font-normal">

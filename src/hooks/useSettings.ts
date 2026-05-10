@@ -12,11 +12,12 @@ export type SiteSettings = {
   mainLynkUrl?: string;
 };
 
-// Fallback defaults — update these to your real values
+// Fallback defaults — GANTI dengan nilai asli kamu sebelum deploy
+// Nilai ini dipakai saat Supabase belum dikonfigurasi atau settings belum diisi
 const DEFAULTS: SiteSettings = {
   id: "main",
-  whatsappNumber: "6281234567890",
-  mainLynkUrl: "https://lynk.id/pakarsheet",
+  whatsappNumber: "", // Isi di Supabase: Settings tab → Nomor WhatsApp
+  mainLynkUrl: "",    // Isi di Supabase: Settings tab → Main Lynk.id URL
 };
 
 export function useSettings() {
@@ -43,7 +44,9 @@ export function useSettings() {
     load();
   }, []);
 
-  const waUrl = `https://wa.me/${(settings.whatsappNumber || DEFAULTS.whatsappNumber)?.replace(/\D/g, "")}`;
+  const waUrl = settings.whatsappNumber
+    ? `https://wa.me/${settings.whatsappNumber.replace(/\D/g, "")}`
+    : "#";
 
   return { settings, isLoading, waUrl };
 }

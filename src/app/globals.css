@@ -25,9 +25,10 @@
     font-family: var(--font-sans);
     position: relative;
     background-color: var(--color-background);
+    /* background-attachment: fixed is broken on iOS Safari — use pseudo-element instead */
     background-image: radial-gradient(circle at 50% 0%, #1a1a24 0%, var(--color-background) 70%);
-    background-attachment: fixed;
     background-repeat: no-repeat;
+    background-size: 100% 100vh;
   }
 }
 

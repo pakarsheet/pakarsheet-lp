@@ -56,15 +56,17 @@ export function Footer() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 mt-2">
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-colors px-5 py-2.5 rounded-xl text-sm font-medium"
-              >
-                <MessageCircle size={16} />
-                Chat WhatsApp
-              </a>
+              {waUrl && (
+                <a
+                  href={waUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-colors px-5 py-2.5 rounded-xl text-sm font-medium"
+                >
+                  <MessageCircle size={16} />
+                  Chat WhatsApp
+                </a>
+              )}
               <a
                 href="mailto:halo@pakarsheet.com"
                 className="inline-flex items-center justify-center gap-2 bg-white/5 text-neutral-300 border border-white/10 hover:bg-white/10 hover:text-white transition-colors px-5 py-2.5 rounded-xl text-sm font-medium"
