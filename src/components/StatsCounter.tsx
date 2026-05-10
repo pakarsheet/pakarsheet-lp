@@ -3,6 +3,7 @@
 import { motion, useMotionValue, useTransform, animate, useInView, type Variants } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { Users, Database, Clock, Star, TrendingUp } from "lucide-react";
+import { SectionEyebrow } from "./SectionEyebrow";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 28 },
@@ -177,13 +178,13 @@ export function StatsCounter() {
           animate={headerInView ? "show" : "hidden"}
           className="text-center max-w-2xl mx-auto mb-16 md:mb-20"
         >
-          <motion.p
+          <motion.div
             variants={fadeUp}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4"
+            className="mb-4"
           >
-            Hasil Nyata
-          </motion.p>
+            <SectionEyebrow icon={TrendingUp} label="Hasil Nyata" />
+          </motion.div>
           <motion.h2
             variants={fadeUp}
             transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}

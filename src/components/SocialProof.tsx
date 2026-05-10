@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { ShieldCheck, Zap, RefreshCw, HeartHandshake } from "lucide-react";
+import { SectionEyebrow } from "./SectionEyebrow";
 
 const trustPoints = [
   {
@@ -34,15 +35,15 @@ export function SocialProof() {
   return (
     <section className="py-14 border-y border-white/5 bg-white/[0.01]">
       <div className="container mx-auto px-4 md:px-6">
-        <motion.p
+        <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 12 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center text-xs font-medium tracking-[0.2em] uppercase text-white/20 mb-8"
+          className="flex justify-center mb-8"
         >
-          Kenapa pilih Pakarsheet
-        </motion.p>
+          <SectionEyebrow icon={ShieldCheck} label="Kenapa pilih Pakarsheet" />
+        </motion.div>
 
         <div className="flex flex-wrap justify-center items-center gap-3 md:gap-6">
           {trustPoints.map((point, i) => (

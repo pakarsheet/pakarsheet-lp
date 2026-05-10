@@ -1,8 +1,9 @@
 "use client"
 
-import { Check, MessageCircle } from "lucide-react";
+import { Check, MessageCircle, Quote } from "lucide-react";
 import { SpotlightCard } from "./SpotlightCard";
 import { useData } from "@/hooks/useData";
+import { SectionEyebrow } from "./SectionEyebrow";
 
 const avatarColors = [
   "bg-blue-500/20 text-blue-400",
@@ -17,12 +18,12 @@ export function Testimonials() {
   const { testimonials: dbTestimonials, isLoading } = useData();
 
   return (
-    <section id="testimoni" className="py-20 md:py-32 border-t border-white/5 bg-background">
+    <section id="testimoni" className="py-20 md:py-32 border-t border-white/5">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-2xl mx-auto mb-16 md:mb-20">
-          <p className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4">
-            Testimoni
-          </p>
+          <div className="mb-4 flex justify-center">
+            <SectionEyebrow icon={Quote} label="Testimoni" />
+          </div>
           <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
             Wall of love.
           </h2>

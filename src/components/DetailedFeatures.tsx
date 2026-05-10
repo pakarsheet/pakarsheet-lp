@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useInView, type Variants } from "framer-motion";
 import { Zap, RefreshCcw, FileText, Lock } from "lucide-react";
+import { SectionEyebrow } from "./SectionEyebrow";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 28 },
@@ -53,9 +54,9 @@ export function DetailedFeatures() {
           animate={headerInView ? "show" : "hidden"}
           className="text-center max-w-2xl mx-auto mb-16 md:mb-20"
         >
-          <motion.p variants={fadeUp} className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4">
-            Kemampuan
-          </motion.p>
+          <motion.div variants={fadeUp} className="mb-4">
+            <SectionEyebrow icon={Zap} label="Kemampuan" />
+          </motion.div>
           <motion.h2 variants={fadeUp} className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
             Bekerja lebih cerdas
           </motion.h2>

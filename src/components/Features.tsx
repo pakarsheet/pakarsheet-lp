@@ -2,7 +2,8 @@
 
 import { useRef } from "react";
 import { motion, useInView, type Variants } from "framer-motion";
-import { LayoutTemplate, BarChart3, ShieldCheck, Zap } from "lucide-react";
+import { LayoutTemplate, BarChart3, ShieldCheck, Zap, Layers } from "lucide-react";
+import { SectionEyebrow } from "./SectionEyebrow";
 
 /* ─── Shared fade-in variants ──────────────────────────────────────────────── */
 const fadeUp: Variants = {
@@ -369,9 +370,9 @@ export function Features() {
           animate={headerInView ? "show" : "hidden"}
           className="text-center max-w-2xl mx-auto mb-24 md:mb-32"
         >
-          <motion.p variants={fadeUp} className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4">
-            Fitur Unggulan
-          </motion.p>
+          <motion.div variants={fadeUp} className="mb-4">
+            <SectionEyebrow icon={Layers} label="Fitur Unggulan" />
+          </motion.div>
           <motion.h2 variants={fadeUp} className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
             Fitur yang bikin <br /> saingan kamu iri.
           </motion.h2>

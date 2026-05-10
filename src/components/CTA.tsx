@@ -2,7 +2,8 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Rocket } from "lucide-react";
+import { SectionEyebrow } from "./SectionEyebrow";
 
 export function CTA() {
   return (
@@ -12,15 +13,15 @@ export function CTA() {
 
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4"
+            className="mb-4"
           >
-            Mulai Sekarang
-          </motion.p>
+            <SectionEyebrow icon={Rocket} label="Mulai Sekarang" />
+          </motion.div>
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

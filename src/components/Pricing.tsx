@@ -1,10 +1,11 @@
 "use client"
 
 import { motion, useInView, type Variants } from "framer-motion";
-import { Check, ShieldCheck, RefreshCw, TrendingDown, Clock, Users, Zap, Infinity, ArrowRight, Sparkles } from "lucide-react";
+import { Tag, Check, ShieldCheck, RefreshCw, TrendingDown, Clock, Users, Zap, Infinity, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRef } from "react";
 import { SpotlightCard } from "./SpotlightCard";
+import { SectionEyebrow } from "./SectionEyebrow";
 
 /* ─── Shared animation variants ────────────────────────────────────────────── */
 const fadeUp: Variants = {
@@ -78,9 +79,9 @@ export function Pricing() {
           animate={headerInView ? "show" : "hidden"}
           className="text-center max-w-2xl mx-auto mb-16 md:mb-20"
         >
-          <motion.p variants={fadeUp} className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4">
-            Harga
-          </motion.p>
+          <motion.div variants={fadeUp} className="mb-4">
+            <SectionEyebrow icon={Tag} label="Harga" />
+          </motion.div>
           <motion.h2 variants={fadeUp} className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
             Investasi pintar. <br /> Sekali seumur hidup.
           </motion.h2>

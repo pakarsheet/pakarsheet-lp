@@ -2,7 +2,8 @@
 
 import { useRef } from "react";
 import { motion, useInView, type Variants } from "framer-motion";
-import { Check, X } from "lucide-react";
+import { Check, X, GitCompare } from "lucide-react";
+import { SectionEyebrow } from "./SectionEyebrow";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 28 },
@@ -39,9 +40,9 @@ export function Comparison() {
           transition={{ staggerChildren: 0.1 }}
           className="text-center max-w-2xl mx-auto mb-16 md:mb-20"
         >
-          <motion.p variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut" }} className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4">
-            Perbandingan
-          </motion.p>
+          <motion.div variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut" }} className="mb-4">
+            <SectionEyebrow icon={GitCompare} label="Perbandingan" />
+          </motion.div>
           <motion.h2 variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }} className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
             Beda kelas, beda hasil.
           </motion.h2>

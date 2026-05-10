@@ -5,8 +5,9 @@ import { motion, useInView } from "framer-motion";
 import {
   Database, FileSpreadsheet, Users,
   LayoutDashboard, Zap, ShieldCheck,
-  Cpu,
+  Cpu, Network,
 } from "lucide-react";
+import { SectionEyebrow } from "./SectionEyebrow";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface NodeDef {
@@ -343,10 +344,10 @@ export function NeuralGraph() {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="text-center max-w-2xl mx-auto mb-14"
         >
-          <p className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4">
-            Cara Kerja
-          </p>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-5 leading-[1.1]">
+          <div className="mb-4 flex justify-center">
+            <SectionEyebrow icon={Network} label="Arsitektur" />
+          </div>
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
             Semua terhubung,<br />semua otomatis.
           </h2>
           <p className="text-neutral-400 text-lg leading-relaxed">
@@ -387,15 +388,37 @@ export function NeuralGraph() {
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-wrap justify-center gap-0 mt-10 max-w-sm mx-auto"
+          className="mt-10 md:mt-12 max-w-2xl mx-auto"
         >
-          {bottomStats.map((s, i) => (
-            <div key={s.label} className="flex-1 flex flex-col items-center text-center px-6 py-4 relative">
-              {i > 0 && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-px bg-white/8" />}
-              <div className={`text-3xl font-bold tracking-tight mb-1 ${s.color}`}>{s.val}</div>
-              <div className="text-xs text-neutral-500 font-medium">{s.label}</div>
-            </div>
-          ))}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 p-2 rounded-2xl border border-white/8 bg-white/[0.02] backdrop-blur-sm">
+            {bottomStats.map((s, i) => (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 12 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.6 + i * 0.08,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="group relative flex flex-col items-center text-center px-3 sm:px-5 py-4 sm:py-5 rounded-xl hover:bg-white/[0.03] transition-colors"
+              >
+                {/* colored indicator dot */}
+                <div
+                  className={`absolute top-3 right-3 w-1.5 h-1.5 rounded-full ${s.color.replace("text-", "bg-")} opacity-50 group-hover:opacity-100 transition-opacity`}
+                  aria-hidden
+                />
+                <div
+                  className={`text-2xl sm:text-3xl md:text-[34px] font-bold tracking-tight leading-none mb-1.5 sm:mb-2 ${s.color}`}
+                >
+                  {s.val}
+                </div>
+                <div className="text-[11px] sm:text-xs text-neutral-500 font-medium uppercase tracking-wider">
+                  {s.label}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
 
       </div>
