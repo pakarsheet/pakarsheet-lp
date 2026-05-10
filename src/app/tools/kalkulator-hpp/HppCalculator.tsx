@@ -41,27 +41,27 @@ export default function HppCalculator() {
         <Field label="Biaya Bahan Baku per Unit" hint="Semua bahan yang dipakai untuk 1 unit produk">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
-            <input type="number" min="0" value={bahan} onChange={(e) => setBahan(e.target.value)} className={inputCls} placeholder="30.000" />
+            <input type="number" inputMode="numeric" min="0" value={bahan} onChange={(e) => setBahan(e.target.value)} className={inputCls} placeholder="30.000" />
           </div>
         </Field>
 
         <Field label="Biaya Tenaga Kerja per Unit" hint="Upah produksi yang dialokasikan per unit">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
-            <input type="number" min="0" value={tenagaKerja} onChange={(e) => setTenagaKerja(e.target.value)} className={inputCls} placeholder="10.000" />
+            <input type="number" inputMode="numeric" min="0" value={tenagaKerja} onChange={(e) => setTenagaKerja(e.target.value)} className={inputCls} placeholder="10.000" />
           </div>
         </Field>
 
         <Field label="Biaya Overhead per Unit" hint="Listrik, sewa, penyusutan mesin, dll">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
-            <input type="number" min="0" value={overhead} onChange={(e) => setOverhead(e.target.value)} className={inputCls} placeholder="5.000" />
+            <input type="number" inputMode="numeric" min="0" value={overhead} onChange={(e) => setOverhead(e.target.value)} className={inputCls} placeholder="5.000" />
           </div>
         </Field>
 
         <Field label="Target Margin (%)" hint="Keuntungan yang ingin kamu capai">
           <div className={inputWrapCls}>
-            <input type="number" min="0" max="99" value={targetMargin} onChange={(e) => setTargetMargin(e.target.value)} className={inputCls} placeholder="30" />
+            <input type="number" inputMode="decimal" min="0" max="99" value={targetMargin} onChange={(e) => setTargetMargin(e.target.value)} className={inputCls} placeholder="30" />
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">%</span>
           </div>
         </Field>
@@ -72,18 +72,20 @@ export default function HppCalculator() {
       {/* HPP Breakdown bar */}
       <div className="mb-6 p-5 rounded-2xl bg-white/[0.03] border border-white/5">
         <p className="text-sm font-semibold text-neutral-400 mb-4">Komposisi HPP</p>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[
             { label: "Bahan Baku", pct: result.bPct, color: "bg-blue-500" },
             { label: "Tenaga Kerja", pct: result.tkPct, color: "bg-green-500" },
             { label: "Overhead", pct: result.ohPct, color: "bg-orange-500" },
           ].map((item) => (
-            <div key={item.label} className="flex items-center gap-4">
-              <span className="text-sm text-neutral-400 w-32 flex-shrink-0">{item.label}</span>
-              <div className="flex-1 h-3 bg-white/5 rounded-full overflow-hidden">
+            <div key={item.label}>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-sm text-neutral-400">{item.label}</span>
+                <span className="text-sm text-neutral-400 font-medium tabular-nums">{item.pct.toFixed(0)}%</span>
+              </div>
+              <div className="h-2.5 bg-white/5 rounded-full overflow-hidden">
                 <div className={`h-full ${item.color} rounded-full transition-all duration-500`} style={{ width: `${item.pct}%` }} />
               </div>
-              <span className="text-sm text-neutral-400 w-12 text-right font-medium">{item.pct.toFixed(0)}%</span>
             </div>
           ))}
         </div>
@@ -96,7 +98,7 @@ export default function HppCalculator() {
         <Field label="Jumlah Unit Produksi">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Qty</span>
-            <input type="number" min="1" value={qty} onChange={(e) => setQty(e.target.value)} className={inputCls} placeholder="1" />
+            <input type="number" inputMode="numeric" min="1" value={qty} onChange={(e) => setQty(e.target.value)} className={inputCls} placeholder="1" />
           </div>
         </Field>
       </div>

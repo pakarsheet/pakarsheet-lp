@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ToolLayout, Field, ResultCard, Divider, inputCls, inputWrapCls } from "@/components/tools/ToolLayout";
-import { Settings2, RotateCcw } from "lucide-react";
+import { Settings2, RotateCcw, X } from "lucide-react";
 
 function fmt(n: number) { return "Rp " + Math.round(n).toLocaleString("id-ID"); }
 
@@ -28,21 +28,64 @@ function FeeEditor({
   onReset: () => void;
   onClose: () => void;
 }) {
+  // Lock body scroll + ESC to close
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Kustomisasi Fee Platform"
+    >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-[#111] border border-white/10 rounded-3xl p-7 shadow-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-base font-bold text-white">Kustomisasi Fee Platform</h3>
-            <p className="text-xs text-neutral-500 mt-0.5">Fee bisa berubah sewaktu-waktu. Sesuaikan dengan dashboard seller kamu.</p>
-          </div>
-          <button onClick={onReset} className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-white transition-colors">
-            <RotateCcw size={12} /> Reset
-          </button>
+
+      {/* Sheet on mobile, modal on desktop */}
+      <div
+        className="relative w-full sm:max-w-md bg-[#111] border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[92svh] sm:max-h-[85vh]"
+      >
+        {/* Drag handle (mobile only) */}
+        <div className="sm:hidden flex justify-center pt-2.5 pb-1 flex-shrink-0">
+          <div className="w-10 h-1 rounded-full bg-white/15" />
         </div>
 
-        <div className="space-y-5">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 px-6 pt-4 sm:pt-6 pb-4 border-b border-white/5 flex-shrink-0">
+          <div className="min-w-0">
+            <h3 className="text-base font-bold text-white">Kustomisasi Fee Platform</h3>
+            <p className="text-xs text-neutral-500 mt-0.5 leading-relaxed">
+              Fee berubah sewaktu-waktu. Sesuaikan dengan dashboard seller kamu.
+            </p>
+          </div>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button
+              onClick={onReset}
+              aria-label="Reset fee ke default"
+              className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-white/5"
+            >
+              <RotateCcw size={12} /> <span className="hidden sm:inline">Reset</span>
+            </button>
+            <button
+              onClick={onClose}
+              aria-label="Tutup"
+              className="w-8 h-8 rounded-lg text-neutral-500 hover:text-white hover:bg-white/5 flex items-center justify-center transition-colors"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-6 py-5 space-y-4">
           {platforms.map((p) => (
             <div key={p.id} className="bg-white/[0.03] border border-white/8 rounded-2xl p-4">
               <p className="text-sm font-semibold text-white mb-3">{p.name}</p>
@@ -51,10 +94,10 @@ function FeeEditor({
                   <label className="block text-xs text-neutral-500 mb-1.5">Service Fee (%)</label>
                   <div className="flex items-center gap-2 bg-white/[0.05] border border-white/10 rounded-xl px-3 py-2.5 focus-within:border-white/30 transition-colors">
                     <input
-                      type="number" min="0" max="30" step="0.1"
+                      type="number" inputMode="decimal" min="0" max="30" step="0.1"
                       value={p.serviceFee}
                       onChange={(e) => onUpdate(p.id, "serviceFee", parseFloat(e.target.value) || 0)}
-                      className="flex-1 bg-transparent text-sm text-white focus:outline-none"
+                      className="flex-1 bg-transparent text-sm text-white focus:outline-none min-w-0"
                     />
                     <span className="text-neutral-600 text-xs">%</span>
                   </div>
@@ -63,10 +106,10 @@ function FeeEditor({
                   <label className="block text-xs text-neutral-500 mb-1.5">Admin Fee (%)</label>
                   <div className="flex items-center gap-2 bg-white/[0.05] border border-white/10 rounded-xl px-3 py-2.5 focus-within:border-white/30 transition-colors">
                     <input
-                      type="number" min="0" max="30" step="0.1"
+                      type="number" inputMode="decimal" min="0" max="30" step="0.1"
                       value={p.adminFee}
                       onChange={(e) => onUpdate(p.id, "adminFee", parseFloat(e.target.value) || 0)}
-                      className="flex-1 bg-transparent text-sm text-white focus:outline-none"
+                      className="flex-1 bg-transparent text-sm text-white focus:outline-none min-w-0"
                     />
                     <span className="text-neutral-600 text-xs">%</span>
                   </div>
@@ -79,12 +122,15 @@ function FeeEditor({
           ))}
         </div>
 
-        <button
-          onClick={onClose}
-          className="w-full mt-6 bg-white text-black text-sm font-bold py-3.5 rounded-xl hover:bg-neutral-100 transition-colors"
-        >
-          Simpan & Tutup
-        </button>
+        {/* Sticky footer action — safe-area aware */}
+        <div className="px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-white/5 flex-shrink-0 bg-[#111]">
+          <button
+            onClick={onClose}
+            className="w-full bg-white text-black text-sm font-bold py-3.5 rounded-xl hover:bg-neutral-100 transition-colors active:scale-[0.99]"
+          >
+            Simpan & Tutup
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -134,11 +180,11 @@ export default function HargaJualCalculator() {
     >
       {/* Platform selector */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
           <label className="text-sm font-semibold text-neutral-400">Platform</label>
           <button
             onClick={() => setShowFeeEditor(true)}
-            className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-white transition-colors border border-white/10 hover:border-white/25 px-3 py-1.5 rounded-lg"
+            className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white transition-colors border border-white/10 hover:border-white/25 px-3 py-1.5 rounded-lg active:scale-95"
           >
             <Settings2 size={12} /> Kustomisasi Fee
           </button>
@@ -146,9 +192,9 @@ export default function HargaJualCalculator() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {platforms.map((p) => {
             const totalFee = p.serviceFee + p.adminFee;
-            const isCustom = DEFAULT_PLATFORMS.find((d) => d.id === p.id)
-              ? (DEFAULT_PLATFORMS.find((d) => d.id === p.id)!.serviceFee !== p.serviceFee ||
-                 DEFAULT_PLATFORMS.find((d) => d.id === p.id)!.adminFee !== p.adminFee)
+            const def = DEFAULT_PLATFORMS.find((d) => d.id === p.id);
+            const isCustom = def
+              ? (def.serviceFee !== p.serviceFee || def.adminFee !== p.adminFee)
               : false;
             return (
               <button
@@ -174,13 +220,13 @@ export default function HargaJualCalculator() {
         <Field label="Modal / HPP per Unit" hint="Biaya produksi atau harga beli">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
-            <input type="number" min="0" value={modal} onChange={(e) => setModal(e.target.value)} className={inputCls} placeholder="50.000" />
+            <input type="number" inputMode="numeric" min="0" value={modal} onChange={(e) => setModal(e.target.value)} className={inputCls} placeholder="50.000" />
           </div>
         </Field>
 
         <Field label="Target Margin (%)" hint="Keuntungan bersih yang kamu inginkan">
           <div className={inputWrapCls}>
-            <input type="number" min="0" max="90" value={targetMargin} onChange={(e) => setTargetMargin(e.target.value)} className={inputCls} placeholder="20" />
+            <input type="number" inputMode="decimal" min="0" max="90" value={targetMargin} onChange={(e) => setTargetMargin(e.target.value)} className={inputCls} placeholder="20" />
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">%</span>
           </div>
         </Field>
@@ -188,14 +234,14 @@ export default function HargaJualCalculator() {
         <Field label="Subsidi Ongkir per Unit" hint="Isi 0 jika ongkir ditanggung pembeli">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
-            <input type="number" min="0" value={ongkir} onChange={(e) => setOngkir(e.target.value)} className={inputCls} placeholder="0" />
+            <input type="number" inputMode="numeric" min="0" value={ongkir} onChange={(e) => setOngkir(e.target.value)} className={inputCls} placeholder="0" />
           </div>
         </Field>
 
         <Field label="Biaya Packaging per Unit" hint="Bubble wrap, kardus, dll">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
-            <input type="number" min="0" value={packaging} onChange={(e) => setPackaging(e.target.value)} className={inputCls} placeholder="2.000" />
+            <input type="number" inputMode="numeric" min="0" value={packaging} onChange={(e) => setPackaging(e.target.value)} className={inputCls} placeholder="2.000" />
           </div>
         </Field>
       </div>

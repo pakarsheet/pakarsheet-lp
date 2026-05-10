@@ -75,14 +75,16 @@ export function PriceTimer({ productId, price, salePrice, salePriceUntil }: Pric
   return (
     <div>
       {/* Price display */}
-      <div className="flex items-baseline gap-3 mb-3">
+      <div className="flex items-baseline gap-2.5 flex-wrap mb-3">
         <span className="text-4xl md:text-5xl font-black text-white tracking-tight">
           {fmt(displayPrice)}
         </span>
         {showOriginal && (
-          <div className="flex flex-col">
-            <span className="text-neutral-600 line-through text-base">{fmt(price)}</span>
-            <span className="text-xs font-bold text-green-400">Hemat {discount}%</span>
+          <div className="flex items-center gap-2">
+            <span className="text-neutral-600 line-through text-sm">{fmt(price)}</span>
+            <span className="px-1.5 py-0.5 rounded-md bg-green-500/10 border border-green-500/20 text-[11px] font-bold text-green-400">
+              -{discount}%
+            </span>
           </div>
         )}
       </div>

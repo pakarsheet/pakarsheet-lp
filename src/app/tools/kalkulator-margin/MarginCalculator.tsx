@@ -48,28 +48,28 @@ export default function MarginCalculator() {
         <Field label="Harga Beli / Modal per Unit" hint="Harga beli dari supplier atau biaya produksi">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
-            <input type="number" min="0" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)} className={inputCls} placeholder="50.000" />
+            <input type="number" inputMode="numeric" min="0" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)} className={inputCls} placeholder="50.000" />
           </div>
         </Field>
 
         <Field label="Harga Jual per Unit" hint="Harga yang kamu jual ke pelanggan">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
-            <input type="number" min="0" value={sellPrice} onChange={(e) => setSellPrice(e.target.value)} className={inputCls} placeholder="80.000" />
+            <input type="number" inputMode="numeric" min="0" value={sellPrice} onChange={(e) => setSellPrice(e.target.value)} className={inputCls} placeholder="80.000" />
           </div>
         </Field>
 
         <Field label="Biaya Operasional per Unit" hint="Ongkir, packaging, fee marketplace, dll">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
-            <input type="number" min="0" value={opCost} onChange={(e) => setOpCost(e.target.value)} className={inputCls} placeholder="5.000" />
+            <input type="number" inputMode="numeric" min="0" value={opCost} onChange={(e) => setOpCost(e.target.value)} className={inputCls} placeholder="5.000" />
           </div>
         </Field>
 
         <Field label="Jumlah Unit" hint="Untuk menghitung total profit">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Qty</span>
-            <input type="number" min="1" value={units} onChange={(e) => setUnits(e.target.value)} className={inputCls} placeholder="100" />
+            <input type="number" inputMode="numeric" min="1" value={units} onChange={(e) => setUnits(e.target.value)} className={inputCls} placeholder="100" />
           </div>
         </Field>
       </div>
@@ -132,7 +132,7 @@ export default function MarginCalculator() {
               title="Profit"
             />
           </div>
-          <div className="flex items-center gap-5 text-xs text-neutral-500">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-neutral-500">
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-neutral-600 inline-block" />Modal</span>
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-orange-500/70 inline-block" />Biaya Ops</span>
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-green-500/70 inline-block" />Profit</span>

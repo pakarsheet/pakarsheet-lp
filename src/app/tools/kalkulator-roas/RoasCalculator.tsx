@@ -47,28 +47,28 @@ export default function RoasCalculator() {
         <Field label="Budget Iklan" hint="Total yang dikeluarkan untuk iklan">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
-            <input type="number" min="0" value={adSpend} onChange={(e) => setAdSpend(e.target.value)} className={inputCls} placeholder="500.000" />
+            <input type="number" inputMode="numeric" min="0" value={adSpend} onChange={(e) => setAdSpend(e.target.value)} className={inputCls} placeholder="500.000" />
           </div>
         </Field>
 
         <Field label="Revenue dari Iklan" hint="Total penjualan yang berasal dari iklan">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
-            <input type="number" min="0" value={revenue} onChange={(e) => setRevenue(e.target.value)} className={inputCls} placeholder="2.000.000" />
+            <input type="number" inputMode="numeric" min="0" value={revenue} onChange={(e) => setRevenue(e.target.value)} className={inputCls} placeholder="2.000.000" />
           </div>
         </Field>
 
         <Field label="HPP / Modal per Produk" hint="Biaya produksi atau harga beli per unit">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
-            <input type="number" min="0" value={hpp} onChange={(e) => setHpp(e.target.value)} className={inputCls} placeholder="300.000" />
+            <input type="number" inputMode="numeric" min="0" value={hpp} onChange={(e) => setHpp(e.target.value)} className={inputCls} placeholder="300.000" />
           </div>
         </Field>
 
         <Field label="Jumlah Order" hint="Total transaksi dari iklan ini">
           <div className={inputWrapCls}>
             <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Qty</span>
-            <input type="number" min="1" value={orders} onChange={(e) => setOrders(e.target.value)} className={inputCls} placeholder="10" />
+            <input type="number" inputMode="numeric" min="1" value={orders} onChange={(e) => setOrders(e.target.value)} className={inputCls} placeholder="10" />
           </div>
         </Field>
       </div>
@@ -76,26 +76,26 @@ export default function RoasCalculator() {
       <Divider label="Hasil" />
 
       {/* ROAS Hero */}
-      <div className={`p-7 rounded-2xl border mb-5 flex items-center justify-between ${
+      <div className={`p-5 md:p-7 rounded-2xl border mb-5 flex items-center justify-between gap-4 ${
         result.roasColor === "green" ? "border-green-500/25 bg-green-500/[0.06]" :
         result.roasColor === "yellow" ? "border-yellow-500/25 bg-yellow-500/[0.06]" :
         "border-red-500/25 bg-red-500/[0.06]"
       }`}>
-        <div>
+        <div className="min-w-0">
           <p className="text-sm text-neutral-500 mb-2 font-medium">ROAS (Return on Ad Spend)</p>
-          <p className="text-5xl font-bold text-white tracking-tight">{result.roas.toFixed(2)}x</p>
+          <p className="text-4xl md:text-5xl font-bold text-white tracking-tight tabular-nums">{result.roas.toFixed(2)}x</p>
           <p className={`text-sm mt-2 font-medium ${
             result.roasColor === "green" ? "text-green-400" :
             result.roasColor === "yellow" ? "text-yellow-400" : "text-red-400"
           }`}>{result.roasLabel}</p>
         </div>
         {result.profitable
-          ? <TrendingUp size={48} className="text-green-400/30" />
-          : <TrendingDown size={48} className="text-red-400/30" />
+          ? <TrendingUp className="text-green-400/30 w-10 h-10 md:w-12 md:h-12 flex-shrink-0" />
+          : <TrendingDown className="text-red-400/30 w-10 h-10 md:w-12 md:h-12 flex-shrink-0" />
         }
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <ResultCard label="Cost per Order" value={fmt(result.cpa)} sub="biaya dapat 1 pembeli" />
         <ResultCard label="Avg. Order Value" value={fmt(result.aov)} sub="rata-rata per transaksi" />
         <ResultCard

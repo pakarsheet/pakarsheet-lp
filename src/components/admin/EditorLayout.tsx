@@ -54,16 +54,16 @@ export function SaveButton({
     <button
       type="submit"
       disabled={loading}
-      className={`flex items-center gap-2 bg-white text-black text-sm font-bold px-6 py-3 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50 ${className}`}
+      className={`flex items-center gap-1.5 bg-white text-black text-[13px] font-semibold px-4 py-2 rounded-lg hover:bg-neutral-100 transition-colors disabled:opacity-50 ${className}`}
     >
       {loading ? (
         <>
-          <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+          <div className="w-3.5 h-3.5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
           Menyimpan...
         </>
       ) : success ? (
         <>
-          <Check size={15} />
+          <Check size={14} />
           Tersimpan!
         </>
       ) : (
@@ -85,7 +85,7 @@ export function SectionCard({
   return (
     <div className={`bg-[#0d0d0d] border border-white/8 rounded-2xl p-7 space-y-6 ${className}`}>
       {title && (
-        <h3 className="text-sm font-bold text-neutral-300 uppercase tracking-wider">
+        <h3 className="text-[13px] font-bold text-neutral-300 uppercase tracking-wider">
           {title}
         </h3>
       )}
@@ -108,20 +108,20 @@ export function EditorTopBar({
 }) {
   return (
     <div className="sticky top-0 z-40 bg-[#080808]/95 backdrop-blur-xl border-b border-white/8">
-      <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4 min-w-0">
+      <div className="max-w-7xl mx-auto px-5 md:px-10 h-14 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
           <Link
             href={backHref}
-            className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors group flex-shrink-0"
+            className="flex items-center gap-1.5 text-neutral-400 hover:text-white transition-colors group flex-shrink-0"
           >
             <ArrowLeft
-              size={17}
+              size={14}
               className="group-hover:-translate-x-0.5 transition-transform"
             />
-            <span className="text-sm font-medium hidden sm:block">{backLabel}</span>
+            <span className="text-[13px] font-medium hidden sm:block">{backLabel}</span>
           </Link>
           <div className="w-px h-5 bg-white/10 flex-shrink-0" />
-          <h1 className="text-base font-semibold text-white truncate">{title}</h1>
+          <h1 className="text-[14px] font-semibold text-white truncate">{title}</h1>
         </div>
         {actions && <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>}
       </div>
@@ -142,11 +142,11 @@ export function TwoColumnEditor({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="max-w-7xl mx-auto px-5 md:px-8 py-8"
+      className="max-w-7xl mx-auto px-5 md:px-10 py-10"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-7 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-start">
         <div className="space-y-7 min-w-0">{left}</div>
-        <div className="space-y-6 lg:sticky lg:top-[80px]">{right}</div>
+        <div className="space-y-6 lg:sticky lg:top-[72px]">{right}</div>
       </div>
     </motion.div>
   );
