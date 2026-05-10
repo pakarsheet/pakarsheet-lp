@@ -796,6 +796,10 @@ function SettingsTab({
   const [form, setForm] = useState({
     metaTitle: "", metaDescription: "", metaKeywords: "",
     whatsappNumber: "", mainLynkUrl: "",
+    // Branding
+    brandName: "",
+    logoUrl: "",
+    faviconUrl: "",
     // Shop page
     shopTitle: "", shopSubtitle: "", shopBadgeText: "",
     shopCategories: "", // comma-separated
@@ -803,6 +807,8 @@ function SettingsTab({
   });
   const [saving, setSaving] = useState(false);
   const [ok, setOk] = useState(false);
+  const [brandErr, setBrandErr] = useState<string | null>(null);
+  const [uploadingKind, setUploadingKind] = useState<"logo" | "favicon" | null>(null);
 
   // Trust badges state: array of {label, icon}
   const [trustBadges, setTrustBadges] = useState<{ label: string; icon: string }[]>([]);
@@ -817,6 +823,9 @@ function SettingsTab({
         metaKeywords: settings.metaKeywords || "",
         whatsappNumber: settings.whatsappNumber || "",
         mainLynkUrl: settings.mainLynkUrl || "",
+        brandName: settings.brandName || "",
+        logoUrl: settings.logoUrl || "",
+        faviconUrl: settings.faviconUrl || "",
         shopTitle: settings.shopTitle || "",
         shopSubtitle: settings.shopSubtitle || "",
         shopBadgeText: settings.shopBadgeText || "",
@@ -832,6 +841,56 @@ function SettingsTab({
     }
   }, [settings]);
 
+  const uploadBrandAsset = async (file: File, kind: "logo" | "favicon"): Promise<string | null> => {
+    setBrandErr(null);
+    if (!supabase) {
+      setBrandErr("Supabase belum dikonfigurasi.");
+      return null;
+    }
+    const maxBytes = kind === "favicon" ? 512 * 1024 : 2 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setBrandErr(`Ukuran file terlalu besar. Maks ${kind === "favicon" ? "512KB" : "2MB"}.`);
+      return null;
+    }
+    const allowed = kind === "favicon"
+      ? ["image/x-icon", "image/vnd.microsoft.icon", "image/png", "image/svg+xml"]
+      : ["image/png", "image/svg+xml", "image/jpeg", "image/webp"];
+    if (file.type && !allowed.includes(file.type)) {
+      setBrandErr(`Format tidak didukung untuk ${kind}.`);
+      return null;
+    }
+    setUploadingKind(kind);
+    try {
+      const ext = file.name.split(".").pop() || (kind === "favicon" ? "ico" : "png");
+      const path = `branding/${kind}-${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      const { error: se } = await supabase.storage.from("products").upload(path, file, { upsert: false });
+      if (se) {
+        setBrandErr(`Gagal upload: ${se.message}`);
+        return null;
+      }
+      const { data: ud } = supabase.storage.from("products").getPublicUrl(path);
+      return ud.publicUrl;
+    } finally {
+      setUploadingKind(null);
+    }
+  };
+
+  const onLogoPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const url = await uploadBrandAsset(file, "logo");
+    if (url) setForm((f) => ({ ...f, logoUrl: url }));
+  };
+
+  const onFaviconPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const url = await uploadBrandAsset(file, "favicon");
+    if (url) setForm((f) => ({ ...f, faviconUrl: url }));
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true);
     const cats = form.shopCategories
@@ -841,10 +900,19 @@ function SettingsTab({
     await saveToSupabase("site_settings", {
       id: settings?.id || "main",
       ...form,
+      logoUrl: form.logoUrl || null,
+      faviconUrl: form.faviconUrl || null,
+      brandName: form.brandName || null,
       shopCategories: cats,
       shopTrustBadges: trustBadges,
       shopFeatures: shopFeatures,
     });
+    // Invalidate server-side metadata cache so favicon/logo updates immediately.
+    try {
+      await fetch("/api/admin/revalidate-settings", { method: "POST" });
+    } catch {
+      // Non-fatal — will eventually expire from TTL.
+    }
     setSaving(false); setOk(true); setTimeout(() => setOk(false), 2000);
   };
 
@@ -864,6 +932,86 @@ function SettingsTab({
     <motion.div key="settings" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
       <PageHeader title="Settings" subtitle="Konfigurasi website, toko, dan kontak" />
       <form onSubmit={handleSave} className="space-y-4 max-w-2xl">
+
+        {/* Branding */}
+        <SettingsCard title="Branding — Logo & Favicon">
+          <Field label="Nama Brand">
+            <input
+              type="text"
+              value={form.brandName}
+              onChange={(e) => setForm({ ...form, brandName: e.target.value })}
+              className={inputCls}
+              placeholder="Pakarsheet"
+            />
+            <p className="text-[11px] text-neutral-600 mt-1.5">Tampil di samping logo pada Navbar dan Footer.</p>
+          </Field>
+
+          {/* Logo upload */}
+          <div>
+            <label className={labelCls}>Logo (PNG/SVG, maks 2MB)</label>
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {form.logoUrl ? (
+                  <Image src={form.logoUrl} alt="Logo" width={64} height={64} className="object-contain w-full h-full" unoptimized />
+                ) : (
+                  <ImageIcon size={18} className="text-neutral-700" />
+                )}
+              </div>
+              <div className="flex-1 flex flex-wrap items-center gap-2">
+                <label className="inline-flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white text-[13px] font-medium px-4 py-2.5 rounded-xl transition-colors cursor-pointer">
+                  <ImageIcon size={14} />
+                  {uploadingKind === "logo" ? "Mengunggah..." : form.logoUrl ? "Ganti Logo" : "Unggah Logo"}
+                  <input type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="hidden" onChange={onLogoPick} disabled={uploadingKind !== null} />
+                </label>
+                {form.logoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, logoUrl: "" }))}
+                    className="inline-flex items-center gap-1.5 text-[12px] font-medium text-red-400 hover:text-red-300 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-colors"
+                  >
+                    <Trash2 size={13} /> Hapus
+                  </button>
+                )}
+              </div>
+            </div>
+            <p className="text-[11px] text-neutral-600 mt-1.5">Kosongkan untuk pakai logo bawaan.</p>
+          </div>
+
+          {/* Favicon upload */}
+          <div>
+            <label className={labelCls}>Favicon (ICO/PNG/SVG, maks 512KB)</label>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg bg-white/[0.03] border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {form.faviconUrl ? (
+                  <Image src={form.faviconUrl} alt="Favicon" width={32} height={32} className="object-contain w-full h-full" unoptimized />
+                ) : (
+                  <ImageIcon size={14} className="text-neutral-700" />
+                )}
+              </div>
+              <div className="flex-1 flex flex-wrap items-center gap-2">
+                <label className="inline-flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white text-[13px] font-medium px-4 py-2.5 rounded-xl transition-colors cursor-pointer">
+                  <ImageIcon size={14} />
+                  {uploadingKind === "favicon" ? "Mengunggah..." : form.faviconUrl ? "Ganti Favicon" : "Unggah Favicon"}
+                  <input type="file" accept=".ico,image/x-icon,image/vnd.microsoft.icon,image/png,image/svg+xml" className="hidden" onChange={onFaviconPick} disabled={uploadingKind !== null} />
+                </label>
+                {form.faviconUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, faviconUrl: "" }))}
+                    className="inline-flex items-center gap-1.5 text-[12px] font-medium text-red-400 hover:text-red-300 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-colors"
+                  >
+                    <Trash2 size={13} /> Hapus
+                  </button>
+                )}
+              </div>
+            </div>
+            <p className="text-[11px] text-neutral-600 mt-1.5">Ukuran 32×32 atau 64×64 direkomendasikan. Perubahan favicon butuh refresh paksa browser.</p>
+          </div>
+
+          {brandErr && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-[12px] px-3 py-2 rounded-lg">{brandErr}</div>
+          )}
+        </SettingsCard>
 
         {/* SEO */}
         <SettingsCard title="SEO & Meta">

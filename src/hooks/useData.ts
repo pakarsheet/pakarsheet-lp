@@ -66,6 +66,10 @@ export type SiteSettings = {
   metaKeywords: string;
   whatsappNumber: string;
   mainLynkUrl: string;
+  // Branding
+  logoUrl?: string | null;
+  faviconUrl?: string | null;
+  brandName?: string | null;
   // Shop page settings
   shopTitle?: string;
   shopSubtitle?: string;

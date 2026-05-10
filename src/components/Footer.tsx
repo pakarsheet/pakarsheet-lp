@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSettings } from "@/hooks/useSettings";
 import { MessageCircle, Mail, ArrowUpRight, FileText, ShieldCheck } from "lucide-react";
@@ -21,7 +22,7 @@ const legalLinks = [
 
 export function Footer() {
   const pathname = usePathname();
-  const { waUrl } = useSettings();
+  const { waUrl, settings } = useSettings();
 
   if (pathname.startsWith('/admin')) return null;
 
@@ -36,16 +37,29 @@ export function Footer() {
           <div className="md:col-span-5 flex flex-col gap-6">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group w-fit">
-              <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center group-hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                <div className="grid grid-cols-2 gap-0.5">
-                  <div className="w-2 h-2 rounded-[2px] bg-black" />
-                  <div className="w-2 h-2 rounded-[2px] bg-green-500" />
-                  <div className="w-2 h-2 rounded-[2px] bg-black" />
-                  <div className="w-2 h-2 rounded-[2px] bg-black" />
+              {settings?.logoUrl ? (
+                <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-white/5 group-hover:scale-105 transition-transform">
+                  <Image
+                    src={settings.logoUrl}
+                    alt={settings.brandName || "Logo"}
+                    width={36}
+                    height={36}
+                    className="object-contain w-full h-full"
+                    unoptimized
+                  />
                 </div>
-              </div>
+              ) : (
+                <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center group-hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                  <div className="grid grid-cols-2 gap-0.5">
+                    <div className="w-2 h-2 rounded-[2px] bg-black" />
+                    <div className="w-2 h-2 rounded-[2px] bg-green-500" />
+                    <div className="w-2 h-2 rounded-[2px] bg-black" />
+                    <div className="w-2 h-2 rounded-[2px] bg-black" />
+                  </div>
+                </div>
+              )}
               <span className="font-bold text-lg tracking-tight text-white">
-                Pakarsheet
+                {settings?.brandName || "Pakarsheet"}
               </span>
             </Link>
 

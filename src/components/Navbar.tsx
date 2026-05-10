@@ -2,14 +2,17 @@
 
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useSettings } from "@/hooks/useSettings";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const { settings } = useSettings();
 
   // All hooks MUST be called before any conditional returns
   const { scrollYProgress } = useScroll();
@@ -42,16 +45,30 @@ export function Navbar() {
         >
           {/* Brand / Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-              <div className="grid grid-cols-2 gap-0.5">
-                <div className="w-2 h-2 rounded-[2px] bg-black"></div>
-                <div className="w-2 h-2 rounded-[2px] bg-green-500"></div>
-                <div className="w-2 h-2 rounded-[2px] bg-black"></div>
-                <div className="w-2 h-2 rounded-[2px] bg-black"></div>
+            {settings?.logoUrl ? (
+              <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-white/5 group-hover:scale-110 transition-transform">
+                <Image
+                  src={settings.logoUrl}
+                  alt={settings.brandName || "Logo"}
+                  width={32}
+                  height={32}
+                  className="object-contain w-full h-full"
+                  unoptimized
+                  priority
+                />
               </div>
-            </div>
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+                <div className="grid grid-cols-2 gap-0.5">
+                  <div className="w-2 h-2 rounded-[2px] bg-black"></div>
+                  <div className="w-2 h-2 rounded-[2px] bg-green-500"></div>
+                  <div className="w-2 h-2 rounded-[2px] bg-black"></div>
+                  <div className="w-2 h-2 rounded-[2px] bg-black"></div>
+                </div>
+              </div>
+            )}
             <span className="font-semibold text-base tracking-tight text-white/90">
-              Pakarsheet
+              {settings?.brandName || "Pakarsheet"}
             </span>
           </Link>
 

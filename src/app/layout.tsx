@@ -22,7 +22,7 @@ const FALLBACK_META = {
 };
 
 // Fetch site settings server-side so metadata is dynamic and SEO-effective.
-// Cached for 1 hour to avoid a Supabase call on every request.
+// Cached for 1 hour and tagged so it can be revalidated on-demand from admin.
 const getSiteSettings = unstable_cache(
   async () => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -37,7 +37,7 @@ const getSiteSettings = unstable_cache(
     }
   },
   ["site_settings"],
-  { revalidate: 3600 } // cache for 1 hour
+  { revalidate: 3600, tags: ["site_settings"] }
 );
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -45,24 +45,36 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const title = settings?.metaTitle || FALLBACK_META.title;
   const description = settings?.metaDescription || FALLBACK_META.description;
+  const faviconUrl: string | undefined = settings?.faviconUrl || undefined;
+  const ogImage: string | undefined = settings?.logoUrl || undefined;
 
   return {
     metadataBase: new URL("https://pakarsheet.com"),
     title,
     description,
     keywords: settings?.metaKeywords || undefined,
+    // Override the file-convention favicon.ico when admin configured one.
+    icons: faviconUrl
+      ? {
+          icon: [{ url: faviconUrl }],
+          shortcut: [{ url: faviconUrl }],
+          apple: [{ url: faviconUrl }],
+        }
+      : undefined,
     openGraph: {
       title,
       description,
       url: "https://pakarsheet.com",
-      siteName: "Pakarsheet",
+      siteName: settings?.brandName || "Pakarsheet",
       locale: "id_ID",
       type: "website",
+      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      ...(ogImage ? { images: [ogImage] } : {}),
     },
   };
 }
