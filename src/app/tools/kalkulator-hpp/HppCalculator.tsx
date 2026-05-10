@@ -1,29 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ToolLayout } from "@/components/tools/ToolLayout";
+import { ToolLayout, Field, ResultCard, Divider, inputCls, inputWrapCls } from "@/components/tools/ToolLayout";
 
 function fmt(n: number) { return "Rp " + Math.round(n).toLocaleString("id-ID"); }
-
-function InputField({ label, value, onChange, hint }: {
-  label: string; value: string; onChange: (v: string) => void; hint?: string;
-}) {
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">{label}</label>
-      <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 focus-within:border-white/30 transition-colors">
-        <span className="text-neutral-600 text-sm flex-shrink-0">Rp</span>
-        <input
-          type="number" min="0" value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="flex-1 bg-transparent text-sm text-white focus:outline-none"
-          placeholder="0"
-        />
-      </div>
-      {hint && <p className="text-[11px] text-neutral-700 mt-1.5">{hint}</p>}
-    </div>
-  );
-}
 
 export default function HppCalculator() {
   const [bahan, setBahan] = useState("30000");
@@ -54,70 +34,81 @@ export default function HppCalculator() {
   return (
     <ToolLayout
       title="Kalkulator HPP"
-      description="Hitung Harga Pokok Produksi dari komponen biaya dan tentukan harga jual minimum yang menguntungkan."
+      description="Hitung Harga Pokok Produksi dari bahan baku, tenaga kerja, dan overhead. Tentukan harga jual minimum yang menguntungkan."
       relatedProduct={{ name: "Finance Tracker Pro — tracking HPP otomatis", href: "/shop" }}
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        <InputField label="Biaya Bahan Baku per Unit" value={bahan} onChange={setBahan} hint="Semua bahan yang dipakai untuk 1 unit produk" />
-        <InputField label="Biaya Tenaga Kerja per Unit" value={tenagaKerja} onChange={setTenagaKerja} hint="Upah produksi yang dialokasikan per unit" />
-        <InputField label="Biaya Overhead per Unit" value={overhead} onChange={setOverhead} hint="Listrik, sewa, penyusutan mesin, dll" />
-        <div>
-          <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Target Margin (%)</label>
-          <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 focus-within:border-white/30 transition-colors">
-            <input
-              type="number" min="0" max="99" value={targetMargin}
-              onChange={(e) => setTargetMargin(e.target.value)}
-              className="flex-1 bg-transparent text-sm text-white focus:outline-none"
-              placeholder="30"
-            />
-            <span className="text-neutral-600 text-sm">%</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <Field label="Biaya Bahan Baku per Unit" hint="Semua bahan yang dipakai untuk 1 unit produk">
+          <div className={inputWrapCls}>
+            <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
+            <input type="number" min="0" value={bahan} onChange={(e) => setBahan(e.target.value)} className={inputCls} placeholder="30.000" />
           </div>
-        </div>
+        </Field>
+
+        <Field label="Biaya Tenaga Kerja per Unit" hint="Upah produksi yang dialokasikan per unit">
+          <div className={inputWrapCls}>
+            <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
+            <input type="number" min="0" value={tenagaKerja} onChange={(e) => setTenagaKerja(e.target.value)} className={inputCls} placeholder="10.000" />
+          </div>
+        </Field>
+
+        <Field label="Biaya Overhead per Unit" hint="Listrik, sewa, penyusutan mesin, dll">
+          <div className={inputWrapCls}>
+            <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Rp</span>
+            <input type="number" min="0" value={overhead} onChange={(e) => setOverhead(e.target.value)} className={inputCls} placeholder="5.000" />
+          </div>
+        </Field>
+
+        <Field label="Target Margin (%)" hint="Keuntungan yang ingin kamu capai">
+          <div className={inputWrapCls}>
+            <input type="number" min="0" max="99" value={targetMargin} onChange={(e) => setTargetMargin(e.target.value)} className={inputCls} placeholder="30" />
+            <span className="text-neutral-500 text-base flex-shrink-0 font-medium">%</span>
+          </div>
+        </Field>
       </div>
 
-      <div className="border-t border-white/5 mb-8" />
+      <Divider label="Hasil" />
 
-      {/* HPP Breakdown */}
-      <div className="mb-6">
-        <p className="text-xs font-semibold text-neutral-600 uppercase tracking-widest mb-3">Komposisi HPP</p>
-        <div className="space-y-2">
+      {/* HPP Breakdown bar */}
+      <div className="mb-6 p-5 rounded-2xl bg-white/[0.03] border border-white/5">
+        <p className="text-sm font-semibold text-neutral-400 mb-4">Komposisi HPP</p>
+        <div className="space-y-3">
           {[
             { label: "Bahan Baku", pct: result.bPct, color: "bg-blue-500" },
             { label: "Tenaga Kerja", pct: result.tkPct, color: "bg-green-500" },
             { label: "Overhead", pct: result.ohPct, color: "bg-orange-500" },
           ].map((item) => (
-            <div key={item.label} className="flex items-center gap-3">
-              <span className="text-xs text-neutral-500 w-28 flex-shrink-0">{item.label}</span>
-              <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+            <div key={item.label} className="flex items-center gap-4">
+              <span className="text-sm text-neutral-400 w-32 flex-shrink-0">{item.label}</span>
+              <div className="flex-1 h-3 bg-white/5 rounded-full overflow-hidden">
                 <div className={`h-full ${item.color} rounded-full transition-all duration-500`} style={{ width: `${item.pct}%` }} />
               </div>
-              <span className="text-xs text-neutral-500 w-10 text-right">{item.pct.toFixed(0)}%</span>
+              <span className="text-sm text-neutral-400 w-12 text-right font-medium">{item.pct.toFixed(0)}%</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Results */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="p-5 rounded-2xl border border-white/8 bg-white/[0.02] col-span-2">
-          <p className="text-xs text-neutral-500 mb-1">HPP per Unit</p>
-          <p className="text-3xl font-bold text-white tracking-tight">{fmt(result.hpp)}</p>
-        </div>
-        <div className="p-5 rounded-2xl border border-green-500/20 bg-green-500/5">
-          <p className="text-xs text-neutral-500 mb-1">Harga Jual Minimum</p>
-          <p className="text-xl font-bold text-white tracking-tight">{fmt(result.hargaJualMin)}</p>
-          <p className="text-[11px] text-neutral-600 mt-1">untuk margin {targetMargin}%</p>
-        </div>
-        <div className="p-5 rounded-2xl border border-white/8 bg-white/[0.02]">
-          <p className="text-xs text-neutral-500 mb-1">Profit per Unit</p>
-          <p className="text-xl font-bold text-white tracking-tight">{fmt(result.profitPerUnit)}</p>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <ResultCard label="HPP per Unit" value={fmt(result.hpp)} large highlight />
+        <ResultCard label="Harga Jual Minimum" value={fmt(result.hargaJualMin)} sub={`untuk margin ${targetMargin}%`} color="green" large />
+        <ResultCard label="Profit per Unit" value={fmt(result.profitPerUnit)} color={result.profitPerUnit > 0 ? "green" : "red"} />
+        <Field label="Jumlah Unit Produksi">
+          <div className={inputWrapCls}>
+            <span className="text-neutral-500 text-base flex-shrink-0 font-medium">Qty</span>
+            <input type="number" min="1" value={qty} onChange={(e) => setQty(e.target.value)} className={inputCls} placeholder="1" />
+          </div>
+        </Field>
       </div>
 
-      <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
-        <p className="text-xs text-neutral-500 leading-relaxed">
-          <span className="text-white/70 font-semibold">Catatan: </span>
-          HPP {fmt(result.hpp)} ini adalah biaya minimum. Harga jual di bawah angka ini berarti rugi. Tambahkan margin sesuai target profitabilitas dan kondisi pasar.
+      {parseFloat(qty) > 1 && (
+        <ResultCard label="Total HPP Produksi" value={fmt(result.totalHpp)} sub={`untuk ${qty} unit`} color="blue" />
+      )}
+
+      <div className="mt-4 p-5 rounded-2xl bg-white/[0.03] border border-white/5">
+        <p className="text-sm text-neutral-400 leading-relaxed">
+          <span className="text-white/80 font-semibold">Catatan: </span>
+          HPP <span className="text-white/70">{fmt(result.hpp)}</span> adalah biaya minimum. Harga jual di bawah angka ini berarti rugi. Tambahkan margin sesuai target profitabilitas dan kondisi pasar.
         </p>
       </div>
     </ToolLayout>
