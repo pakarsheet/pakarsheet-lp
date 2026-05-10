@@ -178,9 +178,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   <span className="text-5xl font-black text-white tracking-tighter">
                     Rp {product.price.toLocaleString("id-ID")}
                   </span>
-                  <span className="text-neutral-600 line-through text-lg">
-                    Rp {(product.price * 2.5).toLocaleString("id-ID")}
-                  </span>
+                  {product.originalPrice && product.originalPrice > product.price && (
+                    <span className="text-neutral-600 line-through text-lg">
+                      Rp {product.originalPrice.toLocaleString("id-ID")}
+                    </span>
+                  )}
                 </div>
               </div>
 

@@ -1,5 +1,3 @@
-"use client"
-
 import { Reveal } from "@/components/Reveal";
 import { FileQuestion, Home } from "lucide-react";
 import Link from "next/link";

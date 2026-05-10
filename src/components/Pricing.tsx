@@ -152,7 +152,7 @@ export function Pricing() {
                 </div>
 
                 {/* Right: price box */}
-                <div className="flex-shrink-0 w-full md:w-[220px] rounded-[24px] bg-white text-black flex flex-col items-center justify-center p-8 gap-1 shadow-[0_0_60px_rgba(255,255,255,0.08)]">
+                <div className="flex-shrink-0 w-full md:w-[220px] rounded-[24px] bg-white text-black flex flex-col items-center justify-center p-6 md:p-8 gap-1 shadow-[0_0_60px_rgba(255,255,255,0.08)]">
                   <p className="text-[10px] font-semibold tracking-[0.18em] uppercase text-black/30 mb-2">
                     Hanya hari ini
                   </p>

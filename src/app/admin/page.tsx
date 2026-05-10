@@ -37,6 +37,41 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   return <div><label className={labelCls}>{label}</label>{children}</div>;
 }
 
+// ─── Confirm Delete Modal ─────────────────────────────────────────────────────
+function ConfirmModal({ open, message, onConfirm, onCancel }: {
+  open: boolean;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onCancel} className="fixed inset-0 bg-black/70 z-[70]" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 8 }}
+            transition={{ type: "spring", damping: 28, stiffness: 320 }}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[80] w-full max-w-sm bg-[#111] border border-white/10 rounded-2xl p-6 shadow-2xl"
+          >
+            <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+              <Trash2 size={18} className="text-red-400" />
+            </div>
+            <h3 className="text-sm font-semibold text-white mb-1">Konfirmasi Hapus</h3>
+            <p className="text-xs text-neutral-500 mb-5">{message}</p>
+            <div className="flex gap-2">
+              <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-neutral-400 hover:text-white hover:bg-white/10 transition-colors">Batal</button>
+              <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl bg-red-500/15 border border-red-500/25 text-sm text-red-400 hover:bg-red-500/25 transition-colors font-semibold">Hapus</button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
 function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between mb-8 gap-4">
@@ -358,15 +393,16 @@ function ProductsTab({ products, isLoading, saveToSupabase, deleteFromSupabase, 
   const [submitting, setSubmitting] = useState(false);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", price: "", lynkUrl: "", category: "Keuangan" });
+  const [form, setForm] = useState({ name: "", description: "", price: "", originalPrice: "", lynkUrl: "", category: "Keuangan" });
   const [slots, setSlots] = useState<ImageSlot[]>([]);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const reset = () => { setOpen(false); setEditing(null); setForm({ name: "", description: "", price: "", lynkUrl: "", category: "Keuangan" }); setSlots([]); setUploadErr(null); };
+  const reset = () => { setOpen(false); setEditing(null); setForm({ name: "", description: "", price: "", originalPrice: "", lynkUrl: "", category: "Keuangan" }); setSlots([]); setUploadErr(null); };
 
   const openEdit = (p: any) => {
     setEditing(p);
-    setForm({ name: p.name, description: p.description, price: p.price.toString(), lynkUrl: p.lynkUrl || "", category: p.category });
+    setForm({ name: p.name, description: p.description, price: p.price.toString(), originalPrice: p.originalPrice ? p.originalPrice.toString() : "", lynkUrl: p.lynkUrl || "", category: p.category });
     const urls: string[] = p.images || (p.image ? [p.image] : []);
     setSlots(urls.map((url) => ({ type: "existing" as const, url })));
     setUploadErr(null); setOpen(true);
@@ -395,7 +431,7 @@ function ProductsTab({ products, isLoading, saveToSupabase, deleteFromSupabase, 
       const { data: ud } = supabase.storage.from("products").getPublicUrl(path);
       urls.push(ud.publicUrl);
     }
-    const data = { id: editing?.id || crypto.randomUUID(), name: form.name, description: form.description, price: parseInt(form.price || "0", 10), images: urls, lynkUrl: form.lynkUrl, category: form.category, createdAt: editing?.createdAt || Date.now(), clicks: editing?.clicks || 0 };
+    const data = { id: editing?.id || crypto.randomUUID(), name: form.name, description: form.description, price: parseInt(form.price || "0", 10), originalPrice: form.originalPrice ? parseInt(form.originalPrice, 10) : null, images: urls, lynkUrl: form.lynkUrl, category: form.category, createdAt: editing?.createdAt || Date.now(), clicks: editing?.clicks || 0 };
     const result = await saveToSupabase("products", data);
     await fetchData();
     setSubmitting(false);
@@ -419,7 +455,7 @@ function ProductsTab({ products, isLoading, saveToSupabase, deleteFromSupabase, 
               </div>
               <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button onClick={() => openEdit(p)} className="p-2 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"><Edit3 size={14} /></button>
-                <button onClick={() => window.confirm("Hapus produk ini?") && deleteFromSupabase("products", p.id)} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"><Trash2 size={14} /></button>
+                <button onClick={() => setConfirmId(p.id)} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"><Trash2 size={14} /></button>
               </div>
             </div>
           ))}
@@ -450,13 +486,20 @@ function ProductsTab({ products, isLoading, saveToSupabase, deleteFromSupabase, 
                 {CATEGORIES.map((c) => <option key={c} value={c} className="bg-black">{c}</option>)}
               </select>
             </Field>
-            <Field label="Harga (Rp)"><input required type="text" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value.replace(/\D/g, "") })} className={inputCls} placeholder="250000" /></Field>
+            <Field label="Harga (Rp)"><input required type="text" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value.replace(/\D/g, "") })} className={inputCls} placeholder="99000" /></Field>
           </div>
+          <Field label="Harga Coret / Asli (Rp) — opsional"><input type="text" value={form.originalPrice} onChange={(e) => setForm({ ...form, originalPrice: e.target.value.replace(/\D/g, "") })} className={inputCls} placeholder="249000" /></Field>
           <Field label="Link Lynk.id"><input required type="url" value={form.lynkUrl} onChange={(e) => setForm({ ...form, lynkUrl: e.target.value })} className={inputCls} placeholder="https://lynk.id/..." /></Field>
           <Field label="Deskripsi"><textarea required rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputCls + " resize-none"} placeholder="Deskripsi singkat produk..." /></Field>
           <div className="pt-1"><SubmitBtn loading={submitting} success={ok} label={editing ? "Update Produk" : "Simpan Produk"} /></div>
         </form>
       </Drawer>
+      <ConfirmModal
+        open={!!confirmId}
+        message="Produk ini akan dihapus permanen beserta semua gambarnya."
+        onConfirm={() => { if (confirmId) deleteFromSupabase("products", confirmId); setConfirmId(null); }}
+        onCancel={() => setConfirmId(null)}
+      />
     </motion.div>
   );
 }
@@ -468,6 +511,7 @@ function TestimonialsTab({ testimonials, isLoading, saveToSupabase, deleteFromSu
   const [submitting, setSubmitting] = useState(false);
   const [ok, setOk] = useState(false);
   const [form, setForm] = useState({ name: "", role: "", content: "", rating: "5" });
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const reset = () => { setOpen(false); setEditing(null); setForm({ name: "", role: "", content: "", rating: "5" }); };
   const openEdit = (t: any) => { setEditing(t); setForm({ name: t.name, role: t.role, content: t.content, rating: String(t.rating || 5) }); setOpen(true); };
@@ -496,7 +540,7 @@ function TestimonialsTab({ testimonials, isLoading, saveToSupabase, deleteFromSu
               </div>
               <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                 <button onClick={() => openEdit(t)} className="p-2 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"><Edit3 size={14} /></button>
-                <button onClick={() => window.confirm("Hapus?") && deleteFromSupabase("testimonials", t.id)} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"><Trash2 size={14} /></button>
+                <button onClick={() => setConfirmId(t.id)} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"><Trash2 size={14} /></button>
               </div>
             </div>
           ))}
@@ -515,6 +559,12 @@ function TestimonialsTab({ testimonials, isLoading, saveToSupabase, deleteFromSu
           <div className="pt-1"><SubmitBtn loading={submitting} success={ok} label={editing ? "Update" : "Simpan"} /></div>
         </form>
       </Drawer>
+      <ConfirmModal
+        open={!!confirmId}
+        message="Testimoni ini akan dihapus permanen."
+        onConfirm={() => { if (confirmId) deleteFromSupabase("testimonials", confirmId); setConfirmId(null); }}
+        onCancel={() => setConfirmId(null)}
+      />
     </motion.div>
   );
 }
@@ -526,6 +576,7 @@ function AcademyTab({ tutorials, isLoading, saveToSupabase, deleteFromSupabase }
   const [submitting, setSubmitting] = useState(false);
   const [ok, setOk] = useState(false);
   const [form, setForm] = useState({ title: "", content: "", videoUrl: "", category: "Keuangan" });
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const reset = () => { setOpen(false); setEditing(null); setForm({ title: "", content: "", videoUrl: "", category: "Keuangan" }); };
   const openEdit = (t: any) => { setEditing(t); setForm({ title: t.title, content: t.content, videoUrl: t.videoUrl || "", category: t.category }); setOpen(true); };
@@ -553,7 +604,7 @@ function AcademyTab({ tutorials, isLoading, saveToSupabase, deleteFromSupabase }
               </div>
               <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                 <button onClick={() => openEdit(t)} className="p-2 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"><Edit3 size={14} /></button>
-                <button onClick={() => window.confirm("Hapus?") && deleteFromSupabase("tutorials", t.id)} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"><Trash2 size={14} /></button>
+                <button onClick={() => setConfirmId(t.id)} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"><Trash2 size={14} /></button>
               </div>
             </div>
           ))}
@@ -572,12 +623,19 @@ function AcademyTab({ tutorials, isLoading, saveToSupabase, deleteFromSupabase }
           <div className="pt-1"><SubmitBtn loading={submitting} success={ok} label={editing ? "Update Tutorial" : "Simpan Tutorial"} /></div>
         </form>
       </Drawer>
+      <ConfirmModal
+        open={!!confirmId}
+        message="Tutorial ini akan dihapus permanen."
+        onConfirm={() => { if (confirmId) deleteFromSupabase("tutorials", confirmId); setConfirmId(null); }}
+        onCancel={() => setConfirmId(null)}
+      />
     </motion.div>
   );
 }
 
 // ─── Requests Tab ─────────────────────────────────────────────────────────────
 function RequestsTab({ userRequests, isLoading, saveToSupabase, deleteFromSupabase }: any) {
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const statusStyle: Record<string, string> = {
     pending:   "bg-orange-500/10 text-orange-400 border-orange-500/20",
     reviewed:  "bg-blue-500/10 text-blue-400 border-blue-500/20",
@@ -606,7 +664,7 @@ function RequestsTab({ userRequests, isLoading, saveToSupabase, deleteFromSupaba
                     {s}
                   </button>
                 ))}
-                <button onClick={() => window.confirm("Hapus request ini?") && deleteFromSupabase("user_requests", req.id)} className="ml-auto p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors opacity-0 group-hover:opacity-100">
+                <button onClick={() => setConfirmId(req.id)} className="ml-auto p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors opacity-0 group-hover:opacity-100">
                   <Trash2 size={13} />
                 </button>
               </div>
@@ -614,11 +672,15 @@ function RequestsTab({ userRequests, isLoading, saveToSupabase, deleteFromSupaba
           ))}
         </div>
       )}
+      <ConfirmModal
+        open={!!confirmId}
+        message="Request ini akan dihapus permanen."
+        onConfirm={() => { if (confirmId) deleteFromSupabase("user_requests", confirmId); setConfirmId(null); }}
+        onCancel={() => setConfirmId(null)}
+      />
     </motion.div>
   );
 }
-
-// ─── Settings Tab ─────────────────────────────────────────────────────────────
 function SettingsTab({ settings, saveToSupabase }: any) {
   const [form, setForm] = useState({ metaTitle: "", metaDescription: "", metaKeywords: "", whatsappNumber: "", mainLynkUrl: "" });
   const [saving, setSaving] = useState(false);

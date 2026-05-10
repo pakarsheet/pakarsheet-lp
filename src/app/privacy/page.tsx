@@ -7,7 +7,7 @@ export default function PrivacyPage() {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-medium mb-8 text-white">Kebijakan Privasi</h1>
           <div className="prose prose-invert prose-neutral max-w-none space-y-6 text-neutral-400">
-            <p className="font-normal">Terakhir diperbarui: 26 April 2026</p>
+            <p className="font-normal">Terakhir diperbarui: 10 Mei 2026</p>
             
             <section className="space-y-4 font-normal">
               <h2 className="text-2xl font-medium text-white">1. Informasi yang Kami Kumpulkan</h2>

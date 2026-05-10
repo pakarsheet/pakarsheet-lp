@@ -31,12 +31,12 @@ export function Navbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 pt-4 px-4 pointer-events-none">
       <motion.div className="scroll-progress" style={{ scaleX }} />
-      <div className="container mx-auto max-w-3xl pointer-events-auto">
+      <div className="container mx-auto max-w-3xl pointer-events-auto px-0">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className={`mx-auto rounded-full border transition-all duration-300 backdrop-blur-2xl flex items-center justify-between ${
-            scrolled ? 'bg-black/80 border-white/10 px-5 py-2.5' : 'bg-white/[0.03] border-white/5 px-7 py-3.5'
+            scrolled ? 'bg-black/80 border-white/10 px-4 py-2' : 'bg-white/[0.03] border-white/5 px-5 py-3'
           }`}
         >
           {/* Brand / Logo */}
@@ -59,6 +59,7 @@ export function Navbar() {
             <Link href="/#fitur" className="hover:text-white transition-colors">Fitur</Link>
             <Link href="/#testimoni" className="hover:text-white transition-colors">Testimoni</Link>
             <Link href="/#faq" className="hover:text-white transition-colors">FAQ</Link>
+            <Link href="/academy" className="hover:text-white transition-colors">Academy</Link>
             <Link href="/shop" className="hover:text-white transition-colors">Toko</Link>
           </nav>
 
@@ -94,6 +95,7 @@ export function Navbar() {
             <Link href="/#fitur" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Fitur</Link>
             <Link href="/#testimoni" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Testimoni</Link>
             <Link href="/#faq" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">FAQ</Link>
+            <Link href="/academy" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Academy</Link>
             <Link href="/shop" onClick={() => setIsOpen(false)} className="text-xl font-medium text-white/90 border-b border-white/5 pb-4 tracking-tight">Toko</Link>
             <Link
               href="/shop"

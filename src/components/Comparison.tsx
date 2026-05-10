@@ -57,13 +57,13 @@ export function Comparison() {
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-4xl mx-auto overflow-hidden rounded-[32px] border border-white/5 bg-[#0a0a0a] shadow-2xl"
         >
-          <div className="grid grid-cols-3 border-b border-white/5 bg-white/[0.02] text-xs md:text-sm font-medium tracking-widest opacity-40">
-            <div className="p-4 md:p-6 text-neutral-500">Kapasitas</div>
-            <div className="p-4 md:p-6 text-center text-white relative">
+          <div className="grid grid-cols-3 border-b border-white/5 bg-white/[0.02] text-[10px] md:text-sm font-medium tracking-widest opacity-40">
+            <div className="p-3 md:p-6 text-neutral-500">Fitur</div>
+            <div className="p-3 md:p-6 text-center text-white relative">
               Pakarsheet
               <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
             </div>
-            <div className="p-4 md:p-6 text-center text-neutral-600">Cara Manual</div>
+            <div className="p-3 md:p-6 text-center text-neutral-600">Manual</div>
           </div>
 
           {comparisons.map((item, i) => (
@@ -74,25 +74,25 @@ export function Comparison() {
               transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
               className="grid grid-cols-3 border-b border-white/5 last:border-b-0 items-center group"
             >
-              <div className="p-4 md:p-6 text-neutral-300 font-medium text-sm tracking-tight">
+              <div className="p-3 md:p-6 text-neutral-300 font-medium text-xs md:text-sm tracking-tight">
                 {item.feature}
                 <p className="text-[10px] md:text-xs text-neutral-600 font-normal mt-1 hidden md:block">
                   {item.desc}
                 </p>
               </div>
-              <div className="p-4 md:p-6 flex justify-center bg-white/[0.015] group-hover:bg-white/[0.03] transition-colors">
+              <div className="p-3 md:p-6 flex justify-center bg-white/[0.015] group-hover:bg-white/[0.03] transition-colors">
                 <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/50">
-                  <Check size={14} />
+                  <Check size={12} />
                 </div>
               </div>
-              <div className="p-4 md:p-6 flex justify-center opacity-30">
+              <div className="p-3 md:p-6 flex justify-center opacity-30">
                 {item.manual ? (
                   <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/40">
-                    <Check size={14} />
+                    <Check size={12} />
                   </div>
                 ) : (
                   <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/[0.03] border border-white/5 flex items-center justify-center text-white/20">
-                    <X size={14} />
+                    <X size={12} />
                   </div>
                 )}
               </div>

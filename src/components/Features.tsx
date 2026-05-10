@@ -292,7 +292,7 @@ function FeatureRow({ eyebrow, title, desc, icon: Icon, visual, reverse, index }
       variants={stagger}
       initial="hidden"
       animate={inView ? "show" : "hidden"}
-      className={`grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center ${reverse ? "md:[&>*:first-child]:order-2" : ""}`}
+      className={`grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center ${reverse ? "md:[&>*:first-child]:order-2" : ""}`}
     >
       {/* Text side */}
       <motion.div variants={fadeUp} className="space-y-6">
@@ -382,7 +382,7 @@ export function Features() {
         </motion.div>
 
         {/* Feature rows */}
-        <div className="space-y-28 md:space-y-40 max-w-5xl mx-auto">
+        <div className="space-y-20 md:space-y-40 max-w-5xl mx-auto">
           {features.map((f, i) => (
             <FeatureRow key={i} index={i} {...f} />
           ))}

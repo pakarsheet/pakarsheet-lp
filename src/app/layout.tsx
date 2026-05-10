@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { createClient } from "@supabase/supabase-js";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,24 +13,54 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://pakarsheet.com'),
+// Fallback metadata used when Supabase is not configured or settings are empty
+const FALLBACK_META = {
   title: "Pakarsheet - Template Google Sheets Bebas Ribet untuk Bisnis",
-  description: "Ubah cara kerjamu hari ini. Template Google Sheets custom dengan otomasi Apps Script, UI cantik, dan sistem anti-ribet.",
-  openGraph: {
-    title: "Pakarsheet - Template Google Sheets Bebas Ribet untuk Bisnis",
-    description: "Ubah cara kerjamu hari ini. Template Google Sheets custom dengan otomasi Apps Script, UI cantik, dan sistem anti-ribet.",
-    url: "https://pakarsheet.com",
-    siteName: "Pakarsheet",
-    locale: "id_ID",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Pakarsheet - Template Google Sheets Bebas Ribet untuk Bisnis",
-    description: "Ubah cara kerjamu hari ini. Template Google Sheets custom dengan otomasi Apps Script, UI cantik, dan sistem anti-ribet.",
-  },
+  description:
+    "Ubah cara kerjamu hari ini. Template Google Sheets custom dengan otomasi Apps Script, UI cantik, dan sistem anti-ribet.",
 };
+
+// Fetch site settings server-side so metadata is dynamic and SEO-effective.
+// This runs at request time (dynamic rendering) when settings exist.
+async function getSiteSettings() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  try {
+    const client = createClient(url, key);
+    const { data } = await client.from("site_settings").select("*").single();
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+
+  const title = settings?.metaTitle || FALLBACK_META.title;
+  const description = settings?.metaDescription || FALLBACK_META.description;
+
+  return {
+    metadataBase: new URL("https://pakarsheet.com"),
+    title,
+    description,
+    keywords: settings?.metaKeywords || undefined,
+    openGraph: {
+      title,
+      description,
+      url: "https://pakarsheet.com",
+      siteName: "Pakarsheet",
+      locale: "id_ID",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";

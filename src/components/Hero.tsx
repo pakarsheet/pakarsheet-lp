@@ -5,7 +5,6 @@ import { ArrowRight, PlayCircle, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import { CodeBackground } from "./CodeBackground";
-import { Magnetic } from "./Magnetic";
 
 export function Hero() {
   return (
@@ -50,25 +49,21 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 w-full max-w-xs sm:max-w-none mx-auto"
           >
-            <Magnetic>
-              <Link 
-                href="#fitur" 
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white text-black px-8 py-3.5 rounded-xl font-semibold hover:bg-neutral-200 transition-all active:scale-95 shadow-xl group"
-              >
-                <Sparkles size={16} className="text-black/50 group-hover:text-black transition-colors" />
-                Lihat template <ArrowRight size={18} />
-              </Link>
-            </Magnetic>
-            <Magnetic>
-              <Link 
-                href="#cara-kerja" 
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-transparent text-white border border-white/20 px-8 py-3.5 rounded-xl font-medium hover:bg-white/5 transition-all active:scale-95"
-              >
-                <PlayCircle size={18} /> Cara kerjanya
-              </Link>
-            </Magnetic>
+            <Link 
+              href="#fitur" 
+              className="flex items-center justify-center gap-2 bg-white text-black px-8 py-3.5 rounded-xl font-semibold hover:bg-neutral-200 transition-all active:scale-95 shadow-xl group"
+            >
+              <Sparkles size={16} className="text-black/50 group-hover:text-black transition-colors" />
+              Lihat template <ArrowRight size={18} />
+            </Link>
+            <Link 
+              href="#cara-kerja" 
+              className="flex items-center justify-center gap-2 bg-transparent text-white border border-white/20 px-8 py-3.5 rounded-xl font-medium hover:bg-white/5 transition-all active:scale-95"
+            >
+              <PlayCircle size={18} /> Cara kerjanya
+            </Link>
           </motion.div>
         </div>
 

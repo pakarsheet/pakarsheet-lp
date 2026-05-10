@@ -9,6 +9,7 @@ import { Features } from "@/components/Features";
 import { Testimonials } from "@/components/Testimonials";
 import { FAQ } from "@/components/FAQ";
 import { Pricing } from "@/components/Pricing";
+import { RequestForm } from "@/components/RequestForm";
 import { CTA } from "@/components/CTA";
 
 import { Reveal } from "@/components/Reveal";
@@ -46,6 +47,9 @@ export default function Home() {
       </Reveal>
       <Reveal>
         <Pricing />
+      </Reveal>
+      <Reveal>
+        <RequestForm />
       </Reveal>
       <Reveal>
         <CTA />
