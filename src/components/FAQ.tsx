@@ -1,7 +1,7 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion";
-import { HelpCircle, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { SpotlightCard } from "./SpotlightCard";
 
@@ -32,13 +32,13 @@ export function FAQ() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   return (
-    <section id="faq" className="py-32 relative">
+    <section id="faq" className="py-20 md:py-32 relative">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-20">
-          <div className="inline-flex items-center justify-center p-3 rounded-xl bg-white/5 mb-6">
-            <HelpCircle className="text-white/60" size={24} />
-          </div>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6">
+        <div className="text-center max-w-2xl mx-auto mb-16 md:mb-20">
+          <p className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4">
+            FAQ
+          </p>
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
             Tanya jawab santai.
           </h2>
           <p className="text-neutral-400 text-lg font-normal leading-relaxed">

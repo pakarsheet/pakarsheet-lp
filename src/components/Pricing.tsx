@@ -1,123 +1,216 @@
 "use client"
 
-import { motion } from "framer-motion";
-import { Check, ShieldCheck, RefreshCw, TrendingDown, Clock, Users, Zap, Infinity, ArrowRight } from "lucide-react";
+import { motion, useInView, type Variants } from "framer-motion";
+import { Check, ShieldCheck, RefreshCw, TrendingDown, Clock, Users, Zap, Infinity, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useRef } from "react";
 import { SpotlightCard } from "./SpotlightCard";
-import { Reveal } from "./Reveal";
 
-export function Pricing() {
+/* ─── Shared animation variants ────────────────────────────────────────────── */
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  show: { opacity: 1, y: 0 },
+};
+const stagger: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.1 } },
+};
+
+/* ─── Pain point card ───────────────────────────────────────────────────────── */
+function PainCard({
+  icon: Icon,
+  title,
+  desc,
+  cost,
+  costColor,
+}: {
+  icon: React.ElementType;
+  title: string;
+  desc: string;
+  cost: string;
+  costColor: string;
+}) {
   return (
-    <section id="beli" className="py-20 md:py-32 bg-background relative overflow-hidden">
-      <div className="container mx-auto px-4 md:px-6">
-        <Reveal>
-          <div className="text-center max-w-2xl mx-auto mb-20">
-            <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6">
-              Investasi pintar. <br/> Sekali seumur hidup.
-            </h2>
-            <p className="text-neutral-400 text-lg font-normal leading-relaxed">
-              Hentikan iuran bulanan yang menguras kantong. <br className="hidden md:block" />
-              Dapatkan otomasi kelas industri dengan harga sekali jajan.
-            </p>
-          </div>
-        </Reveal>
+    <div className="p-8 rounded-[32px] border border-white/5 bg-white/[0.02] flex flex-col justify-between h-full opacity-50 hover:opacity-70 transition-opacity duration-300">
+      <div>
+        <Icon className="text-neutral-600 mb-5" size={22} />
+        <h4 className="text-white/70 font-semibold mb-2 tracking-tight">{title}</h4>
+        <p className="text-sm text-neutral-500 font-normal leading-relaxed">{desc}</p>
+      </div>
+      <div className={`mt-6 pt-5 border-t border-white/5 font-mono text-sm tracking-tight ${costColor}`}>
+        {cost}
+      </div>
+    </div>
+  );
+}
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          {/* Left Column: The "Pain" Points (Bento Style) */}
-          <div className="lg:col-span-4 flex flex-col gap-6">
-            <div className="p-8 rounded-[32px] border border-white/5 bg-white/[0.02] flex flex-col justify-between h-full opacity-60">
-              <div>
-                <Users className="text-neutral-500 mb-4" size={24} />
-                <h4 className="text-white/80 font-medium mb-2 tracking-tight">Sewa agency</h4>
-                <p className="text-sm text-neutral-500 font-normal leading-relaxed">Membayar jutaan tiap bulan untuk laporan yang sebenarnya bisa otomatis.</p>
-              </div>
-              <div className="mt-6 pt-6 border-t border-white/5 text-red-500/50 font-mono text-sm tracking-tight">
-                biaya: Rp 60jt+/tahun
-              </div>
-            </div>
-            
-            <div className="p-8 rounded-[32px] border border-white/5 bg-white/[0.02] flex flex-col justify-between h-full opacity-60">
-              <div>
-                <Clock className="text-neutral-500 mb-4" size={24} />
-                <h4 className="text-white/80 font-medium mb-2 tracking-tight">Manual input</h4>
-                <p className="text-sm text-neutral-500 font-normal leading-relaxed">Menghabiskan 3 jam/hari hanya untuk copy-paste data yang membosankan.</p>
-              </div>
-              <div className="mt-6 pt-6 border-t border-white/5 text-orange-500/50 font-mono text-sm tracking-tight">
-                rugi: 1000+ jam/tahun
-              </div>
-            </div>
-          </div>
+/* ─── Feature check item ────────────────────────────────────────────────────── */
+function FeatureItem({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2.5 text-sm text-neutral-400 font-normal">
+      <div className="w-4 h-4 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center flex-shrink-0">
+        <Check size={10} className="text-white/50" />
+      </div>
+      {label}
+    </div>
+  );
+}
 
-          {/* Center/Right Column: The "Golden Ticket" (Main Offer) */}
-          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* The Main Access Card */}
-            <div className="md:col-span-2 relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-[40px] blur-2xl opacity-30 transition-opacity group-hover:opacity-50" />
-              <SpotlightCard className="relative rounded-[38px] border border-white/10 bg-[#070707] shadow-2xl overflow-hidden h-full">
-                <div className="p-8 md:p-12 flex flex-col md:flex-row items-center gap-12">
-                  <div className="flex-1 space-y-8 text-center md:text-left">
-                    <div>
-                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-500 text-[11px] font-medium tracking-tight mb-4">
-                        <TrendingDown size={14} /> Solusi paling efisien
-                      </span>
-                      <h3 className="text-3xl md:text-4xl font-semibold text-white/90 mb-4 tracking-tight">Akses full template Pakarsheet</h3>
-                      <p className="text-neutral-400 text-sm leading-relaxed max-w-sm font-normal">
-                        Otomasi lengkap dengan Apps Script, dashboard visual, dan lifetime update tanpa biaya tambahan.
-                      </p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      {["No monthly fees", "Custom UI", "Full support", "Lifetime updates"].map((t) => (
-                        <div key={t} className="flex items-center gap-2 text-xs text-neutral-500 font-normal tracking-tight">
-                          <Check size={14} className="text-green-500/40" /> {t}
-                        </div>
-                      ))}
-                    </div>
+/* ─── Main section ──────────────────────────────────────────────────────────── */
+export function Pricing() {
+  const headerRef = useRef(null);
+  const headerInView = useInView(headerRef, { once: true, margin: "-60px" });
+  const gridRef = useRef(null);
+  const gridInView = useInView(gridRef, { once: true, margin: "-60px" });
+
+  return (
+    <section id="beli" className="py-20 md:py-32 relative overflow-hidden">
+      {/* Subtle background blob */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-white/[0.012] blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="container mx-auto px-4 md:px-6 relative">
+
+        {/* ── Header ── */}
+        <motion.div
+          ref={headerRef}
+          variants={stagger}
+          initial="hidden"
+          animate={headerInView ? "show" : "hidden"}
+          className="text-center max-w-2xl mx-auto mb-16 md:mb-20"
+        >
+          <motion.p variants={fadeUp} className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4">
+            Harga
+          </motion.p>
+          <motion.h2 variants={fadeUp} className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
+            Investasi pintar. <br /> Sekali seumur hidup.
+          </motion.h2>
+          <motion.p variants={fadeUp} className="text-neutral-400 text-lg font-normal leading-relaxed">
+            Hentikan iuran bulanan yang menguras kantong.{" "}
+            <br className="hidden md:block" />
+            Dapatkan otomasi kelas industri dengan harga sekali jajan.
+          </motion.p>
+        </motion.div>
+
+        {/* ── Bento grid ── */}
+        <motion.div
+          ref={gridRef}
+          variants={stagger}
+          initial="hidden"
+          animate={gridInView ? "show" : "hidden"}
+          className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4"
+        >
+
+          {/* ── Left: pain points ── */}
+          <motion.div variants={fadeUp} className="lg:col-span-4 flex flex-col gap-4">
+            <PainCard
+              icon={Users}
+              title="Sewa agency"
+              desc="Membayar jutaan tiap bulan untuk laporan yang sebenarnya bisa otomatis."
+              cost="biaya: Rp 60jt+/tahun"
+              costColor="text-red-500/50"
+            />
+            <PainCard
+              icon={Clock}
+              title="Manual input"
+              desc="Menghabiskan 3 jam/hari hanya untuk copy-paste data yang membosankan."
+              cost="rugi: 1000+ jam/tahun"
+              costColor="text-orange-500/50"
+            />
+          </motion.div>
+
+          {/* ── Right: main offer + value boxes ── */}
+          <motion.div variants={fadeUp} className="lg:col-span-8 flex flex-col gap-4">
+
+            {/* Main offer card */}
+            <SpotlightCard className="rounded-[32px] border border-white/10 bg-[#0a0a0a] overflow-hidden">
+              <div className="p-8 md:p-10 flex flex-col md:flex-row items-stretch gap-8 md:gap-10">
+
+                {/* Left: copy */}
+                <div className="flex-1 flex flex-col justify-between gap-8">
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/8 text-neutral-500 text-[11px] font-medium tracking-tight mb-5">
+                      <TrendingDown size={12} /> Solusi paling efisien
+                    </span>
+                    <h3 className="text-2xl md:text-3xl font-semibold text-white/90 mb-3 tracking-tight leading-[1.2]">
+                      Akses full template <br className="hidden md:block" />Pakarsheet
+                    </h3>
+                    <p className="text-neutral-500 text-sm leading-relaxed font-normal max-w-xs">
+                      Otomasi lengkap dengan Apps Script, dashboard visual, dan lifetime update tanpa biaya tambahan.
+                    </p>
                   </div>
 
-                  <div className="flex-shrink-0 w-full md:w-auto p-10 rounded-[32px] bg-white text-black text-center flex flex-col justify-center min-w-[240px] shadow-[0_20px_50px_rgba(255,255,255,0.1)]">
-                    <div className="text-[11px] font-medium tracking-widest mb-4 text-black/30">Hanya hari ini</div>
-                    <div className="text-6xl font-semibold tracking-tight mb-2">99rb</div>
-                    <div className="text-xs font-medium tracking-tight mb-8 text-black/60">Sekali bayar saja</div>
-                    <Link 
-                      href="/shop"
-                      className="bg-black text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform active:scale-95 tracking-tight"
-                    >
-                      Pilih Template <ArrowRight size={18} />
-                    </Link>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                    {[
+                      "No monthly fees",
+                      "Custom UI",
+                      "Full support",
+                      "Lifetime updates",
+                    ].map((t) => (
+                      <FeatureItem key={t} label={t} />
+                    ))}
                   </div>
                 </div>
-              </SpotlightCard>
+
+                {/* Right: price box */}
+                <div className="flex-shrink-0 w-full md:w-[220px] rounded-[24px] bg-white text-black flex flex-col items-center justify-center p-8 gap-1 shadow-[0_0_60px_rgba(255,255,255,0.08)]">
+                  <p className="text-[10px] font-semibold tracking-[0.18em] uppercase text-black/30 mb-2">
+                    Hanya hari ini
+                  </p>
+                  <div className="text-[3.5rem] font-semibold tracking-tight leading-none mb-1">
+                    99rb
+                  </div>
+                  <p className="text-xs text-black/40 font-medium mb-6">Sekali bayar saja</p>
+                  <Link
+                    href="/shop"
+                    className="w-full bg-black text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-neutral-800 transition-colors active:scale-95 text-sm tracking-tight"
+                  >
+                    Pilih Template <ArrowRight size={16} />
+                  </Link>
+                </div>
+
+              </div>
+            </SpotlightCard>
+
+            {/* Value boxes row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-7 rounded-[32px] border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors duration-300">
+                <Zap className="text-yellow-500/40 mb-4" size={22} />
+                <h4 className="text-white/80 font-semibold mb-2 tracking-tight">Instan aktif</h4>
+                <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+                  Setelah pembayaran, link copy template langsung dikirim ke email kamu detik itu juga.
+                </p>
+              </div>
+              <div className="p-7 rounded-[32px] border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors duration-300">
+                <Infinity className="text-blue-500/40 mb-4" size={22} />
+                <h4 className="text-white/80 font-semibold mb-2 tracking-tight">Pakai selamanya</h4>
+                <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+                  Template ini milik kamu 100%. Tidak ada batasan waktu penggunaan atau jumlah baris data.
+                </p>
+              </div>
             </div>
 
-            {/* Small Value Box 1 */}
-            <div className="p-8 rounded-[32px] border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
-              <Zap className="text-yellow-500/30 mb-4" size={24} />
-              <h4 className="text-white/80 font-medium mb-2 tracking-tight">Instan aktif</h4>
-              <p className="text-xs text-neutral-500 leading-relaxed font-normal">Setelah pembayaran, link copy template langsung dikirim ke email kamu detik itu juga.</p>
+          </motion.div>
+        </motion.div>
+
+        {/* ── Trust badges ── */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={gridInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="mt-14 flex flex-wrap items-center justify-center gap-8"
+        >
+          {[
+            { icon: ShieldCheck, label: "100% aman & terpercaya" },
+            { icon: RefreshCw, label: "Bantuan teknis gratis" },
+            { icon: Sparkles, label: "Lifetime updates" },
+          ].map(({ icon: Icon, label }) => (
+            <div key={label} className="flex items-center gap-2 text-[11px] font-medium text-white/20 tracking-tight">
+              <Icon size={14} />
+              {label}
             </div>
+          ))}
+        </motion.div>
 
-            {/* Small Value Box 2 */}
-            <div className="p-8 rounded-[32px] border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
-              <Infinity className="text-blue-500/30 mb-4" size={24} />
-              <h4 className="text-white/80 font-medium mb-2 tracking-tight">Pakai selamanya</h4>
-              <p className="text-xs text-neutral-500 leading-relaxed font-normal">Template ini milik kamu 100%. Tidak ada batasan waktu penggunaan atau jumlah baris data.</p>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Security & Support Badges */}
-        <div className="mt-16 flex flex-wrap items-center justify-center gap-8 opacity-30">
-           <div className="flex items-center gap-2 text-[11px] font-medium text-white tracking-tight">
-             <ShieldCheck size={16} /> 100% aman & terpercaya
-           </div>
-           <div className="flex items-center gap-2 text-[11px] font-medium text-white tracking-tight">
-             <RefreshCw size={16} /> Bantuan teknis gratis
-           </div>
-        </div>
       </div>
     </section>
   );

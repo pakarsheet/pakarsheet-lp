@@ -6,18 +6,27 @@ import { ArrowRight } from "lucide-react";
 
 export function CTA() {
   return (
-    <section className="bg-background relative overflow-hidden py-24 border-t border-white/5">
+    <section className="bg-background relative overflow-hidden py-20 md:py-32 border-t border-white/5">
       {/* Glow effect */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[600px] h-[300px] bg-white/[0.02] blur-[100px] rounded-full pointer-events-none" />
 
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
-          <motion.h2 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-4xl md:text-6xl font-semibold tracking-tight mb-6 text-white/90 leading-tight"
+            className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4"
+          >
+            Mulai Sekarang
+          </motion.p>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.05 }}
+            className="text-4xl md:text-6xl font-semibold tracking-tight mb-6 text-white/90 leading-[1.1]"
           >
             Ubah cara kerjamu hari ini.
           </motion.h2>

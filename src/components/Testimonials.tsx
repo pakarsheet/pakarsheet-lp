@@ -1,6 +1,6 @@
 "use client"
 
-import { MessageCircle, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { SpotlightCard } from "./SpotlightCard";
 import { useData } from "@/hooks/useData";
 
@@ -52,13 +52,13 @@ export function Testimonials() {
     : fallbackTestimonials;
 
   return (
-    <section id="testimoni" className="py-32 border-t border-white/5 bg-background">
+    <section id="testimoni" className="py-20 md:py-32 border-t border-white/5 bg-background">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-20">
-          <div className="inline-flex items-center justify-center p-3 rounded-xl bg-white/5 mb-6">
-            <MessageCircle className="text-white/60" size={24} />
-          </div>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6">
+        <div className="text-center max-w-2xl mx-auto mb-16 md:mb-20">
+          <p className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4">
+            Testimoni
+          </p>
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
             Wall of love.
           </h2>
           <p className="text-neutral-400 text-lg font-normal leading-relaxed">
@@ -67,11 +67,11 @@ export function Testimonials() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-[32px] border border-white/5 bg-[#0a0a0a] p-10 animate-pulse">
+              <div key={i} className="rounded-[32px] border border-white/5 bg-[#0a0a0a] p-8 animate-pulse">
                 <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 rounded-full bg-white/5" />
+                  <div className="w-10 h-10 rounded-full bg-white/5" />
                   <div className="space-y-2">
                     <div className="h-3 w-24 bg-white/10 rounded" />
                     <div className="h-2 w-16 bg-white/5 rounded" />
@@ -86,23 +86,23 @@ export function Testimonials() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
             {testimonials.map((t, i) => (
               <SpotlightCard key={i} className="rounded-[32px] border border-white/5 bg-[#0a0a0a]">
-                <div className="p-10">
-                  <div className="flex items-center gap-4 mb-8">
-                    <div className={`w-12 h-12 rounded-full ${t.color} flex items-center justify-center font-semibold text-lg border border-white/10`}>
+                <div className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className={`w-10 h-10 rounded-full ${t.color} flex items-center justify-center font-semibold text-base border border-white/10`}>
                       {t.avatar}
                     </div>
                     <div>
-                      <div className="font-semibold text-white/90 flex items-center gap-2 tracking-tight">
+                      <div className="font-semibold text-white/90 flex items-center gap-2 tracking-tight text-sm">
                         {t.name}
-                        <Check size={14} className="text-blue-500/50" />
+                        <Check size={12} className="text-white/20" />
                       </div>
-                      <div className="text-[10px] text-neutral-500 tracking-[0.2em] font-medium">Verified Buyer</div>
+                      <div className="text-[10px] text-neutral-600 tracking-[0.15em] font-medium uppercase">Verified Buyer</div>
                     </div>
                   </div>
-                  <p className="text-neutral-400 leading-relaxed font-normal">
+                  <p className="text-neutral-400 text-sm leading-relaxed font-normal">
                     &quot;{t.content}&quot;
                   </p>
                 </div>

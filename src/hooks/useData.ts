@@ -99,20 +99,27 @@ export function useData() {
     fetchData();
   }, [fetchData]);
 
-  // --- CRUD Operations (Generic Logic) ---
-  
-  const saveToSupabase = async (table: string, data: any): Promise<{ ok: boolean; error?: string }> => {
+  // --- CRUD Operations ---
+
+  // Allowed tables — prevents arbitrary table injection from client code
+  const ALLOWED_TABLES = ["products", "testimonials", "tutorials", "user_requests", "site_settings"] as const;
+  type AllowedTable = typeof ALLOWED_TABLES[number];
+
+  const saveToSupabase = async (table: string, data: Record<string, unknown>): Promise<{ ok: boolean; error?: string }> => {
+    if (!(ALLOWED_TABLES as readonly string[]).includes(table)) {
+      return { ok: false, error: "Invalid table" };
+    }
     if (!supabase) {
-      if (table === 'products') {
-        const updated = products.some(p => p.id === data.id) 
-          ? products.map(p => p.id === data.id ? data : p)
-          : [data, ...products];
+      if (table === "products") {
+        const updated = products.some(p => p.id === data.id)
+          ? products.map(p => p.id === data.id ? (data as unknown as Product) : p)
+          : [(data as unknown as Product), ...products];
         setProducts(updated);
         localStorage.setItem("pakarsheet_products", JSON.stringify(updated));
       }
       return { ok: true };
     }
-    const { error } = await supabase.from(table).upsert([data]);
+    const { error } = await supabase.from(table as AllowedTable).upsert([data]);
     if (error) {
       console.error(`Error saving to ${table}:`, error);
       return { ok: false, error: error.message };
@@ -122,15 +129,22 @@ export function useData() {
   };
 
   const deleteFromSupabase = async (table: string, id: string): Promise<{ ok: boolean; error?: string }> => {
+    if (!(ALLOWED_TABLES as readonly string[]).includes(table)) {
+      return { ok: false, error: "Invalid table" };
+    }
+    // Validate id is a non-empty string (no SQL injection via Supabase client, but good practice)
+    if (!id || typeof id !== "string" || id.length > 128) {
+      return { ok: false, error: "Invalid id" };
+    }
     if (!supabase) {
-      if (table === 'products') {
+      if (table === "products") {
         const updated = products.filter(p => p.id !== id);
         setProducts(updated);
         localStorage.setItem("pakarsheet_products", JSON.stringify(updated));
       }
       return { ok: true };
     }
-    const { error } = await supabase.from(table).delete().eq('id', id);
+    const { error } = await supabase.from(table as AllowedTable).delete().eq("id", id);
     if (error) {
       console.error(`Error deleting from ${table}:`, error);
       return { ok: false, error: error.message };

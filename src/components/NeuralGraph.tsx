@@ -351,10 +351,10 @@ export function NeuralGraph() {
           <p className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4">
             Cara Kerja
           </p>
-          <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-white/90 mb-5 leading-[1.1]">
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-5 leading-[1.1]">
             Semua terhubung,<br />semua otomatis.
           </h2>
-          <p className="text-neutral-400 text-base leading-relaxed">
+          <p className="text-neutral-400 text-lg leading-relaxed">
             Pakarsheet jadi pusat kendali yang menghubungkan data, tim, dan output kamu — tanpa perlu coding satu baris pun.
           </p>
         </motion.div>

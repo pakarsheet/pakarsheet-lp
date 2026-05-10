@@ -74,7 +74,7 @@ export function useProducts() {
 
     if (supabase && imageFile) {
       const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `product-images/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -92,7 +92,7 @@ export function useProducts() {
     const newProduct = {
       ...product,
       image: imageUrl,
-      id: Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       createdAt: Date.now(),
       clicks: 0,
     };
@@ -114,7 +114,7 @@ export function useProducts() {
 
     if (supabase && imageFile) {
       const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `product-images/${fileName}`;
       
       const { error: uploadError } = await supabase.storage

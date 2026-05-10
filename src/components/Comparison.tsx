@@ -1,6 +1,17 @@
 "use client"
 
+import { useRef } from "react";
+import { motion, useInView, type Variants } from "framer-motion";
 import { Check, X } from "lucide-react";
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  show: { opacity: 1, y: 0 },
+};
+const stagger: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.1 } },
+};
 
 const comparisons = [
   { feature: "Tampilan & UI", pakarsheet: true, manual: false, desc: "Pakarsheet pakai Custom UI yang bersih, bukan kotak-kotak kaku." },
@@ -11,19 +22,41 @@ const comparisons = [
 ];
 
 export function Comparison() {
-  return (
-    <section className="py-32 bg-background">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-20">
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight mb-6 text-white/90">
-            Beda kelas, beda hasil.
-          </h2>
-          <p className="text-neutral-400 text-lg font-normal leading-relaxed">
-            Kenapa harus bayar kalau bisa bikin sendiri? Karena waktu kamu lebih mahal dari harga template ini.
-          </p>
-        </div>
+  const headerRef = useRef(null);
+  const headerInView = useInView(headerRef, { once: true, margin: "-60px" });
+  const tableRef = useRef(null);
+  const tableInView = useInView(tableRef, { once: true, margin: "-60px" });
 
-        <div className="max-w-4xl mx-auto overflow-hidden rounded-[32px] border border-white/5 bg-[#0a0a0a] shadow-2xl">
+  return (
+    <section className="py-20 md:py-32">
+      <div className="container mx-auto px-4 md:px-6">
+
+        <motion.div
+          ref={headerRef}
+          variants={stagger}
+          initial="hidden"
+          animate={headerInView ? "show" : "hidden"}
+          transition={{ staggerChildren: 0.1 }}
+          className="text-center max-w-2xl mx-auto mb-16 md:mb-20"
+        >
+          <motion.p variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut" }} className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4">
+            Perbandingan
+          </motion.p>
+          <motion.h2 variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }} className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
+            Beda kelas, beda hasil.
+          </motion.h2>
+          <motion.p variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }} className="text-neutral-400 text-lg font-normal leading-relaxed">
+            Kenapa harus bayar kalau bisa bikin sendiri? Karena waktu kamu lebih mahal dari harga template ini.
+          </motion.p>
+        </motion.div>
+
+        <motion.div
+          ref={tableRef}
+          initial={{ opacity: 0, y: 28 }}
+          animate={tableInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="max-w-4xl mx-auto overflow-hidden rounded-[32px] border border-white/5 bg-[#0a0a0a] shadow-2xl"
+        >
           <div className="grid grid-cols-3 border-b border-white/5 bg-white/[0.02] text-xs md:text-sm font-medium tracking-widest opacity-40">
             <div className="p-4 md:p-6 text-neutral-500">Kapasitas</div>
             <div className="p-4 md:p-6 text-center text-white relative">
@@ -34,35 +67,39 @@ export function Comparison() {
           </div>
 
           {comparisons.map((item, i) => (
-            <div
+            <motion.div
               key={i}
+              initial={{ opacity: 0 }}
+              animate={tableInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
               className="grid grid-cols-3 border-b border-white/5 last:border-b-0 items-center group"
             >
-              <div className="p-4 md:p-6 text-neutral-300 font-medium">
+              <div className="p-4 md:p-6 text-neutral-300 font-medium text-sm tracking-tight">
                 {item.feature}
-                <p className="text-[10px] md:text-xs text-neutral-500 font-normal mt-1 hidden md:block">
+                <p className="text-[10px] md:text-xs text-neutral-600 font-normal mt-1 hidden md:block">
                   {item.desc}
                 </p>
               </div>
               <div className="p-4 md:p-6 flex justify-center bg-white/[0.015] group-hover:bg-white/[0.03] transition-colors">
-                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 border border-green-500/30">
-                  <Check size={16} />
+                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/50">
+                  <Check size={14} />
                 </div>
               </div>
-              <div className="p-4 md:p-6 flex justify-center opacity-40">
+              <div className="p-4 md:p-6 flex justify-center opacity-30">
                 {item.manual ? (
-                  <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/10 flex items-center justify-center text-white/40 border border-white/10">
-                    <Check size={16} />
+                  <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/40">
+                    <Check size={14} />
                   </div>
                 ) : (
-                  <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/5 flex items-center justify-center text-white/20 border border-white/5">
-                    <X size={16} />
+                  <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/[0.03] border border-white/5 flex items-center justify-center text-white/20">
+                    <X size={14} />
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
+
       </div>
     </section>
   );

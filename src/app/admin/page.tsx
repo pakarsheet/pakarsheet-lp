@@ -389,13 +389,13 @@ function ProductsTab({ products, isLoading, saveToSupabase, deleteFromSupabase, 
       if (slot.type === "existing") { urls.push(slot.url); continue; }
       if (!supabase) { urls.push(slot.preview); continue; }
       const ext = slot.file.name.split(".").pop() || "jpg";
-      const path = `product-images/${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
+      const path = `product-images/${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const { error: se } = await supabase.storage.from("products").upload(path, slot.file, { upsert: false });
       if (se) { setUploadErr(`Gagal upload: ${se.message}`); setSubmitting(false); return; }
       const { data: ud } = supabase.storage.from("products").getPublicUrl(path);
       urls.push(ud.publicUrl);
     }
-    const data = { id: editing?.id || Math.random().toString(36).substring(2, 9), name: form.name, description: form.description, price: parseInt(form.price || "0", 10), images: urls, lynkUrl: form.lynkUrl, category: form.category, createdAt: editing?.createdAt || Date.now(), clicks: editing?.clicks || 0 };
+    const data = { id: editing?.id || crypto.randomUUID(), name: form.name, description: form.description, price: parseInt(form.price || "0", 10), images: urls, lynkUrl: form.lynkUrl, category: form.category, createdAt: editing?.createdAt || Date.now(), clicks: editing?.clicks || 0 };
     const result = await saveToSupabase("products", data);
     await fetchData();
     setSubmitting(false);
@@ -474,7 +474,7 @@ function TestimonialsTab({ testimonials, isLoading, saveToSupabase, deleteFromSu
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setSubmitting(true);
-    await saveToSupabase("testimonials", { id: editing?.id || Math.random().toString(36).substring(2, 9), name: form.name, role: form.role, content: form.content, rating: parseInt(form.rating, 10), createdAt: editing?.createdAt || Date.now() });
+    await saveToSupabase("testimonials", { id: editing?.id || crypto.randomUUID(), name: form.name, role: form.role, content: form.content, rating: parseInt(form.rating, 10), createdAt: editing?.createdAt || Date.now() });
     setSubmitting(false); setOk(true); setTimeout(() => { setOk(false); reset(); }, 1200);
   };
 
@@ -532,7 +532,7 @@ function AcademyTab({ tutorials, isLoading, saveToSupabase, deleteFromSupabase }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setSubmitting(true);
-    await saveToSupabase("tutorials", { id: editing?.id || Math.random().toString(36).substring(2, 9), title: form.title, content: form.content, videoUrl: form.videoUrl || null, category: form.category, createdAt: editing?.createdAt || Date.now() });
+    await saveToSupabase("tutorials", { id: editing?.id || crypto.randomUUID(), title: form.title, content: form.content, videoUrl: form.videoUrl || null, category: form.category, createdAt: editing?.createdAt || Date.now() });
     setSubmitting(false); setOk(true); setTimeout(() => { setOk(false); reset(); }, 1200);
   };
 

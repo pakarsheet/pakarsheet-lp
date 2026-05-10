@@ -1,15 +1,15 @@
 "use client"
 
-import { motion, useMotionValue, useTransform, animate, useInView } from "framer-motion";
+import { motion, useMotionValue, useTransform, animate, useInView, type Variants } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { Users, Database, Clock, Star } from "lucide-react";
 
 /* ─── Shared animation variants — matches Features/Pricing pattern ─────────── */
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 28 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
+  show: { opacity: 1, y: 0 },
 };
-const stagger = {
+const stagger: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.1 } },
 };
