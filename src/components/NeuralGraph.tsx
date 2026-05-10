@@ -3,46 +3,41 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { motion, useInView } from "framer-motion";
 import {
-  Database,
-  FileSpreadsheet,
-  Users,
-  BarChart3,
-  Bell,
-  Download,
+  Database, FileSpreadsheet, Users,
+  LayoutDashboard, Zap, ShieldCheck,
   Cpu,
 } from "lucide-react";
 
-/* ─── Types ─────────────────────────────────────────────────────────────────── */
+// ─── Types ────────────────────────────────────────────────────────────────────
 interface NodeDef {
   id: string;
   label: string;
   sub: string;
   icon: React.ElementType;
   col: "left" | "center" | "right";
+  accent?: string;
 }
 
-/* ─── Node definitions ──────────────────────────────────────────────────────── */
+// ─── Node definitions ─────────────────────────────────────────────────────────
 const LEFT_NODES: NodeDef[] = [
-  { id: "data",  label: "Data Klien",  sub: "Google Sheets", icon: Database,        col: "left" },
-  { id: "form",  label: "Form Input",  sub: "Google Forms",  icon: FileSpreadsheet, col: "left" },
-  { id: "users", label: "Tim Kamu",    sub: "Multi-user",    icon: Users,           col: "left" },
+  { id: "data",  label: "Data Bisnis",  sub: "Google Sheets",  icon: Database,        col: "left" },
+  { id: "form",  label: "Form Input",   sub: "Google Forms",   icon: FileSpreadsheet, col: "left" },
+  { id: "users", label: "Tim Kamu",     sub: "Multi-user",     icon: Users,           col: "left" },
 ];
 
 const RIGHT_NODES: NodeDef[] = [
-  { id: "report", label: "Laporan",     sub: "Auto-generate", icon: BarChart3, col: "right" },
-  { id: "notif",  label: "Notifikasi",  sub: "Email / WA",    icon: Bell,      col: "right" },
-  { id: "export", label: "Export",      sub: "PDF / Excel",   icon: Download,  col: "right" },
+  { id: "dashboard", label: "Dashboard Otomatis", sub: "Update real-time",   icon: LayoutDashboard, col: "right", accent: "text-blue-400"   },
+  { id: "script",    label: "Apps Script",        sub: "Proses tanpa klik",  icon: Zap,             col: "right", accent: "text-amber-400"  },
+  { id: "protect",   label: "Sistem Lisensi",     sub: "Proteksi file kamu", icon: ShieldCheck,     col: "right", accent: "text-green-400"  },
 ];
 
 const CENTER_NODE: NodeDef = {
   id: "engine", label: "Pakarsheet", sub: "Processing", icon: Cpu, col: "center",
 };
 
-/* ─── Traveling dot ─────────────────────────────────────────────────────────── */
-function TravelDot({
-  x1, y1, x2, y2, delay,
-}: {
-  x1: number; y1: number; x2: number; y2: number; delay: number;
+// ─── Traveling dot ────────────────────────────────────────────────────────────
+function TravelDot({ x1, y1, x2, y2, delay, color = "white" }: {
+  x1: number; y1: number; x2: number; y2: number; delay: number; color?: string;
 }) {
   const [pos, setPos] = useState({ x: x1, y: y1 });
   const [visible, setVisible] = useState(false);
@@ -51,11 +46,11 @@ function TravelDot({
     let cancelled = false;
     const loop = async () => {
       while (!cancelled) {
-        await new Promise(r => setTimeout(r, delay * 1000 + Math.random() * 600));
+        await new Promise(r => setTimeout(r, delay * 1000 + Math.random() * 800));
         if (cancelled) break;
         setVisible(true);
         const start = performance.now();
-        const dur = 800 + Math.random() * 400;
+        const dur = 700 + Math.random() * 400;
         await new Promise<void>(resolve => {
           const tick = (now: number) => {
             const t = Math.min((now - start) / dur, 1);
@@ -68,7 +63,7 @@ function TravelDot({
         });
         if (cancelled) break;
         setVisible(false);
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 400));
       }
     };
     loop();
@@ -76,18 +71,12 @@ function TravelDot({
   }, [x1, y1, x2, y2, delay]);
 
   if (!visible) return null;
-  return (
-    <circle cx={pos.x} cy={pos.y} r={3} fill="white" opacity={0.8} />
-  );
+  return <circle cx={pos.x} cy={pos.y} r={3.5} fill={color} opacity={0.9} />;
 }
 
-/* ─── SVG Connector overlay ─────────────────────────────────────────────────── */
+// ─── SVG Connectors ───────────────────────────────────────────────────────────
 function Connectors({
-  leftRefs,
-  centerRef,
-  rightRefs,
-  containerRef,
-  inView,
+  leftRefs, centerRef, rightRefs, containerRef, inView,
 }: {
   leftRefs: React.RefObject<HTMLDivElement | null>[];
   centerRef: React.RefObject<HTMLDivElement | null>;
@@ -96,7 +85,7 @@ function Connectors({
   inView: boolean;
 }) {
   const [edges, setEdges] = useState<
-    { id: string; x1: number; y1: number; x2: number; y2: number; d: string }[]
+    { id: string; x1: number; y1: number; x2: number; y2: number; d: string; isRight: boolean }[]
   >([]);
 
   const compute = useCallback(() => {
@@ -105,7 +94,6 @@ function Connectors({
     const center = centerRef.current.getBoundingClientRect();
     const cx = center.left - base.left + center.width / 2;
     const cy = center.top - base.top + center.height / 2;
-
     const newEdges: typeof edges = [];
 
     leftRefs.forEach((ref, i) => {
@@ -116,11 +104,7 @@ function Connectors({
       const x2 = center.left - base.left;
       const y2 = cy;
       const mx = (x1 + x2) / 2;
-      newEdges.push({
-        id: `left-${i}`,
-        x1, y1, x2, y2,
-        d: `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`,
-      });
+      newEdges.push({ id: `l${i}`, x1, y1, x2, y2, d: `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`, isRight: false });
     });
 
     rightRefs.forEach((ref, i) => {
@@ -131,11 +115,7 @@ function Connectors({
       const x2 = r.left - base.left;
       const y2 = r.top - base.top + r.height / 2;
       const mx = (x1 + x2) / 2;
-      newEdges.push({
-        id: `right-${i}`,
-        x1, y1, x2, y2,
-        d: `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`,
-      });
+      newEdges.push({ id: `r${i}`, x1, y1, x2, y2, d: `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`, isRight: true });
     });
 
     setEdges(newEdges);
@@ -148,180 +128,140 @@ function Connectors({
     return () => obs.disconnect();
   }, [compute]);
 
+  const dotColors = ["#60a5fa", "#f59e0b", "#4ade80"];
+
   return (
-    <svg
-      className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ overflow: "visible" }}
-    >
+    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ overflow: "visible" }}>
       <defs>
-        <filter id="ng-glow">
-          <feGaussianBlur stdDeviation="2.5" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
       </defs>
-
-      {edges.map(({ id, d, x1, y1, x2, y2 }, i) => (
-        <g key={id}>
-          {/* Base line */}
-          <motion.path
-            d={d}
-            fill="none"
-            stroke="rgba(255,255,255,0.07)"
-            strokeWidth={1.5}
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={inView ? { pathLength: 1, opacity: 1 } : {}}
-            transition={{ duration: 0.9, delay: 0.3 + i * 0.1, ease: "easeOut" }}
-          />
-          {/* Glow line */}
-          <motion.path
-            d={d}
-            fill="none"
-            stroke="rgba(255,255,255,0.15)"
-            strokeWidth={1}
-            filter="url(#ng-glow)"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={inView ? { pathLength: 1, opacity: 1 } : {}}
-            transition={{ duration: 0.9, delay: 0.3 + i * 0.1, ease: "easeOut" }}
-          />
-          {/* Endpoint dots */}
-          <motion.circle
-            cx={x1} cy={y1} r={2.5}
-            fill="rgba(255,255,255,0.2)"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={inView ? { scale: 1, opacity: 1 } : {}}
-            transition={{ delay: 0.5 + i * 0.1 }}
-          />
-          <motion.circle
-            cx={x2} cy={y2} r={2.5}
-            fill="rgba(255,255,255,0.2)"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={inView ? { scale: 1, opacity: 1 } : {}}
-            transition={{ delay: 0.5 + i * 0.1 }}
-          />
-          {/* Traveling dot */}
-          {inView && (
-            <TravelDot x1={x1} y1={y1} x2={x2} y2={y2} delay={0.8 + i * 0.3} />
-          )}
-        </g>
-      ))}
+      {edges.map(({ id, d, x1, y1, x2, y2, isRight }, i) => {
+        const dotColor = isRight ? dotColors[i % dotColors.length] : "rgba(255,255,255,0.6)";
+        return (
+          <g key={id}>
+            <motion.path d={d} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={1.5}
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={inView ? { pathLength: 1, opacity: 1 } : {}}
+              transition={{ duration: 1, delay: 0.3 + i * 0.1, ease: "easeOut" }}
+            />
+            <motion.path d={d} fill="none" stroke={isRight ? dotColor : "rgba(255,255,255,0.12)"} strokeWidth={0.8}
+              filter="url(#glow)"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={inView ? { pathLength: 1, opacity: 1 } : {}}
+              transition={{ duration: 1, delay: 0.3 + i * 0.1, ease: "easeOut" }}
+            />
+            <motion.circle cx={x1} cy={y1} r={2.5} fill="rgba(255,255,255,0.25)"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={inView ? { scale: 1, opacity: 1 } : {}}
+              transition={{ delay: 0.6 + i * 0.1 }}
+            />
+            <motion.circle cx={x2} cy={y2} r={2.5} fill={isRight ? dotColor : "rgba(255,255,255,0.25)"}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={inView ? { scale: 1, opacity: 1 } : {}}
+              transition={{ delay: 0.6 + i * 0.1 }}
+            />
+            {inView && <TravelDot x1={x1} y1={y1} x2={x2} y2={y2} delay={0.9 + i * 0.35} color={isRight ? dotColor : "white"} />}
+          </g>
+        );
+      })}
     </svg>
   );
 }
 
-/* ─── Side node card ────────────────────────────────────────────────────────── */
-function SideNode({
-  node,
-  nodeRef,
-  index,
-  inView,
-}: {
+// ─── Side Node ────────────────────────────────────────────────────────────────
+function SideNode({ node, nodeRef, index, inView }: {
   node: NodeDef;
   nodeRef: React.RefObject<HTMLDivElement | null>;
   index: number;
   inView: boolean;
 }) {
   const Icon = node.icon;
+  const isRight = node.col === "right";
   return (
     <motion.div
       ref={nodeRef}
-      initial={{ opacity: 0, x: node.col === "left" ? -20 : 20 }}
+      initial={{ opacity: 0, x: isRight ? 20 : -20 }}
       animate={inView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.5, delay: 0.2 + index * 0.12, ease: [0.22, 1, 0.36, 1] }}
-      className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#0f0f0f] border border-white/[0.08] hover:border-white/[0.16] transition-colors duration-300 w-full"
+      className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-[#0f0f0f] border border-white/[0.08] hover:border-white/[0.18] hover:bg-white/[0.03] transition-all duration-300 w-full group/node cursor-default"
     >
-      <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
-        <Icon size={15} className="text-white/50" />
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border ${
+        isRight
+          ? "bg-white/[0.04] border-white/[0.08] group-hover/node:bg-white/[0.08]"
+          : "bg-white/[0.04] border-white/[0.06]"
+      } transition-colors`}>
+        <Icon size={16} className={node.accent ?? "text-white/40"} />
       </div>
       <div className="min-w-0">
-        <div className="text-[12px] font-medium text-white/75 leading-tight truncate">{node.label}</div>
+        <div className="text-[12px] font-semibold text-white/75 leading-tight truncate">{node.label}</div>
         <div className="text-[10px] text-neutral-600 mt-0.5 truncate">{node.sub}</div>
       </div>
+      {isRight && (
+        <div className="ml-auto flex-shrink-0">
+          <motion.div
+            className={`w-1.5 h-1.5 rounded-full ${
+              index === 0 ? "bg-blue-400" : index === 1 ? "bg-amber-400" : "bg-green-400"
+            }`}
+            animate={{ opacity: [1, 0.3, 1] }}
+            transition={{ duration: 2 + index * 0.4, repeat: Infinity }}
+          />
+        </div>
+      )}
     </motion.div>
   );
 }
 
-/* ─── Graph layout ──────────────────────────────────────────────────────────── */
+// ─── Graph Layout ─────────────────────────────────────────────────────────────
 function GraphLayout({ inView }: { inView: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const centerRef = useRef<HTMLDivElement>(null);
-  const leftRefs = [
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-  ];
-  const rightRefs = [
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-  ];
-
+  const leftRefs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)];
+  const rightRefs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)];
   const Icon = CENTER_NODE.icon;
 
   return (
-    <div ref={containerRef} className="relative w-full py-8 px-4 md:px-8">
-      {/* SVG connectors rendered behind everything */}
-      <Connectors
-        leftRefs={leftRefs}
-        centerRef={centerRef}
-        rightRefs={rightRefs}
-        containerRef={containerRef}
-        inView={inView}
-      />
+    <div ref={containerRef} className="relative w-full py-10 px-4 md:px-10">
+      <Connectors leftRefs={leftRefs} centerRef={centerRef} rightRefs={rightRefs} containerRef={containerRef} inView={inView} />
 
-      {/* 3-column grid */}
-      <div className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-6 md:gap-10">
-        {/* Left column */}
-        <div className="flex flex-col gap-4">
+      <div className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-6 md:gap-12">
+        {/* Left */}
+        <div className="flex flex-col gap-3">
           {LEFT_NODES.map((node, i) => (
-            <SideNode
-              key={node.id}
-              node={node}
-              nodeRef={leftRefs[i]}
-              index={i}
-              inView={inView}
-            />
+            <SideNode key={node.id} node={node} nodeRef={leftRefs[i]} index={i} inView={inView} />
           ))}
         </div>
 
-        {/* Center node */}
+        {/* Center */}
         <motion.div
           ref={centerRef}
-          initial={{ opacity: 0, scale: 0.75 }}
+          initial={{ opacity: 0, scale: 0.7 }}
           animate={inView ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="relative flex flex-col items-center justify-center w-28 h-28 md:w-32 md:h-32 rounded-2xl bg-[#111] border border-white/[0.18] shadow-[0_0_48px_rgba(255,255,255,0.06)] flex-shrink-0"
+          className="relative flex flex-col items-center justify-center w-28 h-28 md:w-36 md:h-36 rounded-3xl bg-[#111] border border-white/[0.15] shadow-[0_0_60px_rgba(255,255,255,0.05)] flex-shrink-0"
         >
           {/* Pulse rings */}
-          <motion.div
-            className="absolute inset-0 rounded-2xl border border-white/10"
-            animate={{ scale: [1, 1.14, 1], opacity: [0.5, 0, 0.5] }}
-            transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute inset-0 rounded-2xl border border-white/[0.05]"
-            animate={{ scale: [1, 1.26, 1], opacity: [0.3, 0, 0.3] }}
-            transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          />
-          <div className="w-11 h-11 rounded-xl bg-white/[0.08] border border-white/[0.12] flex items-center justify-center mb-2.5">
-            <Icon size={22} className="text-white/80" />
+          {[1.14, 1.28].map((scale, i) => (
+            <motion.div
+              key={i}
+              className="absolute inset-0 rounded-3xl border border-white/[0.08]"
+              animate={{ scale: [1, scale, 1], opacity: [0.4, 0, 0.4] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.6 }}
+            />
+          ))}
+          <div className="w-12 h-12 rounded-2xl bg-white/[0.08] border border-white/[0.12] flex items-center justify-center mb-2.5">
+            <Icon size={24} className="text-white/80" />
           </div>
-          <span className="text-[11px] font-semibold text-white/85 tracking-tight">{CENTER_NODE.label}</span>
+          <span className="text-[12px] font-bold text-white/90 tracking-tight">{CENTER_NODE.label}</span>
           <span className="text-[9px] text-neutral-500 mt-0.5">{CENTER_NODE.sub}</span>
         </motion.div>
 
-        {/* Right column */}
-        <div className="flex flex-col gap-4">
+        {/* Right */}
+        <div className="flex flex-col gap-3">
           {RIGHT_NODES.map((node, i) => (
-            <SideNode
-              key={node.id}
-              node={node}
-              nodeRef={rightRefs[i]}
-              index={i}
-              inView={inView}
-            />
+            <SideNode key={node.id} node={node} nodeRef={rightRefs[i]} index={i} inView={inView} />
           ))}
         </div>
       </div>
@@ -329,24 +269,30 @@ function GraphLayout({ inView }: { inView: boolean }) {
   );
 }
 
-/* ─── Main section ──────────────────────────────────────────────────────────── */
+// ─── Main Section ─────────────────────────────────────────────────────────────
 export function NeuralGraph() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
 
+  const bottomStats = [
+    { val: "< 1 detik", label: "Waktu proses",   color: "text-blue-400" },
+    { val: "100%",      label: "Tanpa coding",    color: "text-amber-400" },
+    { val: "∞",         label: "Baris data",      color: "text-green-400" },
+  ];
+
   return (
     <section className="py-20 md:py-32 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-white/[0.02] blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-white/[0.015] blur-[100px] rounded-full pointer-events-none" />
 
       <div className="container mx-auto px-4 md:px-6 relative">
+
         {/* Header */}
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 24 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center max-w-2xl mx-auto mb-16"
+          className="text-center max-w-2xl mx-auto mb-14"
         >
           <p className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-4">
             Cara Kerja
@@ -380,11 +326,10 @@ export function NeuralGraph() {
                 animate={{ opacity: [1, 0.3, 1] }}
                 transition={{ duration: 1.8, repeat: Infinity }}
               />
-              <span className="text-[10px] text-green-400/70">live</span>
+              <span className="text-[10px] text-green-400/70 font-medium">live</span>
             </div>
           </div>
 
-          {/* Graph */}
           <GraphLayout inView={inView} />
         </motion.div>
 
@@ -392,20 +337,18 @@ export function NeuralGraph() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-wrap justify-center gap-10 mt-12 text-center"
+          transition={{ duration: 0.6, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-wrap justify-center gap-0 mt-12 max-w-lg mx-auto"
         >
-          {[
-            { val: "< 1 detik", label: "Waktu proses" },
-            { val: "100%",      label: "Tanpa coding" },
-            { val: "∞",         label: "Baris data" },
-          ].map((s) => (
-            <div key={s.label}>
-              <div className="text-2xl font-semibold text-white/80 tracking-tight">{s.val}</div>
-              <div className="text-xs text-neutral-500 mt-1">{s.label}</div>
+          {bottomStats.map((s, i) => (
+            <div key={s.label} className="flex-1 flex flex-col items-center text-center px-6 py-4 relative">
+              {i > 0 && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-px bg-white/8" />}
+              <div className={`text-3xl font-bold tracking-tight mb-1 ${s.color}`}>{s.val}</div>
+              <div className="text-xs text-neutral-500 font-medium">{s.label}</div>
             </div>
           ))}
         </motion.div>
+
       </div>
     </section>
   );
