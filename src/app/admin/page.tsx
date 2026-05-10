@@ -70,8 +70,8 @@ type AdminSidebarProps = {
 };
 
 // ─── Shared Primitives ────────────────────────────────────────────────────────
-const inputCls = "w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-[14px] text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition-colors";
-const labelCls = "block text-[11px] font-semibold text-neutral-500 uppercase tracking-[0.14em] mb-2";
+const inputCls = "w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-[15px] text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition-colors";
+const labelCls = "block text-[12px] font-semibold text-neutral-500 uppercase tracking-[0.14em] mb-2";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><label className={labelCls}>{label}</label>{children}</div>;
@@ -96,16 +96,16 @@ function ConfirmModal({ open, message, onConfirm, onCancel }: {
             transition={{ type: "spring", damping: 28, stiffness: 320 }}
             role="dialog"
             aria-modal="true"
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[80] w-[calc(100%-2rem)] max-w-sm bg-[#111] border border-white/10 rounded-2xl p-6 shadow-2xl"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[80] w-[calc(100%-2rem)] max-w-md bg-[#111] border border-white/10 rounded-2xl p-7 shadow-2xl"
           >
-            <div className="w-11 h-11 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
-              <Trash2 size={18} className="text-red-400" />
+            <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+              <Trash2 size={20} className="text-red-400" />
             </div>
-            <h3 className="text-[15px] font-semibold text-white mb-1">Konfirmasi Hapus</h3>
-            <p className="text-[13px] text-neutral-500 mb-5 leading-relaxed">{message}</p>
+            <h3 className="text-[17px] font-semibold text-white mb-1.5">Konfirmasi Hapus</h3>
+            <p className="text-[14px] text-neutral-500 mb-6 leading-relaxed">{message}</p>
             <div className="flex gap-2.5">
-              <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[13px] font-medium text-neutral-300 hover:text-white hover:bg-white/10 transition-colors">Batal</button>
-              <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl bg-red-500/15 border border-red-500/25 text-[13px] font-semibold text-red-400 hover:bg-red-500/25 transition-colors">Hapus</button>
+              <button onClick={onCancel} className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-[14px] font-medium text-neutral-300 hover:text-white hover:bg-white/10 transition-colors">Batal</button>
+              <button onClick={onConfirm} className="flex-1 py-3 rounded-xl bg-red-500/15 border border-red-500/25 text-[14px] font-semibold text-red-400 hover:bg-red-500/25 transition-colors">Hapus</button>
             </div>
           </motion.div>
         </>
@@ -116,10 +116,10 @@ function ConfirmModal({ open, message, onConfirm, onCancel }: {
 
 function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: React.ReactNode }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8 md:mb-10">
+    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-10 md:mb-12">
       <div className="min-w-0">
-        <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{title}</h1>
-        {subtitle && <p className="text-[13px] md:text-[14px] text-neutral-500 mt-1">{subtitle}</p>}
+        <h1 className="text-3xl md:text-[34px] font-bold text-white tracking-tight leading-tight">{title}</h1>
+        {subtitle && <p className="text-[14px] md:text-[15px] text-neutral-500 mt-2">{subtitle}</p>}
       </div>
       {action && <div className="flex-shrink-0">{action}</div>}
     </div>
@@ -128,34 +128,34 @@ function PageHeader({ title, subtitle, action }: { title: string; subtitle?: str
 
 function AddButton({ onClick, label = "Tambah" }: { onClick: () => void; label?: string }) {
   return (
-    <button onClick={onClick} className="inline-flex items-center gap-2 bg-white text-black text-[13px] font-semibold px-4 py-2.5 rounded-xl hover:bg-neutral-100 transition-colors">
-      <Plus size={16} /> {label}
+    <button onClick={onClick} className="inline-flex items-center gap-2 bg-white text-black text-[14px] font-semibold px-5 py-3 rounded-xl hover:bg-neutral-100 transition-colors">
+      <Plus size={17} /> {label}
     </button>
   );
 }
 
 function StatCard({ title, value, icon: Icon, sub }: { title: string; value: string | number; icon: React.ElementType; sub?: string }) {
   return (
-    <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-5 md:p-6">
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-[11px] font-semibold text-neutral-500 uppercase tracking-[0.14em]">{title}</span>
-        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/8 flex items-center justify-center text-neutral-400">
-          <Icon size={15} />
+    <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 md:p-7">
+      <div className="flex items-center justify-between mb-5">
+        <span className="text-[12px] font-semibold text-neutral-500 uppercase tracking-[0.14em]">{title}</span>
+        <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/8 flex items-center justify-center text-neutral-400">
+          <Icon size={17} />
         </div>
       </div>
-      <div className="text-3xl md:text-4xl font-bold text-white tracking-tight tabular-nums">{value}</div>
-      {sub && <p className="text-[12px] text-neutral-600 mt-1.5">{sub}</p>}
+      <div className="text-4xl md:text-5xl font-bold text-white tracking-tight tabular-nums">{value}</div>
+      {sub && <p className="text-[13px] text-neutral-600 mt-2">{sub}</p>}
     </div>
   );
 }
 
 function EmptyState({ message, icon: Icon = Inbox }: { message: string; icon?: React.ElementType }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-white/8 rounded-2xl bg-white/[0.01]">
-      <div className="w-11 h-11 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-3">
-        <Icon size={18} className="text-neutral-600" />
+    <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-white/8 rounded-2xl bg-white/[0.01]">
+      <div className="w-14 h-14 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-4">
+        <Icon size={22} className="text-neutral-600" />
       </div>
-      <p className="text-neutral-500 text-[13px]">{message}</p>
+      <p className="text-neutral-500 text-[14px]">{message}</p>
     </div>
   );
 }
@@ -163,16 +163,16 @@ function EmptyState({ message, icon: Icon = Inbox }: { message: string; icon?: R
 function LoadingRows() {
   return (
     <div className="space-y-2.5">
-      {[1, 2, 3].map((i) => <div key={i} className="h-[68px] rounded-xl bg-white/[0.02] border border-white/5 animate-pulse" />)}
+      {[1, 2, 3].map((i) => <div key={i} className="h-[80px] rounded-xl bg-white/[0.02] border border-white/5 animate-pulse" />)}
     </div>
   );
 }
 
 function SubmitBtn({ loading, success, label }: { loading: boolean; success: boolean; label: string }) {
   return (
-    <button type="submit" disabled={loading} className="w-full bg-white text-black text-[14px] font-semibold py-3.5 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+    <button type="submit" disabled={loading} className="w-full bg-white text-black text-[15px] font-semibold py-4 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
       {loading ? <><div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />Menyimpan...</>
-        : success ? <><Check size={16} />Tersimpan!</>
+        : success ? <><Check size={17} />Tersimpan!</>
         : label}
     </button>
   );
@@ -198,7 +198,7 @@ function IconBtn({
   variant?: "default" | "danger";
   label: string;
 }) {
-  const base = "w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center transition-colors";
+  const base = "w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center transition-colors";
   const styles = variant === "danger"
     ? "bg-red-500/10 text-red-400 hover:bg-red-500/20"
     : "bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10";
@@ -211,9 +211,9 @@ function IconBtn({
 
 function SettingsCard({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-5 md:p-6 space-y-5">
+    <section className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 md:p-7 space-y-6">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-[13px] font-bold text-white uppercase tracking-[0.14em]">{title}</h2>
+        <h2 className="text-[14px] font-bold text-white uppercase tracking-[0.14em]">{title}</h2>
         {action}
       </div>
       {children}
@@ -236,12 +236,12 @@ function Drawer({ open, onClose, title, children }: { open: boolean; onClose: ()
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-[#0a0a0a] border-l border-white/8 z-[60] flex flex-col shadow-2xl"
+            className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#0a0a0a] border-l border-white/8 z-[60] flex flex-col shadow-2xl"
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/8 flex-shrink-0">
-              <h2 className="text-[15px] font-semibold text-white">{title}</h2>
-              <button onClick={onClose} aria-label="Tutup" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition-colors">
-                <X size={16} />
+            <div className="flex items-center justify-between px-7 py-5 border-b border-white/8 flex-shrink-0">
+              <h2 className="text-[17px] font-semibold text-white">{title}</h2>
+              <button onClick={onClose} aria-label="Tutup" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition-colors">
+                <X size={17} />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar">{children}</div>
@@ -263,21 +263,21 @@ function AdminSidebar({
 }: AdminSidebarProps) {
   return (
     <div className="flex flex-col h-full">
-      <div className="px-5 py-5 border-b border-white/8 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-black font-black text-[15px] flex-shrink-0 group-hover:scale-105 transition-transform">P</div>
+      <div className="px-6 py-6 border-b border-white/8 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-black font-black text-[16px] flex-shrink-0 group-hover:scale-105 transition-transform">P</div>
           <div>
-            <div className="text-[14px] font-bold text-white leading-tight">Pakarsheet</div>
+            <div className="text-[15px] font-bold text-white leading-tight">Pakarsheet</div>
             <div className="text-[10px] text-neutral-600 mt-0.5 uppercase tracking-[0.14em]">Admin Panel</div>
           </div>
         </Link>
         {mobile && (
-          <button onClick={onMobileClose} aria-label="Tutup menu" className="w-8 h-8 rounded-lg bg-white/5 text-neutral-400 hover:text-white flex items-center justify-center transition-colors">
-            <X size={16} />
+          <button onClick={onMobileClose} aria-label="Tutup menu" className="w-9 h-9 rounded-lg bg-white/5 text-neutral-400 hover:text-white flex items-center justify-center transition-colors">
+            <X size={17} />
           </button>
         )}
       </div>
-      <nav className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto custom-scrollbar">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
         {NAV_ITEMS.map((item) => {
           const active = tab === item.id;
           return (
@@ -288,28 +288,28 @@ function AdminSidebar({
                 if (mobile) onMobileClose();
               }}
               aria-current={active ? "page" : undefined}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] transition-colors ${active ? "bg-white/10 text-white font-semibold" : "text-neutral-400 hover:text-white hover:bg-white/5"}`}
+              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-[14px] transition-colors ${active ? "bg-white/10 text-white font-semibold" : "text-neutral-400 hover:text-white hover:bg-white/5"}`}
             >
-              <div className="flex items-center gap-2.5">
-                <item.icon size={15} className={active ? "text-white" : "text-neutral-500"} />
+              <div className="flex items-center gap-3">
+                <item.icon size={17} className={active ? "text-white" : "text-neutral-500"} />
                 {item.label}
               </div>
               <div className="flex items-center gap-1.5">
                 {item.id === "requests" && pending > 0 && (
                   <span className="text-[10px] font-bold bg-orange-500/15 text-orange-400 border border-orange-500/25 px-1.5 py-0.5 rounded-full tabular-nums">{pending}</span>
                 )}
-                {active && <ChevronRight size={13} className="text-neutral-500" />}
+                {active && <ChevronRight size={14} className="text-neutral-500" />}
               </div>
             </button>
           );
         })}
       </nav>
-      <div className="px-2.5 py-3 border-t border-white/8 space-y-0.5">
-        <Link href="/" target="_blank" className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
-          <Globe size={15} className="text-neutral-500" />Lihat Website
+      <div className="px-3 py-4 border-t border-white/8 space-y-1">
+        <Link href="/" target="_blank" className="w-full flex items-center gap-3 px-3.5 py-3 rounded-lg text-[14px] text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
+          <Globe size={17} className="text-neutral-500" />Lihat Website
         </Link>
-        <button onClick={onLogout} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] text-neutral-400 hover:text-red-400 hover:bg-red-500/5 transition-colors">
-          <LogOut size={15} className="text-neutral-500" />Logout
+        <button onClick={onLogout} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-lg text-[14px] text-neutral-400 hover:text-red-400 hover:bg-red-500/5 transition-colors">
+          <LogOut size={17} className="text-neutral-500" />Logout
         </button>
       </div>
     </div>
@@ -353,7 +353,7 @@ function AdminPageInner() {
   return (
     <div className="min-h-screen bg-[#080808] text-white flex">
       {/* Desktop Sidebar */}
-      <aside className="w-60 border-r border-white/8 bg-[#0a0a0a] fixed h-full z-40 hidden md:block">
+      <aside className="w-64 border-r border-white/8 bg-[#0a0a0a] fixed h-full z-40 hidden md:block">
         <AdminSidebar
           tab={tab}
           pending={pending}
@@ -364,14 +364,14 @@ function AdminPageInner() {
       </aside>
 
       {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/8 px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black font-black text-[13px] flex-shrink-0">P</div>
-          <span className="text-[14px] font-bold text-white">Admin</span>
-          {activeLabel && <span className="text-[12px] text-neutral-500 truncate">· {activeLabel}</span>}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/8 px-4 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-black font-black text-[14px] flex-shrink-0">P</div>
+          <span className="text-[15px] font-bold text-white">Admin</span>
+          {activeLabel && <span className="text-[13px] text-neutral-500 truncate">· {activeLabel}</span>}
         </div>
-        <button onClick={() => setMobileOpen(true)} aria-label="Buka menu" className="w-9 h-9 rounded-lg bg-white/5 text-neutral-300 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors flex-shrink-0">
-          <Menu size={18} />
+        <button onClick={() => setMobileOpen(true)} aria-label="Buka menu" className="w-10 h-10 rounded-lg bg-white/5 text-neutral-300 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors flex-shrink-0">
+          <Menu size={20} />
         </button>
       </div>
 
@@ -380,7 +380,7 @@ function AdminPageInner() {
         {mobileOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileOpen(false)} className="md:hidden fixed inset-0 bg-black/70 z-50" />
-            <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="md:hidden fixed top-0 left-0 h-full w-72 bg-[#0a0a0a] border-r border-white/8 z-[60] shadow-2xl">
+            <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="md:hidden fixed top-0 left-0 h-full w-[280px] bg-[#0a0a0a] border-r border-white/8 z-[60] shadow-2xl">
               <AdminSidebar
                 tab={tab}
                 pending={pending}
@@ -395,8 +395,8 @@ function AdminPageInner() {
       </AnimatePresence>
 
       {/* Main */}
-      <main className="flex-1 md:ml-60 pt-14 md:pt-0 min-h-screen">
-        <div className="max-w-6xl mx-auto px-4 sm:px-5 md:px-8 py-6 md:py-10">
+      <main className="flex-1 md:ml-64 pt-16 md:pt-0 min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-8 md:py-12">
           <AnimatePresence mode="wait">
             {tab === "dashboard"    && <DashboardTab    key="d"  products={products} userRequests={userRequests} testimonials={testimonials} />}
             {tab === "products"     && <ProductsTab     key="p"  products={products} isLoading={isLoading} deleteFromSupabase={deleteFromSupabase} fetchData={fetchData} />}
@@ -444,19 +444,19 @@ function DashboardTab({
   return (
     <motion.div key="dashboard" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
       <PageHeader title="Dashboard" subtitle="Ringkasan performa toko" />
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5 mb-5 md:mb-6">
         <StatCard title="Total Produk"    value={products.length} icon={Package}          sub="Produk aktif di toko" />
         <StatCard title="Total Klik"      value={totalClicks.toLocaleString("id-ID")} icon={MousePointerClick} sub="Akumulasi semua produk" />
         <StatCard title="Pending Request" value={pending}         icon={Mail}             sub="Menunggu ditinjau" />
       </div>
 
       {chartData.length > 0 && (
-        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-5 md:p-6 mb-4 md:mb-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-[14px] font-semibold text-white">Top 7 Produk · Klik</h2>
-            <span className="text-[11px] text-neutral-600 uppercase tracking-wider">{products.length} total</span>
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 md:p-7 mb-5 md:mb-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-[16px] font-semibold text-white">Top 7 Produk · Klik</h2>
+            <span className="text-[12px] text-neutral-600 uppercase tracking-wider">{products.length} total</span>
           </div>
-          <ResponsiveContainer width="100%" height={220}>
+          <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={chartData} margin={{ top: 0, right: 8, left: -12, bottom: 0 }}>
               <defs>
                 <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
@@ -465,42 +465,42 @@ function DashboardTab({
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-              <XAxis dataKey="name" stroke="#444" tick={{ fontSize: 11, fill: "#666" }} tickLine={false} axisLine={false} />
-              <YAxis stroke="#444" tick={{ fontSize: 11, fill: "#666" }} tickLine={false} axisLine={false} width={32} />
-              <Tooltip cursor={{ stroke: "rgba(255,255,255,0.12)", strokeWidth: 1 }} contentStyle={{ background: "#111", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, color: "#fff", fontSize: 12 }} />
+              <XAxis dataKey="name" stroke="#444" tick={{ fontSize: 12, fill: "#666" }} tickLine={false} axisLine={false} />
+              <YAxis stroke="#444" tick={{ fontSize: 12, fill: "#666" }} tickLine={false} axisLine={false} width={34} />
+              <Tooltip cursor={{ stroke: "rgba(255,255,255,0.12)", strokeWidth: 1 }} contentStyle={{ background: "#111", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, color: "#fff", fontSize: 13 }} />
               <Area type="monotone" dataKey="clicks" stroke="#3b82f6" fill="url(#cg)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-5 md:p-6">
-          <h2 className="text-[14px] font-semibold text-white mb-4">Produk Terpopuler</h2>
-          {products.length === 0 ? <p className="text-neutral-600 text-[13px]">Belum ada produk.</p> : (
-            <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 md:p-7">
+          <h2 className="text-[16px] font-semibold text-white mb-5">Produk Terpopuler</h2>
+          {products.length === 0 ? <p className="text-neutral-600 text-[14px]">Belum ada produk.</p> : (
+            <div className="space-y-3.5">
               {[...products].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5).map((p, i) => (
                 <div key={p.id} className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-[11px] font-mono text-neutral-700 w-4">{i + 1}</span>
-                    <span className="text-[13px] text-neutral-300 truncate">{p.name}</span>
+                    <span className="text-[12px] font-mono text-neutral-700 w-4">{i + 1}</span>
+                    <span className="text-[14px] text-neutral-300 truncate">{p.name}</span>
                   </div>
-                  <span className="text-[12px] font-semibold text-blue-400 flex-shrink-0 tabular-nums">{(p.clicks || 0).toLocaleString("id-ID")}</span>
+                  <span className="text-[13px] font-semibold text-blue-400 flex-shrink-0 tabular-nums">{(p.clicks || 0).toLocaleString("id-ID")}</span>
                 </div>
               ))}
             </div>
           )}
         </div>
-        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-5 md:p-6">
-          <h2 className="text-[14px] font-semibold text-white mb-4">Testimoni Terbaru</h2>
-          {testimonials.length === 0 ? <p className="text-neutral-600 text-[13px]">Belum ada testimoni.</p> : (
-            <div className="space-y-3">
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 md:p-7">
+          <h2 className="text-[16px] font-semibold text-white mb-5">Testimoni Terbaru</h2>
+          {testimonials.length === 0 ? <p className="text-neutral-600 text-[14px]">Belum ada testimoni.</p> : (
+            <div className="space-y-4">
               {testimonials.slice(0, 3).map((t) => (
                 <div key={t.id} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[12px] font-bold flex-shrink-0">{t.name.charAt(0).toUpperCase()}</div>
+                  <div className="w-9 h-9 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[13px] font-bold flex-shrink-0">{t.name.charAt(0).toUpperCase()}</div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[13px] text-white font-medium truncate">{t.name}</p>
-                    <p className="text-[12px] text-neutral-500 line-clamp-1">{t.content}</p>
+                    <p className="text-[14px] text-white font-medium truncate">{t.name}</p>
+                    <p className="text-[13px] text-neutral-500 line-clamp-1">{t.content}</p>
                   </div>
                 </div>
               ))}
@@ -534,15 +534,15 @@ function ProductsTab({
         action={<AddButton onClick={() => router.push("/admin/products/new")} label="Tambah Produk" />}
       />
       {isLoading ? <LoadingRows /> : products.length === 0 ? <EmptyState message="Belum ada produk. Tambah produk pertama kamu." icon={Package} /> : (
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {products.map((p) => (
-            <div key={p.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-3 sm:p-4 flex items-center gap-3 sm:gap-4 group hover:border-white/15 transition-colors">
-              <div className="w-14 h-14 rounded-lg bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/8">
+            <div key={p.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 sm:p-5 flex items-center gap-4 sm:gap-5 group hover:border-white/15 transition-colors">
+              <div className="w-16 h-16 rounded-lg bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/8">
                 {(p.images?.[0] || p.image) && <Image src={p.images?.[0] || p.image || ""} alt={p.name} fill className="object-cover" unoptimized />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-semibold text-white truncate">{p.name}</p>
-                <p className="text-[12px] text-neutral-500 mt-0.5 truncate">
+                <p className="text-[15px] font-semibold text-white truncate">{p.name}</p>
+                <p className="text-[13px] text-neutral-500 mt-1 truncate">
                   <span className="text-neutral-600">{p.category}</span>
                   <span className="text-neutral-800 mx-1.5">·</span>
                   Rp {p.price.toLocaleString("id-ID")}
@@ -551,8 +551,8 @@ function ProductsTab({
                 </p>
               </div>
               <RowActions>
-                <IconBtn label="Edit" onClick={() => router.push(`/admin/products/${p.id}`)}><Edit3 size={14} /></IconBtn>
-                <IconBtn label="Hapus" variant="danger" onClick={() => setConfirmId(p.id)}><Trash2 size={14} /></IconBtn>
+                <IconBtn label="Edit" onClick={() => router.push(`/admin/products/${p.id}`)}><Edit3 size={16} /></IconBtn>
+                <IconBtn label="Hapus" variant="danger" onClick={() => setConfirmId(p.id)}><Trash2 size={16} /></IconBtn>
               </RowActions>
             </div>
           ))}
@@ -600,28 +600,28 @@ function TestimonialsTab({
     <motion.div key="testimonials" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
       <PageHeader title="Testimoni" subtitle={`${testimonials.length} testimoni`} action={<AddButton onClick={() => { setEditing(null); setOpen(true); }} />} />
       {isLoading ? <LoadingRows /> : testimonials.length === 0 ? <EmptyState message="Belum ada testimoni." icon={MessageSquare} /> : (
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {testimonials.map((t) => (
-            <div key={t.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-3 sm:p-4 flex items-start gap-3 sm:gap-4 group hover:border-white/15 transition-colors">
-              <div className="w-10 h-10 rounded-full bg-purple-500/15 text-purple-400 flex items-center justify-center font-bold text-[13px] flex-shrink-0">{t.name.charAt(0).toUpperCase()}</div>
+            <div key={t.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 sm:p-5 flex items-start gap-4 sm:gap-5 group hover:border-white/15 transition-colors">
+              <div className="w-11 h-11 rounded-full bg-purple-500/15 text-purple-400 flex items-center justify-center font-bold text-[14px] flex-shrink-0">{t.name.charAt(0).toUpperCase()}</div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                  <p className="text-[14px] font-semibold text-white">{t.name}</p>
-                  <span className="text-[12px] text-neutral-600">· {t.role}</span>
-                  <div className="flex items-center gap-0.5 ml-auto">{Array.from({ length: t.rating || 5 }).map((_, i) => <Star key={i} size={11} className="text-yellow-400 fill-yellow-400" />)}</div>
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <p className="text-[15px] font-semibold text-white">{t.name}</p>
+                  <span className="text-[13px] text-neutral-600">· {t.role}</span>
+                  <div className="flex items-center gap-0.5 ml-auto">{Array.from({ length: t.rating || 5 }).map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}</div>
                 </div>
-                <p className="text-[12px] text-neutral-500 line-clamp-2 leading-relaxed">{t.content}</p>
+                <p className="text-[13px] text-neutral-500 line-clamp-2 leading-relaxed">{t.content}</p>
               </div>
               <RowActions>
-                <IconBtn label="Edit" onClick={() => openEdit(t)}><Edit3 size={14} /></IconBtn>
-                <IconBtn label="Hapus" variant="danger" onClick={() => setConfirmId(t.id)}><Trash2 size={14} /></IconBtn>
+                <IconBtn label="Edit" onClick={() => openEdit(t)}><Edit3 size={16} /></IconBtn>
+                <IconBtn label="Hapus" variant="danger" onClick={() => setConfirmId(t.id)}><Trash2 size={16} /></IconBtn>
               </RowActions>
             </div>
           ))}
         </div>
       )}
       <Drawer open={open} onClose={reset} title={editing ? "Edit Testimoni" : "Tambah Testimoni"}>
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-7 space-y-6">
           <Field label="Nama"><input required type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} placeholder="Budi Santoso" /></Field>
           <Field label="Jabatan / Role"><input required type="text" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className={inputCls} placeholder="Digital Marketer" /></Field>
           <Field label="Rating">
@@ -675,36 +675,36 @@ function AcademyTab({
     <motion.div key="academy" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
       <PageHeader title="Academy" subtitle={`${tutorials.length} tutorial`} action={<AddButton onClick={() => { setEditing(null); setOpen(true); }} label="Tambah Tutorial" />} />
       {isLoading ? <LoadingRows /> : tutorials.length === 0 ? <EmptyState message="Belum ada tutorial." icon={BookOpen} /> : (
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {tutorials.map((t) => (
-            <div key={t.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-3 sm:p-4 flex items-start gap-3 sm:gap-4 group hover:border-white/15 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center flex-shrink-0 border border-blue-500/15">
-                {t.videoUrl ? <Video size={16} /> : <BookOpen size={16} />}
+            <div key={t.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 sm:p-5 flex items-start gap-4 sm:gap-5 group hover:border-white/15 transition-colors">
+              <div className="w-11 h-11 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center flex-shrink-0 border border-blue-500/15">
+                {t.videoUrl ? <Video size={18} /> : <BookOpen size={18} />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-semibold text-white truncate">{t.title}</p>
-                <div className="flex items-center gap-2 flex-wrap mt-0.5 text-[12px] text-neutral-500">
+                <p className="text-[15px] font-semibold text-white truncate">{t.title}</p>
+                <div className="flex items-center gap-2 flex-wrap mt-1 text-[13px] text-neutral-500">
                   <span>{t.category}</span>
                   {t.videoUrl && (
                     <>
                       <span className="text-neutral-800">·</span>
                       <a href={t.videoUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 inline-flex items-center gap-1 hover:underline">
-                        <ExternalLink size={10} />Lihat Video
+                        <ExternalLink size={11} />Lihat Video
                       </a>
                     </>
                   )}
                 </div>
               </div>
               <RowActions>
-                <IconBtn label="Edit" onClick={() => openEdit(t)}><Edit3 size={14} /></IconBtn>
-                <IconBtn label="Hapus" variant="danger" onClick={() => setConfirmId(t.id)}><Trash2 size={14} /></IconBtn>
+                <IconBtn label="Edit" onClick={() => openEdit(t)}><Edit3 size={16} /></IconBtn>
+                <IconBtn label="Hapus" variant="danger" onClick={() => setConfirmId(t.id)}><Trash2 size={16} /></IconBtn>
               </RowActions>
             </div>
           ))}
         </div>
       )}
       <Drawer open={open} onClose={reset} title={editing ? "Edit Tutorial" : "Tambah Tutorial"}>
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-7 space-y-6">
           <Field label="Judul Tutorial"><input required type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inputCls} placeholder="Cara Pakai Finance Tracker" /></Field>
           <Field label="Kategori">
             <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={inputCls + " appearance-none"}>
@@ -712,7 +712,7 @@ function AcademyTab({
             </select>
           </Field>
           <Field label="Link Video (opsional)"><input type="url" value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} className={inputCls} placeholder="https://youtube.com/..." /></Field>
-          <Field label="Konten (Markdown)"><textarea required rows={8} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className={inputCls + " resize-none font-mono text-xs"} placeholder="## Cara Penggunaan..." /></Field>
+          <Field label="Konten (Markdown)"><textarea required rows={8} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className={inputCls + " resize-none font-mono text-[13px]"} placeholder="## Cara Penggunaan..." /></Field>
           <div className="pt-1"><SubmitBtn loading={submitting} success={ok} label={editing ? "Update Tutorial" : "Simpan Tutorial"} /></div>
         </form>
       </Drawer>
@@ -751,25 +751,25 @@ function RequestsTab({
       {isLoading ? <LoadingRows /> : userRequests.length === 0 ? <EmptyState message="Belum ada request masuk." icon={Mail} /> : (
         <div className="space-y-3">
           {userRequests.map((req) => (
-            <div key={req.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 sm:p-5 group hover:border-white/15 transition-colors">
+            <div key={req.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 sm:p-6 group hover:border-white/15 transition-colors">
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="min-w-0">
-                  <p className="text-[14px] font-semibold text-white truncate">{req.email}</p>
-                  <p className="text-[11px] text-neutral-600 mt-0.5">{new Date(req.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
+                  <p className="text-[15px] font-semibold text-white truncate">{req.email}</p>
+                  <p className="text-[12px] text-neutral-600 mt-1">{new Date(req.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
                 </div>
-                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border flex-shrink-0 uppercase tracking-wider ${statusStyle[req.status] || statusStyle.pending}`}>{req.status}</span>
+                <span className={`px-3 py-1 rounded-full text-[11px] font-semibold border flex-shrink-0 uppercase tracking-wider ${statusStyle[req.status] || statusStyle.pending}`}>{req.status}</span>
               </div>
-              <p className="text-[13px] text-neutral-400 mb-4 leading-relaxed whitespace-pre-wrap">{req.request}</p>
+              <p className="text-[14px] text-neutral-400 mb-5 leading-relaxed whitespace-pre-wrap">{req.request}</p>
               <div className="flex items-center gap-1.5 flex-wrap">
                 {(["pending", "reviewed", "completed"] satisfies UserRequest["status"][]).map((s) => (
                   <button key={s} onClick={() => saveToSupabase("user_requests", { ...req, status: s })}
-                    className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold border transition-colors capitalize ${req.status === s ? statusStyle[s] : "bg-white/5 text-neutral-500 border-white/8 hover:bg-white/10 hover:text-white"}`}>
+                    className={`px-3.5 py-2 rounded-lg text-[13px] font-semibold border transition-colors capitalize ${req.status === s ? statusStyle[s] : "bg-white/5 text-neutral-500 border-white/8 hover:bg-white/10 hover:text-white"}`}>
                     {s}
                   </button>
                 ))}
                 <div className="ml-auto">
                   <RowActions>
-                    <IconBtn label="Hapus" variant="danger" onClick={() => setConfirmId(req.id)}><Trash2 size={13} /></IconBtn>
+                    <IconBtn label="Hapus" variant="danger" onClick={() => setConfirmId(req.id)}><Trash2 size={15} /></IconBtn>
                   </RowActions>
                 </div>
               </div>
@@ -931,7 +931,7 @@ function SettingsTab({
   return (
     <motion.div key="settings" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
       <PageHeader title="Settings" subtitle="Konfigurasi website, toko, dan kontak" />
-      <form onSubmit={handleSave} className="space-y-4 max-w-2xl">
+      <form onSubmit={handleSave} className="space-y-5 max-w-3xl">
 
         {/* Branding */}
         <SettingsCard title="Branding — Logo & Favicon">
@@ -943,7 +943,7 @@ function SettingsTab({
               className={inputCls}
               placeholder="Pakarsheet"
             />
-            <p className="text-[11px] text-neutral-600 mt-1.5">Tampil di samping logo pada Navbar dan Footer.</p>
+            <p className="text-[12px] text-neutral-600 mt-2">Tampil di samping logo pada Navbar dan Footer.</p>
           </Field>
 
           {/* Logo upload */}
@@ -958,7 +958,7 @@ function SettingsTab({
                 )}
               </div>
               <div className="flex-1 flex flex-wrap items-center gap-2">
-                <label className="inline-flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white text-[13px] font-medium px-4 py-2.5 rounded-xl transition-colors cursor-pointer">
+                <label className="inline-flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white text-[14px] font-medium px-5 py-3 rounded-xl transition-colors cursor-pointer">
                   <ImageIcon size={14} />
                   {uploadingKind === "logo" ? "Mengunggah..." : form.logoUrl ? "Ganti Logo" : "Unggah Logo"}
                   <input type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="hidden" onChange={onLogoPick} disabled={uploadingKind !== null} />
@@ -967,14 +967,14 @@ function SettingsTab({
                   <button
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, logoUrl: "" }))}
-                    className="inline-flex items-center gap-1.5 text-[12px] font-medium text-red-400 hover:text-red-300 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-[13px] font-medium text-red-400 hover:text-red-300 px-4 py-3 rounded-xl hover:bg-red-500/10 transition-colors"
                   >
                     <Trash2 size={13} /> Hapus
                   </button>
                 )}
               </div>
             </div>
-            <p className="text-[11px] text-neutral-600 mt-1.5">Kosongkan untuk pakai logo bawaan.</p>
+            <p className="text-[12px] text-neutral-600 mt-2">Kosongkan untuk pakai logo bawaan.</p>
           </div>
 
           {/* Favicon upload */}
@@ -989,7 +989,7 @@ function SettingsTab({
                 )}
               </div>
               <div className="flex-1 flex flex-wrap items-center gap-2">
-                <label className="inline-flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white text-[13px] font-medium px-4 py-2.5 rounded-xl transition-colors cursor-pointer">
+                <label className="inline-flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white text-[14px] font-medium px-5 py-3 rounded-xl transition-colors cursor-pointer">
                   <ImageIcon size={14} />
                   {uploadingKind === "favicon" ? "Mengunggah..." : form.faviconUrl ? "Ganti Favicon" : "Unggah Favicon"}
                   <input type="file" accept=".ico,image/x-icon,image/vnd.microsoft.icon,image/png,image/svg+xml" className="hidden" onChange={onFaviconPick} disabled={uploadingKind !== null} />
@@ -998,18 +998,18 @@ function SettingsTab({
                   <button
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, faviconUrl: "" }))}
-                    className="inline-flex items-center gap-1.5 text-[12px] font-medium text-red-400 hover:text-red-300 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-[13px] font-medium text-red-400 hover:text-red-300 px-4 py-3 rounded-xl hover:bg-red-500/10 transition-colors"
                   >
                     <Trash2 size={13} /> Hapus
                   </button>
                 )}
               </div>
             </div>
-            <p className="text-[11px] text-neutral-600 mt-1.5">Ukuran 32×32 atau 64×64 direkomendasikan. Perubahan favicon butuh refresh paksa browser.</p>
+            <p className="text-[12px] text-neutral-600 mt-2">Ukuran 32×32 atau 64×64 direkomendasikan. Perubahan favicon butuh refresh paksa browser.</p>
           </div>
 
           {brandErr && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-[12px] px-3 py-2 rounded-lg">{brandErr}</div>
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] px-4 py-3 rounded-lg">{brandErr}</div>
           )}
         </SettingsCard>
 
@@ -1024,10 +1024,10 @@ function SettingsTab({
         <SettingsCard title="Kontak & Link">
           <Field label="Nomor WhatsApp">
             <div className="flex items-center gap-2">
-              <span className="text-[14px] text-neutral-500 font-mono flex-shrink-0">+62</span>
+              <span className="text-[15px] text-neutral-500 font-mono flex-shrink-0">+62</span>
               <input type="text" value={form.whatsappNumber} onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value.replace(/\D/g, "") })} className={inputCls + " font-mono"} placeholder="81234567890" />
             </div>
-            <p className="text-[11px] text-neutral-600 mt-1.5">Tanpa tanda + atau 0 di depan.</p>
+            <p className="text-[12px] text-neutral-600 mt-2">Tanpa tanda + atau 0 di depan.</p>
           </Field>
           <Field label="Main Lynk.id URL"><input type="url" value={form.mainLynkUrl} onChange={(e) => setForm({ ...form, mainLynkUrl: e.target.value })} className={inputCls} placeholder="https://lynk.id/pakarsheet" /></Field>
         </SettingsCard>
@@ -1039,14 +1039,14 @@ function SettingsTab({
           </Field>
           <Field label="Judul Halaman">
             <textarea rows={2} value={form.shopTitle} onChange={(e) => setForm({ ...form, shopTitle: e.target.value })} className={inputCls + " resize-none"} placeholder="Senjata Rahasia Operasional Bisnis." />
-            <p className="text-[11px] text-neutral-600 mt-1.5">Gunakan baris baru (\n) untuk memisah baris. Baris ke-2 akan tampil abu-abu.</p>
+            <p className="text-[12px] text-neutral-600 mt-2">Gunakan baris baru (\n) untuk memisah baris. Baris ke-2 akan tampil abu-abu.</p>
           </Field>
           <Field label="Subtitle">
             <textarea rows={3} value={form.shopSubtitle} onChange={(e) => setForm({ ...form, shopSubtitle: e.target.value })} className={inputCls + " resize-none"} placeholder="Pilih sistem siap pakai yang telah dioptimasi..." />
           </Field>
           <Field label="Kategori Produk (pisah koma)">
             <input type="text" value={form.shopCategories} onChange={(e) => setForm({ ...form, shopCategories: e.target.value })} className={inputCls} placeholder="Keuangan, Marketing, Inventory, HR & Admin, Lainnya" />
-            <p className="text-[11px] text-neutral-600 mt-1.5">&quot;Semua&quot; otomatis ditambahkan di awal.</p>
+            <p className="text-[12px] text-neutral-600 mt-2">&quot;Semua&quot; otomatis ditambahkan di awal.</p>
           </Field>
         </SettingsCard>
 
@@ -1064,22 +1064,22 @@ function SettingsTab({
         <SettingsCard
           title="Shop — Trust Badges"
           action={
-            <button type="button" onClick={addTrustBadge} className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-neutral-400 hover:text-white transition-colors">
-              <Plus size={13} /> Tambah
+            <button type="button" onClick={addTrustBadge} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-neutral-400 hover:text-white transition-colors">
+              <Plus size={14} /> Tambah
             </button>
           }
         >
-          <p className="text-[12px] text-neutral-600">Tampil di bawah gambar produk di halaman detail.</p>
+          <p className="text-[13px] text-neutral-600">Tampil di bawah gambar produk di halaman detail.</p>
           {trustBadges.length === 0 && (
-            <p className="text-[12px] text-neutral-700 italic">Kosong = pakai default (Premium Quality, Lifetime Update, Cloud Sync).</p>
+            <p className="text-[13px] text-neutral-700 italic">Kosong = pakai default (Premium Quality, Lifetime Update, Cloud Sync).</p>
           )}
           {trustBadges.map((badge, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <select value={badge.icon} onChange={(e) => updateTrustBadge(i, "icon", e.target.value)} className={inputCls + " appearance-none w-36 flex-shrink-0"}>
+            <div key={i} className="flex items-center gap-2.5">
+              <select value={badge.icon} onChange={(e) => updateTrustBadge(i, "icon", e.target.value)} className={inputCls + " appearance-none w-40 flex-shrink-0"}>
                 {ICON_OPTIONS.map((ic) => <option key={ic} value={ic} className="bg-black">{ic}</option>)}
               </select>
               <input type="text" value={badge.label} onChange={(e) => updateTrustBadge(i, "label", e.target.value)} className={inputCls} placeholder="Premium Quality" />
-              <IconBtn label="Hapus" variant="danger" onClick={() => removeTrustBadge(i)}><X size={14} /></IconBtn>
+              <IconBtn label="Hapus" variant="danger" onClick={() => removeTrustBadge(i)}><X size={15} /></IconBtn>
             </div>
           ))}
         </SettingsCard>
@@ -1088,19 +1088,19 @@ function SettingsTab({
         <SettingsCard
           title="Shop — Fitur Unggulan (Default)"
           action={
-            <button type="button" onClick={addShopFeature} className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-neutral-400 hover:text-white transition-colors">
-              <Plus size={13} /> Tambah
+            <button type="button" onClick={addShopFeature} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-neutral-400 hover:text-white transition-colors">
+              <Plus size={14} /> Tambah
             </button>
           }
         >
-          <p className="text-[12px] text-neutral-600">Dipakai untuk semua produk yang tidak punya fitur sendiri. Kosong = pakai bawaan sistem.</p>
+          <p className="text-[13px] text-neutral-600">Dipakai untuk semua produk yang tidak punya fitur sendiri. Kosong = pakai bawaan sistem.</p>
           {shopFeatures.map((feat, i) => (
-            <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-4 space-y-3">
+            <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-5 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-neutral-500 uppercase tracking-[0.14em]">Fitur {i + 1}</span>
-                <IconBtn label="Hapus" variant="danger" onClick={() => removeShopFeature(i)}><X size={13} /></IconBtn>
+                <span className="text-[12px] font-semibold text-neutral-500 uppercase tracking-[0.14em]">Fitur {i + 1}</span>
+                <IconBtn label="Hapus" variant="danger" onClick={() => removeShopFeature(i)}><X size={14} /></IconBtn>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <input type="text" value={feat.title} onChange={(e) => updateShopFeature(i, "title", e.target.value)} className={inputCls} placeholder="Nama Fitur" />
                 <select value={feat.icon} onChange={(e) => updateShopFeature(i, "icon", e.target.value)} className={inputCls + " appearance-none"}>
                   {ICON_OPTIONS.map((ic) => <option key={ic} value={ic} className="bg-black">{ic}</option>)}
@@ -1111,11 +1111,11 @@ function SettingsTab({
           ))}
         </SettingsCard>
 
-        <div className="pt-2">
-          <button type="submit" disabled={saving} className="inline-flex items-center gap-2 bg-white text-black text-[14px] font-semibold px-6 py-3 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50">
+        <div className="pt-3">
+          <button type="submit" disabled={saving} className="inline-flex items-center gap-2 bg-white text-black text-[15px] font-semibold px-7 py-3.5 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50">
             {saving ? <><div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />Menyimpan...</>
-              : ok ? <><Check size={16} />Tersimpan!</>
-              : <><Save size={16} />Simpan Pengaturan</>}
+              : ok ? <><Check size={17} />Tersimpan!</>
+              : <><Save size={17} />Simpan Pengaturan</>}
           </button>
         </div>
       </form>
@@ -1153,18 +1153,18 @@ function BlogTab({
       />
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6">
-        <div className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 text-center">
-          <div className="text-2xl md:text-3xl font-bold text-white tabular-nums">{blogPosts.length}</div>
-          <div className="text-[11px] text-neutral-600 mt-1 uppercase tracking-wider">Total</div>
+      <div className="grid grid-cols-3 gap-4 md:gap-5 mb-7">
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 text-center">
+          <div className="text-3xl md:text-4xl font-bold text-white tabular-nums">{blogPosts.length}</div>
+          <div className="text-[12px] text-neutral-600 mt-1.5 uppercase tracking-wider">Total</div>
         </div>
-        <div className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 text-center">
-          <div className="text-2xl md:text-3xl font-bold text-green-400 tabular-nums">{published}</div>
-          <div className="text-[11px] text-neutral-600 mt-1 uppercase tracking-wider">Published</div>
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 text-center">
+          <div className="text-3xl md:text-4xl font-bold text-green-400 tabular-nums">{published}</div>
+          <div className="text-[12px] text-neutral-600 mt-1.5 uppercase tracking-wider">Published</div>
         </div>
-        <div className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 text-center">
-          <div className="text-2xl md:text-3xl font-bold text-neutral-400 tabular-nums">{drafts}</div>
-          <div className="text-[11px] text-neutral-600 mt-1 uppercase tracking-wider">Draft</div>
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 text-center">
+          <div className="text-3xl md:text-4xl font-bold text-neutral-400 tabular-nums">{drafts}</div>
+          <div className="text-[12px] text-neutral-600 mt-1.5 uppercase tracking-wider">Draft</div>
         </div>
       </div>
 
@@ -1173,44 +1173,44 @@ function BlogTab({
       ) : blogPosts.length === 0 ? (
         <EmptyState message="Belum ada artikel. Mulai tulis artikel pertama kamu." icon={FileText} />
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {blogPosts.map((post) => (
             <div
               key={post.id}
-              className="bg-[#0d0d0d] border border-white/8 rounded-xl p-3 sm:p-4 flex items-start gap-3 sm:gap-4 group hover:border-white/15 transition-colors"
+              className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 sm:p-5 flex items-start gap-4 sm:gap-5 group hover:border-white/15 transition-colors"
             >
-              <div className="w-14 h-14 rounded-lg bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/8">
+              <div className="w-16 h-16 rounded-lg bg-neutral-900 relative overflow-hidden flex-shrink-0 border border-white/8">
                 {post.coverImage ? (
                   <Image src={post.coverImage} alt={post.title} fill className="object-cover" unoptimized />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <ImageIcon size={16} className="text-neutral-700" />
+                    <ImageIcon size={18} className="text-neutral-700" />
                   </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <p className="text-[14px] font-semibold text-white truncate">{post.title}</p>
+                <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                  <p className="text-[15px] font-semibold text-white truncate">{post.title}</p>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border flex-shrink-0 uppercase tracking-wider ${statusStyle[post.status] || statusStyle.draft}`}>
                     {post.status}
                   </span>
                 </div>
-                <p className="text-[12px] text-neutral-500 line-clamp-1 mb-1">{post.excerpt}</p>
-                <div className="flex items-center gap-2 sm:gap-3 text-[11px] text-neutral-700 flex-wrap">
+                <p className="text-[13px] text-neutral-500 line-clamp-1 mb-1.5">{post.excerpt}</p>
+                <div className="flex items-center gap-2 sm:gap-3 text-[12px] text-neutral-700 flex-wrap">
                   <span>{post.category}</span>
-                  <span className="flex items-center gap-1 tabular-nums"><Eye size={10} /> {post.views || 0}</span>
-                  <span className="flex items-center gap-1 tabular-nums"><AlignLeft size={10} /> {post.readingTime || 1} mnt</span>
+                  <span className="flex items-center gap-1 tabular-nums"><Eye size={11} /> {post.views || 0}</span>
+                  <span className="flex items-center gap-1 tabular-nums"><AlignLeft size={11} /> {post.readingTime || 1} mnt</span>
                   {post.tags?.length > 0 && (
-                    <span className="flex items-center gap-1 hidden sm:inline-flex"><Tag size={10} /> {post.tags.slice(0, 2).join(", ")}</span>
+                    <span className="flex items-center gap-1 hidden sm:inline-flex"><Tag size={11} /> {post.tags.slice(0, 2).join(", ")}</span>
                   )}
                 </div>
               </div>
               <RowActions>
-                <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer" aria-label="Lihat" className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors flex items-center justify-center">
-                  <ExternalLink size={14} />
+                <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer" aria-label="Lihat" className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors flex items-center justify-center">
+                  <ExternalLink size={16} />
                 </a>
-                <IconBtn label="Edit" onClick={() => router.push(`/admin/blog/${post.id}`)}><Edit3 size={14} /></IconBtn>
-                <IconBtn label="Hapus" variant="danger" onClick={() => setConfirmId(post.id)}><Trash2 size={14} /></IconBtn>
+                <IconBtn label="Edit" onClick={() => router.push(`/admin/blog/${post.id}`)}><Edit3 size={16} /></IconBtn>
+                <IconBtn label="Hapus" variant="danger" onClick={() => setConfirmId(post.id)}><Trash2 size={16} /></IconBtn>
               </RowActions>
             </div>
           ))}
@@ -1289,31 +1289,31 @@ function CustomOrdersTab({
       ) : (
         <div className="space-y-3">
           {orders.map((order) => (
-            <div key={order.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 sm:p-5 group hover:border-white/15 transition-colors">
-              <div className="flex items-start justify-between gap-3 mb-3">
+            <div key={order.id} className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 sm:p-6 group hover:border-white/15 transition-colors">
+              <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                    <p className="text-[14px] font-semibold text-white">{order.name}</p>
-                    <span className={`text-[10px] font-bold uppercase tracking-[0.14em] ${pkgStyle[order.package] ?? "text-neutral-400"}`}>
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <p className="text-[15px] font-semibold text-white">{order.name}</p>
+                    <span className={`text-[11px] font-bold uppercase tracking-[0.14em] ${pkgStyle[order.package] ?? "text-neutral-400"}`}>
                       {order.package}
                     </span>
                   </div>
-                  <p className="text-[12px] text-neutral-500 truncate">{order.email} · {order.business}</p>
-                  <p className="text-[11px] text-neutral-700 mt-0.5">
+                  <p className="text-[13px] text-neutral-500 truncate">{order.email} · {order.business}</p>
+                  <p className="text-[12px] text-neutral-700 mt-1">
                     {new Date(order.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                     {order.deadline && ` · Deadline: ${order.deadline}`}
                   </p>
                 </div>
-                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border flex-shrink-0 uppercase tracking-wider ${statusStyle[order.status] ?? statusStyle.new}`}>
+                <span className={`px-3 py-1 rounded-full text-[11px] font-semibold border flex-shrink-0 uppercase tracking-wider ${statusStyle[order.status] ?? statusStyle.new}`}>
                   {order.status.replace("_", " ")}
                 </span>
               </div>
 
-              <p className="text-[13px] text-neutral-400 leading-relaxed mb-4 bg-white/[0.02] rounded-lg p-3 border border-white/5 whitespace-pre-wrap">
+              <p className="text-[14px] text-neutral-400 leading-relaxed mb-5 bg-white/[0.02] rounded-lg p-4 border border-white/5 whitespace-pre-wrap">
                 {order.description}
               </p>
 
-              <div className="flex items-center gap-2 flex-wrap mb-3 text-[11px] text-neutral-600">
+              <div className="flex items-center gap-2 flex-wrap mb-4 text-[12px] text-neutral-600">
                 <span>Tim: {order.teamSize}</span>
                 {order.hasMigration && <><span className="text-neutral-800">·</span><span>Ada migrasi data</span></>}
               </div>
@@ -1323,7 +1323,7 @@ function CustomOrdersTab({
                   <button
                     key={s}
                     onClick={() => updateStatus(order, s)}
-                    className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold border transition-colors capitalize ${
+                    className={`px-3.5 py-2 rounded-lg text-[13px] font-semibold border transition-colors capitalize ${
                       order.status === s
                         ? statusStyle[s]
                         : "bg-white/5 text-neutral-500 border-white/8 hover:bg-white/10 hover:text-white"
@@ -1334,7 +1334,7 @@ function CustomOrdersTab({
                 ))}
                 <div className="ml-auto">
                   <RowActions>
-                    <IconBtn label="Hapus" variant="danger" onClick={() => setConfirmId(order.id)}><Trash2 size={13} /></IconBtn>
+                    <IconBtn label="Hapus" variant="danger" onClick={() => setConfirmId(order.id)}><Trash2 size={15} /></IconBtn>
                   </RowActions>
                 </div>
               </div>
