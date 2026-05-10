@@ -5,10 +5,12 @@ import { ArrowLeft, Check, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 // ── Shared style tokens ────────────────────────────────────────────────────────
+// Larger, more readable inputs for admin editors
 export const inputCls =
-  "w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition-colors";
+  "w-full bg-white/[0.05] border border-white/10 rounded-2xl px-5 py-4 text-base text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 focus:bg-white/[0.07] transition-all";
+
 export const labelCls =
-  "block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2";
+  "block text-sm font-semibold text-neutral-400 mb-2.5";
 
 export function Field({
   label,
@@ -22,13 +24,15 @@ export function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <div className="space-y-0">
       <label className={labelCls}>{label}</label>
       {children}
-      {hint && !error && <p className="text-xs text-neutral-600 mt-1.5">{hint}</p>}
+      {hint && !error && (
+        <p className="text-sm text-neutral-600 mt-2 leading-relaxed">{hint}</p>
+      )}
       {error && (
-        <p className="flex items-center gap-1.5 text-xs text-red-400 mt-1.5">
-          <AlertCircle size={11} /> {error}
+        <p className="flex items-center gap-1.5 text-sm text-red-400 mt-2">
+          <AlertCircle size={13} /> {error}
         </p>
       )}
     </div>
@@ -79,9 +83,9 @@ export function SectionCard({
   className?: string;
 }) {
   return (
-    <div className={`bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 space-y-5 ${className}`}>
+    <div className={`bg-[#0d0d0d] border border-white/8 rounded-2xl p-7 space-y-6 ${className}`}>
       {title && (
-        <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+        <h3 className="text-sm font-bold text-neutral-300 uppercase tracking-wider">
           {title}
         </h3>
       )}
@@ -103,21 +107,21 @@ export function EditorTopBar({
   actions?: React.ReactNode;
 }) {
   return (
-    <div className="sticky top-0 z-40 bg-[#080808]/90 backdrop-blur-xl border-b border-white/8">
-      <div className="max-w-7xl mx-auto px-5 md:px-8 h-14 flex items-center justify-between gap-4">
+    <div className="sticky top-0 z-40 bg-[#080808]/95 backdrop-blur-xl border-b border-white/8">
+      <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 min-w-0">
           <Link
             href={backHref}
-            className="flex items-center gap-1.5 text-neutral-500 hover:text-white transition-colors group flex-shrink-0"
+            className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors group flex-shrink-0"
           >
             <ArrowLeft
-              size={16}
+              size={17}
               className="group-hover:-translate-x-0.5 transition-transform"
             />
-            <span className="text-sm hidden sm:block">{backLabel}</span>
+            <span className="text-sm font-medium hidden sm:block">{backLabel}</span>
           </Link>
-          <div className="w-px h-4 bg-white/10 flex-shrink-0" />
-          <h1 className="text-sm font-semibold text-white truncate">{title}</h1>
+          <div className="w-px h-5 bg-white/10 flex-shrink-0" />
+          <h1 className="text-base font-semibold text-white truncate">{title}</h1>
         </div>
         {actions && <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>}
       </div>
@@ -140,9 +144,9 @@ export function TwoColumnEditor({
       transition={{ duration: 0.25 }}
       className="max-w-7xl mx-auto px-5 md:px-8 py-8"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
-        <div className="space-y-6 min-w-0">{left}</div>
-        <div className="space-y-5 lg:sticky lg:top-[72px]">{right}</div>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-7 items-start">
+        <div className="space-y-7 min-w-0">{left}</div>
+        <div className="space-y-6 lg:sticky lg:top-[80px]">{right}</div>
       </div>
     </motion.div>
   );

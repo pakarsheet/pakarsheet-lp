@@ -14,7 +14,7 @@ import {
   inputCls,
   labelCls,
 } from "@/components/admin/EditorLayout";
-import { AlertCircle, Plus, X, Trash2 } from "lucide-react";
+import { AlertCircle, Plus, X, Info } from "lucide-react";
 import Image from "next/image";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -43,7 +43,6 @@ const EMPTY_FORM = {
   socialProofCount: "",
 };
 
-// ── Validation ─────────────────────────────────────────────────────────────────
 function validate(form: typeof EMPTY_FORM, slots: ImageSlot[]) {
   const errors: Partial<Record<keyof typeof EMPTY_FORM | "images", string>> = {};
   if (!form.name.trim()) errors.name = "Nama produk wajib diisi.";
@@ -75,6 +74,8 @@ export default function ProductEditorPage({
   const [saveOk, setSaveOk] = useState(false);
   const [saveErr, setSaveErr] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  // Track whether the DB supports the features column
+  const [featuresSupported, setFeaturesSupported] = useState<boolean | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Auth check
@@ -85,6 +86,22 @@ export default function ProductEditorPage({
       if (!ok) router.replace("/admin");
     });
   }, [router]);
+
+  // Probe whether the features column exists in Supabase
+  useEffect(() => {
+    if (!supabase) { setFeaturesSupported(false); return; }
+    supabase
+      .from("products")
+      .select("features")
+      .limit(1)
+      .then(({ error }) => {
+        // If error mentions 'features' column not found, it's not supported yet
+        const notFound =
+          error?.message?.toLowerCase().includes("features") ||
+          error?.message?.toLowerCase().includes("schema cache");
+        setFeaturesSupported(!notFound);
+      });
+  }, []);
 
   // Load existing product
   useEffect(() => {
@@ -156,7 +173,7 @@ export default function ProductEditorPage({
       urls.push(ud.publicUrl);
     }
 
-    const data = {
+    const data: Record<string, unknown> = {
       id: editingId || crypto.randomUUID(),
       name: form.name.trim(),
       description: form.description.trim(),
@@ -174,16 +191,37 @@ export default function ProductEditorPage({
       socialProofCount: form.socialProofCount
         ? parseInt(form.socialProofCount, 10)
         : null,
-      features: features.length > 0 ? features : null,
     };
 
-    const result = await saveToSupabase("products", data as any);
+    // Only include features if the column exists in the DB
+    if (featuresSupported !== false) {
+      data.features = features.length > 0 ? features : null;
+    }
+
+    const result = await saveToSupabase("products", data);
     await fetchData();
     setSubmitting(false);
 
     if (result?.ok === false) {
-      setSaveErr(`Gagal menyimpan: ${result.error}`);
-      return;
+      // If it's a features column error, retry without features
+      if (
+        result.error?.toLowerCase().includes("features") ||
+        result.error?.toLowerCase().includes("schema cache")
+      ) {
+        setFeaturesSupported(false);
+        delete data.features;
+        const retry = await saveToSupabase("products", data);
+        await fetchData();
+        if (retry?.ok === false) {
+          setSaveErr(`Gagal menyimpan: ${retry.error}`);
+          setSubmitting(false);
+          return;
+        }
+      } else {
+        setSaveErr(`Gagal menyimpan: ${result.error}`);
+        setSubmitting(false);
+        return;
+      }
     }
 
     setSaveOk(true);
@@ -221,9 +259,28 @@ export default function ProductEditorPage({
             <>
               {/* Error banner */}
               {saveErr && (
-                <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-                  <AlertCircle size={15} className="flex-shrink-0" />
-                  {saveErr}
+                <div className="flex items-start gap-3 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-2xl px-5 py-4">
+                  <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+                  <span>{saveErr}</span>
+                </div>
+              )}
+
+              {/* DB migration notice */}
+              {featuresSupported === false && (
+                <div className="flex items-start gap-3 text-yellow-400 text-sm bg-yellow-500/10 border border-yellow-500/20 rounded-2xl px-5 py-4">
+                  <Info size={16} className="flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold mb-1">Kolom &quot;features&quot; belum ada di database</p>
+                    <p className="text-yellow-400/70 text-xs leading-relaxed">
+                      Jalankan SQL berikut di Supabase SQL Editor untuk mengaktifkan fitur unggulan per produk:
+                    </p>
+                    <code className="block mt-2 text-xs bg-black/40 rounded-lg px-3 py-2 font-mono text-yellow-300/80 select-all">
+                      ALTER TABLE products ADD COLUMN IF NOT EXISTS features jsonb;
+                    </code>
+                    <p className="text-yellow-400/60 text-xs mt-2">
+                      Produk tetap bisa disimpan tanpa kolom ini. Fitur unggulan akan menggunakan default dari Settings.
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -252,23 +309,23 @@ export default function ProductEditorPage({
               {/* Features */}
               <SectionCard>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  <h3 className="text-sm font-bold text-neutral-300 uppercase tracking-wider">
                     Fitur Unggulan
                   </h3>
                   <button
                     type="button"
                     onClick={addFeature}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
+                    className="flex items-center gap-2 text-sm font-semibold text-neutral-400 hover:text-white transition-colors border border-white/10 hover:border-white/25 px-3 py-1.5 rounded-xl"
                   >
-                    <Plus size={13} /> Tambah Fitur
+                    <Plus size={14} /> Tambah Fitur
                   </button>
                 </div>
-                <p className="text-xs text-neutral-600 -mt-2">
+                <p className="text-sm text-neutral-600 -mt-2">
                   Kosong = pakai fitur default dari Settings.
                 </p>
 
                 {features.length === 0 && (
-                  <div className="border border-dashed border-white/8 rounded-xl py-8 text-center text-neutral-700 text-sm">
+                  <div className="border border-dashed border-white/8 rounded-2xl py-10 text-center text-neutral-600 text-sm">
                     Belum ada fitur. Klik &quot;Tambah Fitur&quot; untuk menambahkan.
                   </div>
                 )}
@@ -277,47 +334,56 @@ export default function ProductEditorPage({
                   {features.map((feat, i) => (
                     <div
                       key={i}
-                      className="bg-white/[0.02] border border-white/5 rounded-xl p-4 space-y-3"
+                      className="bg-white/[0.02] border border-white/8 rounded-2xl p-5 space-y-4"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                        <span className="text-sm font-semibold text-neutral-500">
                           Fitur {i + 1}
                         </span>
                         <button
                           type="button"
                           onClick={() => removeFeature(i)}
-                          className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                          className="p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
                         >
-                          <X size={12} />
+                          <X size={14} />
                         </button>
                       </div>
-                      <div className="grid grid-cols-[1fr_140px] gap-2">
-                        <input
-                          type="text"
-                          value={feat.title}
-                          onChange={(e) => updateFeature(i, "title", e.target.value)}
-                          className={inputCls}
-                          placeholder="Nama Fitur"
-                        />
-                        <select
-                          value={feat.icon}
-                          onChange={(e) => updateFeature(i, "icon", e.target.value)}
-                          className={inputCls + " appearance-none"}
-                        >
-                          {ICON_OPTIONS.map((ic) => (
-                            <option key={ic} value={ic} className="bg-black">
-                              {ic}
-                            </option>
-                          ))}
-                        </select>
+                      <div className="grid grid-cols-[1fr_160px] gap-3">
+                        <div>
+                          <label className={labelCls}>Nama Fitur</label>
+                          <input
+                            type="text"
+                            value={feat.title}
+                            onChange={(e) => updateFeature(i, "title", e.target.value)}
+                            className={inputCls}
+                            placeholder="Otomatisasi Apps Script"
+                          />
+                        </div>
+                        <div>
+                          <label className={labelCls}>Ikon</label>
+                          <select
+                            value={feat.icon}
+                            onChange={(e) => updateFeature(i, "icon", e.target.value)}
+                            className={inputCls + " appearance-none"}
+                          >
+                            {ICON_OPTIONS.map((ic) => (
+                              <option key={ic} value={ic} className="bg-black">
+                                {ic}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
-                      <textarea
-                        rows={2}
-                        value={feat.desc}
-                        onChange={(e) => updateFeature(i, "desc", e.target.value)}
-                        className={inputCls + " resize-none"}
-                        placeholder="Deskripsi singkat fitur ini..."
-                      />
+                      <div>
+                        <label className={labelCls}>Deskripsi</label>
+                        <textarea
+                          rows={2}
+                          value={feat.desc}
+                          onChange={(e) => updateFeature(i, "desc", e.target.value)}
+                          className={inputCls + " resize-none"}
+                          placeholder="Deskripsi singkat fitur ini..."
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -332,15 +398,15 @@ export default function ProductEditorPage({
               {/* Images */}
               <SectionCard title="Foto Produk">
                 {errors.images && (
-                  <p className="flex items-center gap-1.5 text-xs text-red-400">
-                    <AlertCircle size={11} /> {errors.images}
+                  <p className="flex items-center gap-1.5 text-sm text-red-400">
+                    <AlertCircle size={13} /> {errors.images}
                   </p>
                 )}
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-3">
                   {slots.map((slot, i) => (
                     <div
                       key={i}
-                      className="relative aspect-square rounded-xl overflow-hidden bg-neutral-900 border border-white/8 group/img"
+                      className="relative aspect-square rounded-2xl overflow-hidden bg-neutral-900 border border-white/8 group/img"
                     >
                       <Image
                         src={slot.type === "existing" ? slot.url : slot.preview}
@@ -350,32 +416,28 @@ export default function ProductEditorPage({
                         unoptimized
                       />
                       <span
-                        className={`absolute top-1 left-1 text-[8px] font-bold px-1.5 py-0.5 rounded-full text-white ${
-                          slot.type === "existing"
-                            ? "bg-blue-500/80"
-                            : "bg-green-500/80"
+                        className={`absolute top-1.5 left-1.5 text-[9px] font-bold px-2 py-0.5 rounded-full text-white ${
+                          slot.type === "existing" ? "bg-blue-500/90" : "bg-green-500/90"
                         }`}
                       >
                         {slot.type === "existing" ? "SAVED" : "NEW"}
                       </span>
                       <button
                         type="button"
-                        onClick={() =>
-                          setSlots((prev) => prev.filter((_, j) => j !== i))
-                        }
-                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity"
+                        onClick={() => setSlots((prev) => prev.filter((_, j) => j !== i))}
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg"
                       >
-                        <X size={10} />
+                        <X size={12} />
                       </button>
                     </div>
                   ))}
                   <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
-                    className="aspect-square rounded-xl border-2 border-dashed border-white/10 hover:border-white/25 bg-white/[0.02] flex flex-col items-center justify-center text-neutral-600 hover:text-neutral-400 transition-colors"
+                    className="aspect-square rounded-2xl border-2 border-dashed border-white/10 hover:border-white/30 bg-white/[0.02] hover:bg-white/[0.04] flex flex-col items-center justify-center text-neutral-600 hover:text-neutral-400 transition-all"
                   >
-                    <Plus size={18} />
-                    <span className="text-[9px] mt-1 font-semibold uppercase tracking-wider">
+                    <Plus size={22} />
+                    <span className="text-xs mt-1.5 font-semibold uppercase tracking-wider">
                       Foto
                     </span>
                   </button>
@@ -399,7 +461,7 @@ export default function ProductEditorPage({
                     className={inputCls + " appearance-none"}
                   >
                     {CATEGORIES.map((c) => (
-                      <option key={c} value={c} className="bg-black">
+                      <option key={c} value={c} className="bg-[#111]">
                         {c}
                       </option>
                     ))}
@@ -423,10 +485,7 @@ export default function ProductEditorPage({
                     type="text"
                     value={form.originalPrice}
                     onChange={(e) =>
-                      setForm({
-                        ...form,
-                        originalPrice: e.target.value.replace(/\D/g, ""),
-                      })
+                      setForm({ ...form, originalPrice: e.target.value.replace(/\D/g, "") })
                     }
                     className={inputCls}
                     placeholder="249000"
@@ -439,10 +498,7 @@ export default function ProductEditorPage({
                       type="text"
                       value={form.salePrice}
                       onChange={(e) =>
-                        setForm({
-                          ...form,
-                          salePrice: e.target.value.replace(/\D/g, ""),
-                        })
+                        setForm({ ...form, salePrice: e.target.value.replace(/\D/g, "") })
                       }
                       className={inputCls}
                       placeholder="79000"
@@ -468,10 +524,7 @@ export default function ProductEditorPage({
                     type="text"
                     value={form.socialProofCount}
                     onChange={(e) =>
-                      setForm({
-                        ...form,
-                        socialProofCount: e.target.value.replace(/\D/g, ""),
-                      })
+                      setForm({ ...form, socialProofCount: e.target.value.replace(/\D/g, "") })
                     }
                     className={inputCls}
                     placeholder="234"

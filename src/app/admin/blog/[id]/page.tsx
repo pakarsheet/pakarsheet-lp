@@ -269,8 +269,8 @@ export default function BlogEditorPage({
                 </Field>
 
                 <Field label="Slug (URL)">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-neutral-600 flex-shrink-0 font-mono">
+                  <div className="flex items-center gap-2 bg-white/[0.05] border border-white/10 rounded-2xl px-5 py-4 focus-within:border-white/30 focus-within:bg-white/[0.07] transition-all">
+                    <span className="text-sm text-neutral-600 flex-shrink-0 font-mono">
                       /blog/
                     </span>
                     <input
@@ -285,12 +285,12 @@ export default function BlogEditorPage({
                             .replace(/[^a-z0-9-]/g, "-"),
                         }));
                       }}
-                      className={inputCls + " font-mono text-xs"}
+                      className="flex-1 bg-transparent text-base text-white focus:outline-none font-mono placeholder:text-neutral-600"
                       placeholder="cara-membuat-laporan-keuangan"
                     />
                   </div>
                   {form.slug && (
-                    <p className="text-xs text-neutral-700 mt-1.5 font-mono">
+                    <p className="text-sm text-neutral-600 mt-2 font-mono">
                       pakarsheet.com/blog/{form.slug}
                     </p>
                   )}
@@ -320,7 +320,7 @@ export default function BlogEditorPage({
               {/* Cover image */}
               <SectionCard title="Cover Image">
                 <div
-                  className="relative w-full aspect-[21/9] rounded-xl border-2 border-dashed border-white/10 hover:border-white/25 bg-white/[0.02] overflow-hidden cursor-pointer transition-colors"
+                  className="relative w-full aspect-[21/9] rounded-2xl border-2 border-dashed border-white/10 hover:border-white/25 bg-white/[0.02] overflow-hidden cursor-pointer transition-colors"
                   onClick={() => coverRef.current?.click()}
                 >
                   {coverPreview ? (
@@ -332,11 +332,11 @@ export default function BlogEditorPage({
                     />
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-neutral-600">
-                      <ImageIcon size={22} className="mb-2" />
-                      <span className="text-xs font-semibold uppercase tracking-wider">
+                      <ImageIcon size={28} className="mb-3" />
+                      <span className="text-sm font-semibold uppercase tracking-wider">
                         Upload Cover
                       </span>
-                      <span className="text-[10px] mt-1">Rasio 21:9 disarankan</span>
+                      <span className="text-xs mt-1.5 text-neutral-700">Rasio 21:9 disarankan</span>
                     </div>
                   )}
                 </div>
@@ -351,16 +351,16 @@ export default function BlogEditorPage({
                   <button
                     type="button"
                     onClick={removeCover}
-                    className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 transition-colors"
+                    className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-300 transition-colors"
                   >
-                    <X size={12} /> Hapus cover
+                    <X size={14} /> Hapus cover
                   </button>
                 )}
               </SectionCard>
 
               {/* Meta */}
               <SectionCard title="Pengaturan Artikel">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <Field label="Kategori">
                     <select
                       value={form.category}
@@ -368,7 +368,7 @@ export default function BlogEditorPage({
                       className={inputCls + " appearance-none"}
                     >
                       {BLOG_CATEGORIES.map((c) => (
-                        <option key={c} value={c} className="bg-black">
+                        <option key={c} value={c} className="bg-[#111]">
                           {c}
                         </option>
                       ))}
@@ -385,10 +385,10 @@ export default function BlogEditorPage({
                       }
                       className={inputCls + " appearance-none"}
                     >
-                      <option value="draft" className="bg-black">
+                      <option value="draft" className="bg-[#111]">
                         Draft
                       </option>
-                      <option value="published" className="bg-black">
+                      <option value="published" className="bg-[#111]">
                         Published
                       </option>
                     </select>
@@ -401,7 +401,7 @@ export default function BlogEditorPage({
                 >
                   <textarea
                     rows={3}
-                    maxLength={Math.max(excerptMax, excerptLen)} // allow editing legacy long excerpts
+                    maxLength={Math.max(excerptMax, excerptLen)}
                     value={form.excerpt}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -435,11 +435,11 @@ export default function BlogEditorPage({
                     }
                     className={inputCls + " appearance-none"}
                   >
-                    <option value="" className="bg-black">
+                    <option value="" className="bg-[#111]">
                       — Tidak ada —
                     </option>
                     {products.map((p: any) => (
-                      <option key={p.id} value={p.id} className="bg-black">
+                      <option key={p.id} value={p.id} className="bg-[#111]">
                         {p.name}
                       </option>
                     ))}
