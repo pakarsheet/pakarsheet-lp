@@ -19,7 +19,7 @@ export function Testimonials() {
 
   return (
     <section id="testimoni" className="py-20 md:py-32 border-t border-white/5">
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16">
         <div className="text-center max-w-2xl mx-auto mb-16 md:mb-20">
           <div className="mb-4 flex justify-center">
             <SectionEyebrow icon={Quote} label="Testimoni" />
@@ -33,7 +33,7 @@ export function Testimonials() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
             {[1, 2, 3].map((i) => (
               <div key={i} className="rounded-[32px] border border-white/5 bg-[#0a0a0a] p-8 animate-pulse">
                 <div className="flex items-center gap-4 mb-8">
@@ -61,7 +61,7 @@ export function Testimonials() {
             <p className="text-neutral-600 text-xs">Testimoni dari pengguna nyata akan tampil di sini.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
             {dbTestimonials.map((t, i) => (
               <SpotlightCard key={t.id} className="rounded-[32px] border border-white/5 bg-[#0a0a0a]">
                 <div className="p-8">

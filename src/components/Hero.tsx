@@ -13,8 +13,8 @@ export function Hero() {
       <CodeBackground />
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-white/[0.03] blur-[80px] rounded-full pointer-events-none" />
       
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
+      <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16 relative z-10">
+        <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -72,7 +72,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-20 relative mx-auto max-w-5xl"
+          className="mt-20 relative mx-auto max-w-6xl"
           style={{ willChange: "transform, opacity" }}
         >
           <div className="rounded-[32px] border border-white/10 bg-white/[0.02] p-2 md:p-3 shadow-2xl overflow-hidden relative">

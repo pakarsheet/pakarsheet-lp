@@ -11,7 +11,7 @@ export function CTA() {
       {/* Glow effect */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[600px] h-[300px] bg-white/[0.02] blur-[100px] rounded-full pointer-events-none" />
 
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16">
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

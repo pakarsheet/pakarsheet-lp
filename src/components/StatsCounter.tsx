@@ -168,7 +168,7 @@ export function StatsCounter() {
       {/* Background radial */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(255,255,255,0.02)_0%,transparent_70%)] pointer-events-none" />
 
-      <div className="container mx-auto px-4 md:px-6 relative">
+      <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16 relative">
 
         {/* ── Header ── */}
         <motion.div
@@ -202,7 +202,7 @@ export function StatsCounter() {
         </motion.div>
 
         {/* ── Cards ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
           {stats.map((stat, i) => (
             <StatCard key={i} stat={stat} index={i} />
           ))}

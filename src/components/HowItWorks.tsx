@@ -44,7 +44,7 @@ export function HowItWorks() {
 
   return (
     <section id="cara-kerja" className="py-20 md:py-32 bg-white/[0.01]">
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16">
 
         <motion.div
           ref={headerRef}
@@ -69,7 +69,7 @@ export function HowItWorks() {
           variants={stagger}
           initial="hidden"
           animate={gridInView ? "show" : "hidden"}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto"
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto"
         >
           {steps.map((step, i) => (
             <motion.div key={i} variants={fadeUp}>

@@ -45,7 +45,7 @@ export function DetailedFeatures() {
 
   return (
     <section className="py-20 md:py-32 border-t border-white/5">
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16">
 
         <motion.div
           ref={headerRef}
@@ -70,7 +70,7 @@ export function DetailedFeatures() {
           variants={stagger}
           initial="hidden"
           animate={gridInView ? "show" : "hidden"}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl mx-auto"
         >
           {detailedFeatures.map((f, i) => (
             <motion.div

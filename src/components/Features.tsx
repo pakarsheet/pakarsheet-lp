@@ -361,7 +361,7 @@ export function Features() {
       {/* Subtle background accent */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-white/[0.015] blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="container mx-auto px-4 md:px-6 relative">
+      <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16 relative">
         {/* Header */}
         <motion.div
           ref={headerRef}
@@ -382,7 +382,7 @@ export function Features() {
         </motion.div>
 
         {/* Feature rows */}
-        <div className="space-y-20 md:space-y-40 max-w-5xl mx-auto">
+        <div className="space-y-20 md:space-y-40 max-w-6xl mx-auto">
           {features.map((f, i) => (
             <FeatureRow key={i} {...f} />
           ))}

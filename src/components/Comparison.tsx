@@ -30,7 +30,7 @@ export function Comparison() {
 
   return (
     <section className="py-20 md:py-32">
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16">
 
         <motion.div
           ref={headerRef}
@@ -56,7 +56,7 @@ export function Comparison() {
           initial={{ opacity: 0, y: 28 }}
           animate={tableInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-4xl mx-auto overflow-hidden rounded-[32px] border border-white/5 bg-[#0a0a0a] shadow-2xl"
+          className="max-w-5xl mx-auto overflow-hidden rounded-[32px] border border-white/5 bg-[#0a0a0a] shadow-2xl"
         >
           <div className="grid grid-cols-3 border-b border-white/5 bg-white/[0.02] text-[10px] md:text-sm font-medium tracking-widest opacity-40">
             <div className="p-3 md:p-6 text-neutral-500">Fitur</div>

@@ -82,7 +82,7 @@ export function RequestForm() {
       {/* Ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-white/[0.015] blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="container mx-auto px-4 md:px-6 relative">
+      <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16 relative">
         {/* Header */}
         <motion.div
           variants={stagger}
@@ -112,7 +112,7 @@ export function RequestForm() {
           initial={{ opacity: 0, y: 24 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4 sm:gap-5"
+          className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4 sm:gap-5"
         >
           {/* ── Left: inspiration pane ── */}
           <div className="relative rounded-[28px] border border-white/8 bg-gradient-to-b from-white/[0.035] to-white/[0.01] p-6 sm:p-8 overflow-hidden">

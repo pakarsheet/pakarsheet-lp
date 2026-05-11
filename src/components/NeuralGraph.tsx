@@ -333,7 +333,7 @@ export function NeuralGraph() {
     <section className="py-20 md:py-32 relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-white/[0.015] blur-[100px] rounded-full pointer-events-none" />
 
-      <div className="container mx-auto px-4 md:px-6 relative">
+      <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16 relative">
 
         {/* Header */}
         <motion.div
@@ -359,7 +359,7 @@ export function NeuralGraph() {
           initial={{ opacity: 0, y: 32 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="relative rounded-3xl border border-white/[0.08] bg-[#080808] overflow-hidden shadow-2xl max-w-4xl mx-auto"
+          className="relative rounded-3xl border border-white/[0.08] bg-[#080808] overflow-hidden shadow-2xl max-w-5xl mx-auto"
         >
           {/* Top bar */}
           <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/[0.05] bg-white/[0.015]">
