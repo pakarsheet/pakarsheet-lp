@@ -927,197 +927,277 @@ function SettingsTab({
     setShopFeatures((prev) => prev.map((f, j) => j === i ? { ...f, [key]: val } : f));
 
   const ICON_OPTIONS = ["Zap", "Clock", "Globe", "Star", "Shield", "Check", "LayoutDashboard", "Edit3", "MessageSquare", "Package", "Sparkles", "Heart", "Lock", "Rocket", "Layers"];
+  const categoryPreview = form.shopCategories
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const brandPreview = form.brandName.trim() || "Pakarsheet";
 
   return (
     <motion.div key="settings" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-      <PageHeader title="Settings" subtitle="Konfigurasi website, toko, dan kontak" />
-      <form onSubmit={handleSave} className="space-y-5 max-w-3xl">
-
-        {/* Branding */}
-        <SettingsCard title="Branding — Logo & Favicon">
-          <Field label="Nama Brand">
-            <input
-              type="text"
-              value={form.brandName}
-              onChange={(e) => setForm({ ...form, brandName: e.target.value })}
-              className={inputCls}
-              placeholder="Pakarsheet"
-            />
-            <p className="text-[12px] text-neutral-600 mt-2">Tampil di samping logo pada Navbar dan Footer.</p>
-          </Field>
-
-          {/* Logo upload */}
-          <div>
-            <label className={labelCls}>Logo (PNG/SVG, maks 2MB)</label>
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {form.logoUrl ? (
-                  <Image src={form.logoUrl} alt="Logo" width={64} height={64} className="object-contain w-full h-full" unoptimized />
-                ) : (
-                  <ImageIcon size={18} className="text-neutral-700" />
-                )}
-              </div>
-              <div className="flex-1 flex flex-wrap items-center gap-2">
-                <label className="inline-flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white text-[14px] font-medium px-5 py-3 rounded-xl transition-colors cursor-pointer">
-                  <ImageIcon size={14} />
-                  {uploadingKind === "logo" ? "Mengunggah..." : form.logoUrl ? "Ganti Logo" : "Unggah Logo"}
-                  <input type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="hidden" onChange={onLogoPick} disabled={uploadingKind !== null} />
-                </label>
-                {form.logoUrl && (
-                  <button
-                    type="button"
-                    onClick={() => setForm((f) => ({ ...f, logoUrl: "" }))}
-                    className="inline-flex items-center gap-1.5 text-[13px] font-medium text-red-400 hover:text-red-300 px-4 py-3 rounded-xl hover:bg-red-500/10 transition-colors"
-                  >
-                    <Trash2 size={13} /> Hapus
-                  </button>
-                )}
-              </div>
-            </div>
-            <p className="text-[12px] text-neutral-600 mt-2">Kosongkan untuk pakai logo bawaan.</p>
-          </div>
-
-          {/* Favicon upload */}
-          <div>
-            <label className={labelCls}>Favicon (ICO/PNG/SVG, maks 512KB)</label>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-white/[0.03] border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {form.faviconUrl ? (
-                  <Image src={form.faviconUrl} alt="Favicon" width={32} height={32} className="object-contain w-full h-full" unoptimized />
-                ) : (
-                  <ImageIcon size={14} className="text-neutral-700" />
-                )}
-              </div>
-              <div className="flex-1 flex flex-wrap items-center gap-2">
-                <label className="inline-flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white text-[14px] font-medium px-5 py-3 rounded-xl transition-colors cursor-pointer">
-                  <ImageIcon size={14} />
-                  {uploadingKind === "favicon" ? "Mengunggah..." : form.faviconUrl ? "Ganti Favicon" : "Unggah Favicon"}
-                  <input type="file" accept=".ico,image/x-icon,image/vnd.microsoft.icon,image/png,image/svg+xml" className="hidden" onChange={onFaviconPick} disabled={uploadingKind !== null} />
-                </label>
-                {form.faviconUrl && (
-                  <button
-                    type="button"
-                    onClick={() => setForm((f) => ({ ...f, faviconUrl: "" }))}
-                    className="inline-flex items-center gap-1.5 text-[13px] font-medium text-red-400 hover:text-red-300 px-4 py-3 rounded-xl hover:bg-red-500/10 transition-colors"
-                  >
-                    <Trash2 size={13} /> Hapus
-                  </button>
-                )}
-              </div>
-            </div>
-            <p className="text-[12px] text-neutral-600 mt-2">Ukuran 32×32 atau 64×64 direkomendasikan. Perubahan favicon butuh refresh paksa browser.</p>
-          </div>
-
-          {brandErr && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] px-4 py-3 rounded-lg">{brandErr}</div>
-          )}
-        </SettingsCard>
-
-        {/* SEO */}
-        <SettingsCard title="SEO & Meta">
-          <Field label="Meta Title"><input type="text" value={form.metaTitle} onChange={(e) => setForm({ ...form, metaTitle: e.target.value })} className={inputCls} placeholder="Pakarsheet - Template Google Sheets..." /></Field>
-          <Field label="Meta Description"><textarea rows={3} value={form.metaDescription} onChange={(e) => setForm({ ...form, metaDescription: e.target.value })} className={inputCls + " resize-none"} placeholder="Deskripsi singkat untuk mesin pencari..." /></Field>
-          <Field label="Keywords (pisah koma)"><input type="text" value={form.metaKeywords} onChange={(e) => setForm({ ...form, metaKeywords: e.target.value })} className={inputCls} placeholder="google sheets, template, otomasi..." /></Field>
-        </SettingsCard>
-
-        {/* Kontak */}
-        <SettingsCard title="Kontak & Link">
-          <Field label="Nomor WhatsApp">
-            <div className="flex items-center gap-2">
-              <span className="text-[15px] text-neutral-500 font-mono flex-shrink-0">+62</span>
-              <input type="text" value={form.whatsappNumber} onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value.replace(/\D/g, "") })} className={inputCls + " font-mono"} placeholder="81234567890" />
-            </div>
-            <p className="text-[12px] text-neutral-600 mt-2">Tanpa tanda + atau 0 di depan.</p>
-          </Field>
-          <Field label="Main Lynk.id URL"><input type="url" value={form.mainLynkUrl} onChange={(e) => setForm({ ...form, mainLynkUrl: e.target.value })} className={inputCls} placeholder="https://lynk.id/pakarsheet" /></Field>
-        </SettingsCard>
-
-        {/* Shop Header */}
-        <SettingsCard title="Shop — Header">
-          <Field label="Badge Text">
-            <input type="text" value={form.shopBadgeText} onChange={(e) => setForm({ ...form, shopBadgeText: e.target.value })} className={inputCls} placeholder="Koleksi Template Premium" />
-          </Field>
-          <Field label="Judul Halaman">
-            <textarea rows={2} value={form.shopTitle} onChange={(e) => setForm({ ...form, shopTitle: e.target.value })} className={inputCls + " resize-none"} placeholder="Senjata Rahasia Operasional Bisnis." />
-            <p className="text-[12px] text-neutral-600 mt-2">Gunakan baris baru (\n) untuk memisah baris. Baris ke-2 akan tampil abu-abu.</p>
-          </Field>
-          <Field label="Subtitle">
-            <textarea rows={3} value={form.shopSubtitle} onChange={(e) => setForm({ ...form, shopSubtitle: e.target.value })} className={inputCls + " resize-none"} placeholder="Pilih sistem siap pakai yang telah dioptimasi..." />
-          </Field>
-          <Field label="Kategori Produk (pisah koma)">
-            <input type="text" value={form.shopCategories} onChange={(e) => setForm({ ...form, shopCategories: e.target.value })} className={inputCls} placeholder="Keuangan, Marketing, Inventory, HR & Admin, Lainnya" />
-            <p className="text-[12px] text-neutral-600 mt-2">&quot;Semua&quot; otomatis ditambahkan di awal.</p>
-          </Field>
-        </SettingsCard>
-
-        {/* Shop CTA */}
-        <SettingsCard title="Shop — Tombol & Catatan">
-          <Field label="Teks Tombol Beli">
-            <input type="text" value={form.shopCtaText} onChange={(e) => setForm({ ...form, shopCtaText: e.target.value })} className={inputCls} placeholder="Beli Sekarang" />
-          </Field>
-          <Field label="Catatan Pembayaran">
-            <input type="text" value={form.shopPaymentNote} onChange={(e) => setForm({ ...form, shopPaymentNote: e.target.value })} className={inputCls} placeholder="🔒 Pembayaran aman via Lynk.id" />
-          </Field>
-        </SettingsCard>
-
-        {/* Trust Badges */}
-        <SettingsCard
-          title="Shop — Trust Badges"
-          action={
-            <button type="button" onClick={addTrustBadge} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-neutral-400 hover:text-white transition-colors">
-              <Plus size={14} /> Tambah
-            </button>
-          }
-        >
-          <p className="text-[13px] text-neutral-600">Tampil di bawah gambar produk di halaman detail.</p>
-          {trustBadges.length === 0 && (
-            <p className="text-[13px] text-neutral-700 italic">Kosong = pakai default (Premium Quality, Lifetime Update, Cloud Sync).</p>
-          )}
-          {trustBadges.map((badge, i) => (
-            <div key={i} className="flex items-center gap-2.5">
-              <select value={badge.icon} onChange={(e) => updateTrustBadge(i, "icon", e.target.value)} className={inputCls + " appearance-none w-40 flex-shrink-0"}>
-                {ICON_OPTIONS.map((ic) => <option key={ic} value={ic} className="bg-black">{ic}</option>)}
-              </select>
-              <input type="text" value={badge.label} onChange={(e) => updateTrustBadge(i, "label", e.target.value)} className={inputCls} placeholder="Premium Quality" />
-              <IconBtn label="Hapus" variant="danger" onClick={() => removeTrustBadge(i)}><X size={15} /></IconBtn>
-            </div>
-          ))}
-        </SettingsCard>
-
-        {/* Global Shop Features */}
-        <SettingsCard
-          title="Shop — Fitur Unggulan (Default)"
-          action={
-            <button type="button" onClick={addShopFeature} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-neutral-400 hover:text-white transition-colors">
-              <Plus size={14} /> Tambah
-            </button>
-          }
-        >
-          <p className="text-[13px] text-neutral-600">Dipakai untuk semua produk yang tidak punya fitur sendiri. Kosong = pakai bawaan sistem.</p>
-          {shopFeatures.map((feat, i) => (
-            <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[12px] font-semibold text-neutral-500 uppercase tracking-[0.14em]">Fitur {i + 1}</span>
-                <IconBtn label="Hapus" variant="danger" onClick={() => removeShopFeature(i)}><X size={14} /></IconBtn>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <input type="text" value={feat.title} onChange={(e) => updateShopFeature(i, "title", e.target.value)} className={inputCls} placeholder="Nama Fitur" />
-                <select value={feat.icon} onChange={(e) => updateShopFeature(i, "icon", e.target.value)} className={inputCls + " appearance-none"}>
-                  {ICON_OPTIONS.map((ic) => <option key={ic} value={ic} className="bg-black">{ic}</option>)}
-                </select>
-              </div>
-              <textarea rows={2} value={feat.desc} onChange={(e) => updateShopFeature(i, "desc", e.target.value)} className={inputCls + " resize-none"} placeholder="Deskripsi singkat fitur ini..." />
-            </div>
-          ))}
-        </SettingsCard>
-
-        <div className="pt-3">
-          <button type="submit" disabled={saving} className="inline-flex items-center gap-2 bg-white text-black text-[15px] font-semibold px-7 py-3.5 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50">
+      <PageHeader
+        title="Settings"
+        subtitle="Kelola identitas website dan pengalaman toko dari satu layar."
+        action={
+          <button type="submit" form="settings-form" disabled={saving} className="inline-flex items-center gap-2 bg-white text-black text-[15px] font-semibold px-6 py-3 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50">
             {saving ? <><div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />Menyimpan...</>
-              : ok ? <><Check size={17} />Tersimpan!</>
-              : <><Save size={17} />Simpan Pengaturan</>}
+              : ok ? <><Check size={17} />Tersimpan</>
+              : <><Save size={17} />Simpan</>}
           </button>
-        </div>
+        }
+      />
+
+      <form id="settings-form" onSubmit={handleSave} className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
+        <SettingsCard
+          title="Site Identity"
+          action={<span className="text-[11px] text-neutral-600 font-semibold uppercase tracking-[0.14em]">Brand · SEO · Contact</span>}
+        >
+          <div className="flex items-center gap-4 pb-6 border-b border-white/8">
+            <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+              {form.logoUrl ? (
+                <Image src={form.logoUrl} alt="Logo preview" width={64} height={64} className="object-contain w-full h-full" unoptimized />
+              ) : (
+                <span className="text-2xl font-black text-white/80">{brandPreview.charAt(0).toUpperCase()}</span>
+              )}
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-xl font-semibold text-white tracking-tight truncate">{brandPreview}</p>
+                <div className="w-5 h-5 rounded-md bg-white/[0.04] border border-white/8 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {form.faviconUrl ? (
+                    <Image src={form.faviconUrl} alt="Favicon preview" width={20} height={20} className="object-contain w-full h-full" unoptimized />
+                  ) : (
+                    <ImageIcon size={10} className="text-neutral-600" />
+                  )}
+                </div>
+              </div>
+              <p className="text-[13px] text-neutral-500 leading-relaxed">
+                Preview ringkas untuk navbar, footer, metadata, dan tombol kontak.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            <div className="flex items-center gap-2">
+              <ImageIcon size={15} className="text-neutral-500" />
+              <h3 className="text-[13px] font-bold text-white uppercase tracking-[0.14em]">Branding</h3>
+            </div>
+            <Field label="Nama Brand">
+              <input
+                type="text"
+                value={form.brandName}
+                onChange={(e) => setForm({ ...form, brandName: e.target.value })}
+                className={inputCls}
+                placeholder="Pakarsheet"
+              />
+              <p className="text-[12px] text-neutral-600 mt-2">Tampil di samping logo pada Navbar dan Footer.</p>
+            </Field>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>Logo (PNG/SVG, maks 2MB)</label>
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {form.logoUrl ? (
+                      <Image src={form.logoUrl} alt="Logo" width={56} height={56} className="object-contain w-full h-full" unoptimized />
+                    ) : (
+                      <ImageIcon size={17} className="text-neutral-700" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1.5 min-w-0">
+                    <label className="inline-flex items-center justify-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white text-[13px] font-medium px-4 py-2.5 rounded-xl transition-colors cursor-pointer">
+                      <ImageIcon size={13} />
+                      {uploadingKind === "logo" ? "Mengunggah..." : form.logoUrl ? "Ganti" : "Unggah"}
+                      <input type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="hidden" onChange={onLogoPick} disabled={uploadingKind !== null} />
+                    </label>
+                    {form.logoUrl && (
+                      <button type="button" onClick={() => setForm((f) => ({ ...f, logoUrl: "" }))} className="text-left text-[12px] font-medium text-red-400 hover:text-red-300 transition-colors">
+                        Hapus logo
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className={labelCls}>Favicon (maks 512KB)</label>
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {form.faviconUrl ? (
+                      <Image src={form.faviconUrl} alt="Favicon" width={40} height={40} className="object-contain w-10 h-10" unoptimized />
+                    ) : (
+                      <ImageIcon size={17} className="text-neutral-700" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1.5 min-w-0">
+                    <label className="inline-flex items-center justify-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white text-[13px] font-medium px-4 py-2.5 rounded-xl transition-colors cursor-pointer">
+                      <ImageIcon size={13} />
+                      {uploadingKind === "favicon" ? "Mengunggah..." : form.faviconUrl ? "Ganti" : "Unggah"}
+                      <input type="file" accept=".ico,image/x-icon,image/vnd.microsoft.icon,image/png,image/svg+xml" className="hidden" onChange={onFaviconPick} disabled={uploadingKind !== null} />
+                    </label>
+                    {form.faviconUrl && (
+                      <button type="button" onClick={() => setForm((f) => ({ ...f, faviconUrl: "" }))} className="text-left text-[12px] font-medium text-red-400 hover:text-red-300 transition-colors">
+                        Hapus favicon
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {brandErr && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] px-4 py-3 rounded-lg">{brandErr}</div>
+            )}
+          </div>
+
+          <div className="space-y-5 pt-6 border-t border-white/8">
+            <div className="flex items-center gap-2">
+              <Globe size={15} className="text-neutral-500" />
+              <h3 className="text-[13px] font-bold text-white uppercase tracking-[0.14em]">SEO & Meta</h3>
+            </div>
+            <Field label="Meta Title">
+              <input type="text" value={form.metaTitle} onChange={(e) => setForm({ ...form, metaTitle: e.target.value })} className={inputCls} placeholder="Pakarsheet - Template Google Sheets..." />
+            </Field>
+            <Field label="Meta Description">
+              <textarea rows={3} value={form.metaDescription} onChange={(e) => setForm({ ...form, metaDescription: e.target.value })} className={inputCls + " resize-none"} placeholder="Deskripsi singkat untuk mesin pencari..." />
+            </Field>
+            <Field label="Keywords (pisah koma)">
+              <input type="text" value={form.metaKeywords} onChange={(e) => setForm({ ...form, metaKeywords: e.target.value })} className={inputCls} placeholder="google sheets, template, otomasi..." />
+            </Field>
+          </div>
+
+          <div className="space-y-5 pt-6 border-t border-white/8">
+            <div className="flex items-center gap-2">
+              <ExternalLink size={15} className="text-neutral-500" />
+              <h3 className="text-[13px] font-bold text-white uppercase tracking-[0.14em]">Kontak & Link</h3>
+            </div>
+            <Field label="Nomor WhatsApp">
+              <div className="flex items-center gap-2">
+                <span className="text-[15px] text-neutral-500 font-mono flex-shrink-0">+62</span>
+                <input type="text" value={form.whatsappNumber} onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value.replace(/\D/g, "") })} className={inputCls + " font-mono"} placeholder="81234567890" />
+              </div>
+              <p className="text-[12px] text-neutral-600 mt-2">Tanpa tanda + atau 0 di depan.</p>
+            </Field>
+            <Field label="Main Lynk.id URL">
+              <input type="url" value={form.mainLynkUrl} onChange={(e) => setForm({ ...form, mainLynkUrl: e.target.value })} className={inputCls} placeholder="https://lynk.id/pakarsheet" />
+            </Field>
+          </div>
+        </SettingsCard>
+
+        <SettingsCard
+          title="Shop Experience"
+          action={<span className="text-[11px] text-neutral-600 font-semibold uppercase tracking-[0.14em]">{categoryPreview.length || CATEGORIES.length} Categories</span>}
+        >
+          <div className="pb-6 border-b border-white/8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/8 text-[12px] text-neutral-400 mb-4">
+              <Tag size={13} className="text-neutral-500" />
+              {form.shopBadgeText || "Koleksi Template Premium"}
+            </div>
+            <h3 className="text-2xl md:text-3xl font-semibold text-white/90 tracking-tight leading-tight whitespace-pre-line">
+              {form.shopTitle || "Senjata Rahasia Operasional Bisnis."}
+            </h3>
+            <p className="text-[14px] text-neutral-500 leading-relaxed mt-3 line-clamp-2">
+              {form.shopSubtitle || "Pilih sistem siap pakai yang telah dioptimasi untuk kerja operasional yang lebih cepat."}
+            </p>
+          </div>
+
+          <div className="space-y-5">
+            <div className="flex items-center gap-2">
+              <AlignLeft size={15} className="text-neutral-500" />
+              <h3 className="text-[13px] font-bold text-white uppercase tracking-[0.14em]">Shop Header</h3>
+            </div>
+            <Field label="Badge Text">
+              <input type="text" value={form.shopBadgeText} onChange={(e) => setForm({ ...form, shopBadgeText: e.target.value })} className={inputCls} placeholder="Koleksi Template Premium" />
+            </Field>
+            <Field label="Judul Halaman">
+              <textarea rows={2} value={form.shopTitle} onChange={(e) => setForm({ ...form, shopTitle: e.target.value })} className={inputCls + " resize-none"} placeholder="Senjata Rahasia Operasional Bisnis." />
+              <p className="text-[12px] text-neutral-600 mt-2">Gunakan baris baru (\n) untuk memisah baris. Baris ke-2 akan tampil abu-abu.</p>
+            </Field>
+            <Field label="Subtitle">
+              <textarea rows={3} value={form.shopSubtitle} onChange={(e) => setForm({ ...form, shopSubtitle: e.target.value })} className={inputCls + " resize-none"} placeholder="Pilih sistem siap pakai yang telah dioptimasi..." />
+            </Field>
+            <Field label="Kategori Produk (pisah koma)">
+              <input type="text" value={form.shopCategories} onChange={(e) => setForm({ ...form, shopCategories: e.target.value })} className={inputCls} placeholder="Keuangan, Marketing, Inventory, HR & Admin, Lainnya" />
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {["Semua", ...(categoryPreview.length ? categoryPreview : CATEGORIES)].map((cat) => (
+                  <span key={cat} className="px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/8 text-[11px] text-neutral-500">{cat}</span>
+                ))}
+              </div>
+            </Field>
+          </div>
+
+          <div className="space-y-5 pt-6 border-t border-white/8">
+            <div className="flex items-center gap-2">
+              <MousePointerClick size={15} className="text-neutral-500" />
+              <h3 className="text-[13px] font-bold text-white uppercase tracking-[0.14em]">CTA & Payment</h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Teks Tombol Beli">
+                <input type="text" value={form.shopCtaText} onChange={(e) => setForm({ ...form, shopCtaText: e.target.value })} className={inputCls} placeholder="Beli Sekarang" />
+              </Field>
+              <Field label="Catatan Pembayaran">
+                <input type="text" value={form.shopPaymentNote} onChange={(e) => setForm({ ...form, shopPaymentNote: e.target.value })} className={inputCls} placeholder="Pembayaran aman via Lynk.id" />
+              </Field>
+            </div>
+          </div>
+
+          <div className="space-y-5 pt-6 border-t border-white/8">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Star size={15} className="text-neutral-500" />
+                <h3 className="text-[13px] font-bold text-white uppercase tracking-[0.14em]">Trust Badges</h3>
+              </div>
+              <button type="button" onClick={addTrustBadge} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-neutral-400 hover:text-white transition-colors">
+                <Plus size={14} /> Tambah
+              </button>
+            </div>
+            <p className="text-[13px] text-neutral-600">Tampil di bawah gambar produk di halaman detail.</p>
+            {trustBadges.length === 0 && (
+              <p className="text-[13px] text-neutral-700 italic">Kosong = pakai default (Premium Quality, Lifetime Update, Cloud Sync).</p>
+            )}
+            <div className="space-y-2.5">
+              {trustBadges.map((badge, i) => (
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-2.5 bg-white/[0.02] border border-white/5 rounded-xl p-3">
+                  <select value={badge.icon} onChange={(e) => updateTrustBadge(i, "icon", e.target.value)} className={inputCls + " appearance-none sm:w-40 flex-shrink-0"}>
+                    {ICON_OPTIONS.map((ic) => <option key={ic} value={ic} className="bg-black">{ic}</option>)}
+                  </select>
+                  <input type="text" value={badge.label} onChange={(e) => updateTrustBadge(i, "label", e.target.value)} className={inputCls} placeholder="Premium Quality" />
+                  <IconBtn label="Hapus" variant="danger" onClick={() => removeTrustBadge(i)}><X size={15} /></IconBtn>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-5 pt-6 border-t border-white/8">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Package size={15} className="text-neutral-500" />
+                <h3 className="text-[13px] font-bold text-white uppercase tracking-[0.14em]">Fitur Default Produk</h3>
+              </div>
+              <button type="button" onClick={addShopFeature} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-neutral-400 hover:text-white transition-colors">
+                <Plus size={14} /> Tambah
+              </button>
+            </div>
+            <p className="text-[13px] text-neutral-600">Dipakai untuk semua produk yang tidak punya fitur sendiri. Kosong = pakai bawaan sistem.</p>
+            <div className="space-y-3">
+              {shopFeatures.map((feat, i) => (
+                <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] font-semibold text-neutral-500 uppercase tracking-[0.14em]">Fitur {i + 1}</span>
+                    <IconBtn label="Hapus" variant="danger" onClick={() => removeShopFeature(i)}><X size={14} /></IconBtn>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <input type="text" value={feat.title} onChange={(e) => updateShopFeature(i, "title", e.target.value)} className={inputCls} placeholder="Nama Fitur" />
+                    <select value={feat.icon} onChange={(e) => updateShopFeature(i, "icon", e.target.value)} className={inputCls + " appearance-none"}>
+                      {ICON_OPTIONS.map((ic) => <option key={ic} value={ic} className="bg-black">{ic}</option>)}
+                    </select>
+                  </div>
+                  <textarea rows={2} value={feat.desc} onChange={(e) => updateShopFeature(i, "desc", e.target.value)} className={inputCls + " resize-none"} placeholder="Deskripsi singkat fitur ini..." />
+                </div>
+              ))}
+            </div>
+          </div>
+        </SettingsCard>
       </form>
     </motion.div>
   );
