@@ -164,7 +164,7 @@ export function StatsCounter() {
   ];
 
   return (
-    <section className="py-20 md:py-32 relative overflow-hidden">
+    <section className="py-32 md:py-40 relative overflow-hidden">
       {/* Background radial */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(255,255,255,0.02)_0%,transparent_70%)] pointer-events-none" />
 
@@ -176,26 +176,26 @@ export function StatsCounter() {
           variants={stagger}
           initial="hidden"
           animate={headerInView ? "show" : "hidden"}
-          className="text-center max-w-2xl mx-auto mb-16 md:mb-20"
+          className="text-center max-w-2xl mx-auto mb-20 md:mb-28"
         >
           <motion.div
             variants={fadeUp}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="mb-4"
+            className="mb-5"
           >
             <SectionEyebrow icon={TrendingUp} label="Hasil Nyata" />
           </motion.div>
           <motion.h2
             variants={fadeUp}
             transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
-            className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]"
+            className="text-5xl md:text-7xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.05]"
           >
             Angka yang bicara.
           </motion.h2>
           <motion.p
             variants={fadeUp}
             transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
-            className="text-neutral-400 text-lg leading-relaxed"
+            className="text-neutral-400 text-xl leading-relaxed"
           >
             Bukan klaim kosong. Ini hasil nyata dari pengguna yang sudah beralih ke Pakarsheet.
           </motion.p>

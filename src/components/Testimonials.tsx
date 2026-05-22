@@ -18,16 +18,16 @@ export function Testimonials() {
   const { testimonials: dbTestimonials, isLoading } = useData();
 
   return (
-    <section id="testimoni" className="py-20 md:py-32 border-t border-white/5">
+    <section id="testimoni" className="py-32 md:py-40 border-t border-white/5">
       <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16">
-        <div className="text-center max-w-2xl mx-auto mb-16 md:mb-20">
-          <div className="mb-4 flex justify-center">
+        <div className="text-center max-w-2xl mx-auto mb-20 md:mb-28">
+          <div className="mb-5 flex justify-center">
             <SectionEyebrow icon={Quote} label="Testimoni" />
           </div>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
+          <h2 className="text-5xl md:text-7xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.05]">
             Wall of love.
           </h2>
-          <p className="text-neutral-400 text-lg font-normal leading-relaxed">
+          <p className="text-neutral-400 text-xl font-normal leading-relaxed">
             Nggak perlu dengerin kata kami, dengerin aja dari mereka yang udah ngerasain hemat waktu berjam-jam tiap harinya.
           </p>
         </div>

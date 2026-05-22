@@ -73,10 +73,11 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-400 tracking-tight">
+          <nav aria-label="Navigasi utama" className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-400 tracking-tight">
             <Link href="/#fitur" className="hover:text-white transition-colors">Fitur</Link>
             <Link href="/tools" className="hover:text-white transition-colors">Tools</Link>
             <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
+            <Link href="/academy" className="hover:text-white transition-colors">Academy</Link>
             <Link href="/custom" className="hover:text-white transition-colors">Custom</Link>
             <Link href="/shop" className="hover:text-white transition-colors">Toko</Link>
           </nav>

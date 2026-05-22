@@ -330,7 +330,7 @@ export function NeuralGraph() {
   ];
 
   return (
-    <section className="py-20 md:py-32 relative overflow-hidden">
+    <section className="py-32 md:py-40 relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-white/[0.015] blur-[100px] rounded-full pointer-events-none" />
 
       <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16 relative">
@@ -341,15 +341,15 @@ export function NeuralGraph() {
           initial={{ opacity: 0, y: 24 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center max-w-2xl mx-auto mb-14"
+          className="text-center max-w-2xl mx-auto mb-16"
         >
-          <div className="mb-4 flex justify-center">
+          <div className="mb-5 flex justify-center">
             <SectionEyebrow icon={Network} label="Arsitektur" />
           </div>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
+          <h2 className="text-5xl md:text-7xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.05]">
             Semua terhubung,<br />semua otomatis.
           </h2>
-          <p className="text-neutral-400 text-lg leading-relaxed">
+          <p className="text-neutral-400 text-xl leading-relaxed">
             Pakarsheet jadi pusat kendali yang menghubungkan data, tim, dan output kamu — tanpa perlu coding satu baris pun.
           </p>
         </motion.div>

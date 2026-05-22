@@ -205,8 +205,8 @@ export default function ProductDetailPage({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Main image — 1:1 */}
-            <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-neutral-900 border border-white/[0.07] group">
+            {/* Main image — 16:10 */}
+            <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden bg-neutral-900 border border-white/[0.07] group">
               <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 navigation={{ prevEl: ".swiper-prev", nextEl: ".swiper-next" }}
@@ -296,10 +296,10 @@ export default function ProductDetailPage({
                   <Package size={9} />
                   {prod.category || "Template"}
                 </div>
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight leading-snug text-white mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight leading-snug text-white mb-2">
                   {prod.name}
                 </h1>
-                <p className="text-neutral-500 text-[13px] leading-relaxed">
+                <p className="text-neutral-500 text-sm leading-relaxed">
                   {sidebarDesc}
                   {hasLongDesc && (
                     <a
@@ -453,8 +453,8 @@ export default function ProductDetailPage({
               <Sparkles size={11} className="text-white/30" />
               <span className="text-[11px] font-semibold text-white/30 uppercase tracking-[0.18em]">Yang kamu dapat</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Fitur Unggulan</h2>
-            <p className="text-neutral-500 text-sm mt-1.5">Semua yang kamu butuhkan untuk mengelola bisnis lebih efisien.</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Fitur Unggulan</h2>
+            <p className="text-neutral-500 text-base mt-2">Semua yang kamu butuhkan untuk mengelola bisnis lebih efisien.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -468,13 +468,13 @@ export default function ProductDetailPage({
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-20px" }}
                   transition={{ delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                  className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.03] hover:border-white/[0.08] transition-all duration-300"
+                  className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.03] hover:border-white/[0.08] transition-all duration-300"
                 >
-                  <div className={`w-9 h-9 rounded-xl ${s.bg} border ${s.border} flex items-center justify-center mb-4`}>
-                    <Icon size={16} className={s.text} />
+                  <div className={`w-10 h-10 rounded-xl ${s.bg} border ${s.border} flex items-center justify-center mb-5`}>
+                    <Icon size={18} className={s.text} />
                   </div>
-                  <h4 className="text-sm font-semibold text-white/90 mb-1.5 tracking-tight">{feature.title}</h4>
-                  <p className="text-neutral-500 text-xs leading-relaxed">{feature.desc}</p>
+                  <h4 className="text-base font-semibold text-white/90 mb-2 tracking-tight">{feature.title}</h4>
+                  <p className="text-neutral-500 text-sm leading-relaxed">{feature.desc}</p>
                 </motion.div>
               );
             })}

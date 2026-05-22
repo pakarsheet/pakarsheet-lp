@@ -52,7 +52,10 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL("https://pakarsheet.com"),
     title,
     description,
-    keywords: settings?.metaKeywords || undefined,
+    keywords: settings?.metaKeywords || "template google sheets, otomasi apps script, template bisnis, spreadsheet premium, pakarsheet",
+    alternates: {
+      canonical: "https://pakarsheet.com",
+    },
     // Override the file-convention favicon.ico when admin configured one.
     icons: faviconUrl
       ? {

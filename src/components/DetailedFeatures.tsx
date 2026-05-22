@@ -44,7 +44,7 @@ export function DetailedFeatures() {
   const gridInView = useInView(gridRef, { once: true, margin: "-60px" });
 
   return (
-    <section className="py-20 md:py-32 border-t border-white/5">
+    <section className="py-32 md:py-40 border-t border-white/5">
       <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16">
 
         <motion.div
@@ -52,15 +52,15 @@ export function DetailedFeatures() {
           variants={stagger}
           initial="hidden"
           animate={headerInView ? "show" : "hidden"}
-          className="text-center max-w-2xl mx-auto mb-16 md:mb-20"
+          className="text-center max-w-2xl mx-auto mb-20 md:mb-28"
         >
-          <motion.div variants={fadeUp} className="mb-4">
+          <motion.div variants={fadeUp} className="mb-5">
             <SectionEyebrow icon={Zap} label="Kemampuan" />
           </motion.div>
-          <motion.h2 variants={fadeUp} className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
+          <motion.h2 variants={fadeUp} className="text-5xl md:text-7xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.05]">
             Bekerja lebih cerdas
           </motion.h2>
-          <motion.p variants={fadeUp} className="text-neutral-400 text-lg font-normal leading-relaxed">
+          <motion.p variants={fadeUp} className="text-neutral-400 text-xl font-normal leading-relaxed">
             Kami menyisipkan puluhan jam kerja teknis ke dalam setiap baris kode Apps Script, supaya kamu tidak perlu melakukan hal yang sama berulang kali.
           </motion.p>
         </motion.div>
@@ -70,19 +70,19 @@ export function DetailedFeatures() {
           variants={stagger}
           initial="hidden"
           animate={gridInView ? "show" : "hidden"}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl mx-auto"
+          className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-6xl mx-auto"
         >
           {detailedFeatures.map((f, i) => (
             <motion.div
               key={i}
               variants={fadeUp}
-              className="p-8 rounded-[32px] border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors duration-300 group"
+              className="p-10 rounded-[32px] border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors duration-300 group"
             >
-              <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/8 flex items-center justify-center mb-6">
-                <f.icon size={17} className="text-white/40" />
+              <div className="w-11 h-11 rounded-2xl bg-white/[0.06] border border-white/8 flex items-center justify-center mb-7">
+                <f.icon size={20} className="text-white/40" aria-hidden="true" />
               </div>
-              <h3 className="text-xl font-semibold text-white/90 mb-3 tracking-tight">{f.title}</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed font-normal">{f.desc}</p>
+              <h3 className="text-2xl font-semibold text-white/90 mb-4 tracking-tight">{f.title}</h3>
+              <p className="text-neutral-500 text-base leading-relaxed font-normal">{f.desc}</p>
             </motion.div>
           ))}
         </motion.div>

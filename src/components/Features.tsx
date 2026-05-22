@@ -295,17 +295,17 @@ function FeatureRow({ eyebrow, title, desc, icon: Icon, visual, reverse }: Featu
       className={`grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center ${reverse ? "md:[&>*:first-child]:order-2" : ""}`}
     >
       {/* Text side */}
-      <motion.div variants={fadeUp} className="space-y-6">
+      <motion.div variants={fadeUp} className="space-y-7">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white/6 border border-white/8 flex items-center justify-center">
-            <Icon size={17} className="text-white/50" />
+          <div className="w-11 h-11 rounded-2xl bg-white/6 border border-white/8 flex items-center justify-center">
+            <Icon size={20} className="text-white/50" aria-hidden="true" />
           </div>
           <span className="text-xs font-medium tracking-[0.18em] uppercase text-white/30">{eyebrow}</span>
         </div>
-        <h3 className="text-3xl md:text-5xl font-semibold text-white/90 tracking-tight leading-[1.1]">
+        <h3 className="text-4xl md:text-6xl font-semibold text-white/90 tracking-tight leading-[1.05]">
           {title}
         </h3>
-        <p className="text-neutral-400 text-base leading-relaxed">{desc}</p>
+        <p className="text-neutral-400 text-lg leading-relaxed">{desc}</p>
       </motion.div>
 
       {/* Visual side */}
@@ -357,7 +357,7 @@ export function Features() {
   ];
 
   return (
-    <section id="fitur" className="py-20 md:py-32 relative overflow-hidden">
+    <section id="fitur" className="py-32 md:py-40 relative overflow-hidden">
       {/* Subtle background accent */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-white/[0.015] blur-[120px] rounded-full pointer-events-none" />
 
@@ -368,21 +368,21 @@ export function Features() {
           variants={stagger}
           initial="hidden"
           animate={headerInView ? "show" : "hidden"}
-          className="text-center max-w-2xl mx-auto mb-24 md:mb-32"
+          className="text-center max-w-2xl mx-auto mb-28 md:mb-40"
         >
-          <motion.div variants={fadeUp} className="mb-4">
+          <motion.div variants={fadeUp} className="mb-5">
             <SectionEyebrow icon={Layers} label="Fitur Unggulan" />
           </motion.div>
-          <motion.h2 variants={fadeUp} className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
+          <motion.h2 variants={fadeUp} className="text-5xl md:text-7xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.05]">
             Fitur yang bikin <br /> saingan kamu iri.
           </motion.h2>
-          <motion.p variants={fadeUp} className="text-neutral-400 text-lg leading-relaxed">
+          <motion.p variants={fadeUp} className="text-neutral-400 text-xl leading-relaxed">
             Bukan sekadar spreadsheet. Ini adalah sistem operasi mini untuk bisnis kamu yang haus akan efisiensi.
           </motion.p>
         </motion.div>
 
         {/* Feature rows */}
-        <div className="space-y-20 md:space-y-40 max-w-6xl mx-auto">
+        <div className="space-y-28 md:space-y-48 max-w-6xl mx-auto">
           {features.map((f, i) => (
             <FeatureRow key={i} {...f} />
           ))}

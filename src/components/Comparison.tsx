@@ -29,7 +29,7 @@ export function Comparison() {
   const tableInView = useInView(tableRef, { once: true, margin: "-60px" });
 
   return (
-    <section className="py-20 md:py-32">
+    <section className="py-32 md:py-40">
       <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16">
 
         <motion.div
@@ -38,15 +38,15 @@ export function Comparison() {
           initial="hidden"
           animate={headerInView ? "show" : "hidden"}
           transition={{ staggerChildren: 0.1 }}
-          className="text-center max-w-2xl mx-auto mb-16 md:mb-20"
+          className="text-center max-w-2xl mx-auto mb-20 md:mb-28"
         >
-          <motion.div variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut" }} className="mb-4">
+          <motion.div variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut" }} className="mb-5">
             <SectionEyebrow icon={GitCompare} label="Perbandingan" />
           </motion.div>
-          <motion.h2 variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }} className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
+          <motion.h2 variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }} className="text-5xl md:text-7xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.05]">
             Beda kelas, beda hasil.
           </motion.h2>
-          <motion.p variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }} className="text-neutral-400 text-lg font-normal leading-relaxed">
+          <motion.p variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }} className="text-neutral-400 text-xl font-normal leading-relaxed">
             Kenapa harus bayar kalau bisa bikin sendiri? Karena waktu kamu lebih mahal dari harga template ini.
           </motion.p>
         </motion.div>

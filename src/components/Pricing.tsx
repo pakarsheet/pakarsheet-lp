@@ -65,7 +65,7 @@ export function Pricing() {
   const gridInView = useInView(gridRef, { once: true, margin: "-60px" });
 
   return (
-    <section id="beli" className="py-20 md:py-32 relative overflow-hidden">
+    <section id="beli" className="py-32 md:py-40 relative overflow-hidden">
       {/* Subtle background blob */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-white/[0.012] blur-[120px] rounded-full pointer-events-none" />
 
@@ -77,15 +77,15 @@ export function Pricing() {
           variants={stagger}
           initial="hidden"
           animate={headerInView ? "show" : "hidden"}
-          className="text-center max-w-2xl mx-auto mb-16 md:mb-20"
+          className="text-center max-w-2xl mx-auto mb-20 md:mb-28"
         >
-          <motion.div variants={fadeUp} className="mb-4">
+          <motion.div variants={fadeUp} className="mb-5">
             <SectionEyebrow icon={Tag} label="Harga" />
           </motion.div>
-          <motion.h2 variants={fadeUp} className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
+          <motion.h2 variants={fadeUp} className="text-5xl md:text-7xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.05]">
             Investasi pintar. <br /> Sekali seumur hidup.
           </motion.h2>
-          <motion.p variants={fadeUp} className="text-neutral-400 text-lg font-normal leading-relaxed">
+          <motion.p variants={fadeUp} className="text-neutral-400 text-xl font-normal leading-relaxed">
             Hentikan iuran bulanan yang menguras kantong.{" "}
             <br className="hidden md:block" />
             Dapatkan otomasi kelas industri dengan harga sekali jajan.

@@ -33,16 +33,16 @@ export function FAQ() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   return (
-    <section id="faq" className="py-20 md:py-32 relative">
+    <section id="faq" className="py-32 md:py-40 relative">
       <div className="container mx-auto px-4 md:px-10 lg:px-12 xl:px-16">
-        <div className="text-center max-w-2xl mx-auto mb-16 md:mb-20">
-          <div className="mb-4 flex justify-center">
+        <div className="text-center max-w-2xl mx-auto mb-20 md:mb-28">
+          <div className="mb-5 flex justify-center">
             <SectionEyebrow icon={HelpCircle} label="FAQ" />
           </div>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.1]">
+          <h2 className="text-5xl md:text-7xl font-semibold tracking-tight text-white/90 mb-6 leading-[1.05]">
             Tanya jawab santai.
           </h2>
-          <p className="text-neutral-400 text-lg font-normal leading-relaxed">
+          <p className="text-neutral-400 text-xl font-normal leading-relaxed">
             Masih ada yang ganjel? Mungkin jawaban yang kamu cari ada di bawah sini.
           </p>
         </div>
@@ -53,6 +53,7 @@ export function FAQ() {
               <button
                 type="button"
                 aria-expanded={activeIndex === i}
+                aria-controls={`faq-panel-${i}`}
                 className="w-full p-6 flex items-center justify-between gap-4 text-left"
                 onClick={() => setActiveIndex(activeIndex === i ? null : i)}
               >
@@ -68,6 +69,9 @@ export function FAQ() {
               <AnimatePresence mode="wait">
                 {activeIndex === i && (
                   <motion.div
+                    id={`faq-panel-${i}`}
+                    role="region"
+                    aria-labelledby={`faq-btn-${i}`}
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}

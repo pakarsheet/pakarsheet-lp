@@ -17,7 +17,7 @@ function ProductSkeleton() {
   return (
     <div className="h-full relative flex flex-col rounded-[32px] border border-white/5 bg-[#0a0a0a] overflow-hidden animate-pulse">
       <div className="p-3 pb-0">
-        <div className="w-full aspect-square rounded-[24px] bg-white/5" />
+        <div className="w-full aspect-[4/3] rounded-[24px] bg-white/5" />
       </div>
       <div className="p-8 flex flex-col flex-1">
         <div className="flex items-center gap-2 mb-4">
@@ -93,7 +93,7 @@ export default function ShopClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-semibold tracking-tight text-white mb-6 leading-[1.1]"
+            className="text-6xl md:text-8xl font-semibold tracking-tight text-white mb-6 leading-[1.02]"
           >
             {shopTitle.includes("\n") ? (
               shopTitle.split("\n").map((line, i) => (
@@ -186,7 +186,7 @@ export default function ShopClient() {
                 <Link href={`/shop/${product.id}`} className="block group h-full">
                   <div className="h-full relative flex flex-col rounded-[32px] border border-white/10 bg-[#0a0a0a] overflow-hidden hover:border-white/20 hover:bg-[#0f0f0f] transition-all duration-500">
                     <div className="p-3 pb-0 z-10">
-                      <div className="relative w-full aspect-square rounded-[24px] bg-neutral-900 overflow-hidden shadow-2xl border border-white/5">
+                      <div className="relative w-full aspect-[4/3] rounded-[24px] bg-neutral-900 overflow-hidden shadow-2xl border border-white/5">
                         <Image
                           src={(product.images && product.images.length > 0) ? product.images[0] : (product.image || "")}
                           alt={product.name}

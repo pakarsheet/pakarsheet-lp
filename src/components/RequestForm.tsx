@@ -77,7 +77,7 @@ export function RequestForm() {
     <section
       id="request"
       ref={sectionRef}
-      className="py-20 md:py-32 border-t border-white/5 relative overflow-hidden"
+      className="py-32 md:py-40 border-t border-white/5 relative overflow-hidden"
     >
       {/* Ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-white/[0.015] blur-[120px] rounded-full pointer-events-none" />
@@ -95,7 +95,7 @@ export function RequestForm() {
           </motion.div>
           <motion.h2
             variants={fadeUp}
-            className="text-[32px] sm:text-4xl md:text-6xl font-semibold tracking-tight text-white/90 mb-4 md:mb-6 leading-[1.1]"
+            className="text-[36px] sm:text-5xl md:text-7xl font-semibold tracking-tight text-white/90 mb-4 md:mb-6 leading-[1.05]"
           >
             Nggak nemu yang kamu cari?
           </motion.h2>
