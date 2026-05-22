@@ -229,7 +229,7 @@ export default function ProductDetailPage({
           HERO — full-width gallery + sticky panel
       ════════════════════════════════════════════════════════ */}
       <section className="pt-12">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] xl:grid-cols-[1fr_460px] min-h-[calc(100vh-48px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] xl:grid-cols-[1fr_460px]">
 
           {/* ── LEFT: Immersive Gallery ── */}
           <motion.div
@@ -244,8 +244,8 @@ export default function ProductDetailPage({
               <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Official Product</span>
             </div>
 
-            {/* Main swiper — fills available height */}
-            <div className="relative flex-1 min-h-[320px] lg:min-h-0 group">
+            {/* Main swiper — 1:1 aspect ratio */}
+            <div className="relative aspect-square w-full group">
               <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 navigation={{ prevEl: ".swiper-prev", nextEl: ".swiper-next" }}
