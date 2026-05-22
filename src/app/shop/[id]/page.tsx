@@ -201,7 +201,7 @@ export default function ProductDetailPage({
   const catStyle = CATEGORY_STYLES[prod.category ?? ""] ?? DEFAULT_CAT_STYLE;
   const buyerCount = prod.socialProofCount != null
     ? prod.socialProofCount
-    : prod.clicks > 0 ? Math.max(1, Math.floor(prod.clicks * 0.15)) : null;
+    : (prod.clicks ?? 0) > 0 ? Math.max(1, Math.floor((prod.clicks ?? 0) * 0.15)) : null;
 
   return (
     <div className="min-h-screen bg-[#030303] text-white">
