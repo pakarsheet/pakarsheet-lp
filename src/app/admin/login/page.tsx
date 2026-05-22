@@ -49,12 +49,12 @@ function AdminLoginInner() {
           <span className="font-bold text-white text-lg">Pakarsheet Admin</span>
         </div>
 
-        <form onSubmit={submit} className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-8">
-          <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-5">
-            <Lock size={18} className="text-neutral-400" />
+        <form onSubmit={submit} className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-8 md:p-10">
+          <div className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+            <Lock size={22} className="text-neutral-400" />
           </div>
-          <h1 className="text-lg font-bold text-white mb-1.5">Masuk ke Dashboard</h1>
-          <p className="text-[14px] text-neutral-500 mb-6">
+          <h1 className="text-2xl font-bold text-white mb-2">Masuk ke Dashboard</h1>
+          <p className="text-base text-neutral-500 mb-8">
             Masukkan password admin untuk melanjutkan.
           </p>
 
@@ -63,14 +63,14 @@ function AdminLoginInner() {
             placeholder="Password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-[15px] text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition-colors"
+            className="w-full bg-white/[0.05] border border-white/10 rounded-2xl px-5 py-4 text-base text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 focus:bg-white/[0.07] transition-all"
             autoComplete="current-password"
             autoFocus
           />
 
           {error && (
-            <div className="flex items-center gap-2 text-red-400 text-[13px] bg-red-500/10 border border-red-500/20 rounded-xl px-3.5 py-3 mt-4">
-              <AlertCircle size={14} />
+            <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3.5 mt-4">
+              <AlertCircle size={15} />
               {error}
             </div>
           )}
@@ -78,7 +78,7 @@ function AdminLoginInner() {
           <button
             type="submit"
             disabled={loading || !password}
-            className="mt-4 w-full bg-white text-black text-[15px] font-bold py-4 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="mt-5 w-full bg-white text-black text-base font-bold py-4 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>

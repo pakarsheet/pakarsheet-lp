@@ -70,8 +70,8 @@ type AdminSidebarProps = {
 };
 
 // ─── Shared Primitives ────────────────────────────────────────────────────────
-const inputCls = "w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-[15px] text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition-colors";
-const labelCls = "block text-[12px] font-semibold text-neutral-500 uppercase tracking-[0.14em] mb-2";
+const inputCls = "w-full bg-white/[0.05] border border-white/10 rounded-2xl px-5 py-4 text-base text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 focus:bg-white/[0.07] transition-all";
+const labelCls = "block text-sm font-semibold text-neutral-400 mb-2.5";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><label className={labelCls}>{label}</label>{children}</div>;
@@ -96,16 +96,16 @@ function ConfirmModal({ open, message, onConfirm, onCancel }: {
             transition={{ type: "spring", damping: 28, stiffness: 320 }}
             role="dialog"
             aria-modal="true"
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[80] w-[calc(100%-2rem)] max-w-md bg-[#111] border border-white/10 rounded-2xl p-7 shadow-2xl"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[80] w-[calc(100%-2rem)] max-w-md bg-[#111] border border-white/10 rounded-2xl p-8 shadow-2xl"
           >
-            <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
-              <Trash2 size={20} className="text-red-400" />
+            <div className="w-14 h-14 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-5">
+              <Trash2 size={22} className="text-red-400" />
             </div>
-            <h3 className="text-[17px] font-semibold text-white mb-1.5">Konfirmasi Hapus</h3>
-            <p className="text-[14px] text-neutral-500 mb-6 leading-relaxed">{message}</p>
-            <div className="flex gap-2.5">
-              <button onClick={onCancel} className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-[14px] font-medium text-neutral-300 hover:text-white hover:bg-white/10 transition-colors">Batal</button>
-              <button onClick={onConfirm} className="flex-1 py-3 rounded-xl bg-red-500/15 border border-red-500/25 text-[14px] font-semibold text-red-400 hover:bg-red-500/25 transition-colors">Hapus</button>
+            <h3 className="text-xl font-semibold text-white mb-2">Konfirmasi Hapus</h3>
+            <p className="text-base text-neutral-500 mb-7 leading-relaxed">{message}</p>
+            <div className="flex gap-3">
+              <button onClick={onCancel} className="flex-1 py-3.5 rounded-xl bg-white/5 border border-white/10 text-base font-medium text-neutral-300 hover:text-white hover:bg-white/10 transition-colors">Batal</button>
+              <button onClick={onConfirm} className="flex-1 py-3.5 rounded-xl bg-red-500/15 border border-red-500/25 text-base font-semibold text-red-400 hover:bg-red-500/25 transition-colors">Hapus</button>
             </div>
           </motion.div>
         </>
@@ -118,8 +118,8 @@ function PageHeader({ title, subtitle, action }: { title: string; subtitle?: str
   return (
     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-10 md:mb-12">
       <div className="min-w-0">
-        <h1 className="text-3xl md:text-[34px] font-bold text-white tracking-tight leading-tight">{title}</h1>
-        {subtitle && <p className="text-[14px] md:text-[15px] text-neutral-500 mt-2">{subtitle}</p>}
+        <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight">{title}</h1>
+        {subtitle && <p className="text-base text-neutral-500 mt-2.5">{subtitle}</p>}
       </div>
       {action && <div className="flex-shrink-0">{action}</div>}
     </div>
@@ -128,23 +128,23 @@ function PageHeader({ title, subtitle, action }: { title: string; subtitle?: str
 
 function AddButton({ onClick, label = "Tambah" }: { onClick: () => void; label?: string }) {
   return (
-    <button onClick={onClick} className="inline-flex items-center gap-2 bg-white text-black text-[14px] font-semibold px-5 py-3 rounded-xl hover:bg-neutral-100 transition-colors">
-      <Plus size={17} /> {label}
+    <button onClick={onClick} className="inline-flex items-center gap-2 bg-white text-black text-base font-semibold px-6 py-3.5 rounded-xl hover:bg-neutral-100 transition-colors">
+      <Plus size={18} /> {label}
     </button>
   );
 }
 
 function StatCard({ title, value, icon: Icon, sub }: { title: string; value: string | number; icon: React.ElementType; sub?: string }) {
   return (
-    <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 md:p-7">
+    <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 md:p-8">
       <div className="flex items-center justify-between mb-5">
-        <span className="text-[12px] font-semibold text-neutral-500 uppercase tracking-[0.14em]">{title}</span>
-        <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/8 flex items-center justify-center text-neutral-400">
-          <Icon size={17} />
+        <span className="text-sm font-semibold text-neutral-500 uppercase tracking-[0.14em]">{title}</span>
+        <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center text-neutral-400">
+          <Icon size={19} />
         </div>
       </div>
-      <div className="text-4xl md:text-5xl font-bold text-white tracking-tight tabular-nums">{value}</div>
-      {sub && <p className="text-[13px] text-neutral-600 mt-2">{sub}</p>}
+      <div className="text-5xl md:text-6xl font-bold text-white tracking-tight tabular-nums">{value}</div>
+      {sub && <p className="text-sm text-neutral-600 mt-2.5">{sub}</p>}
     </div>
   );
 }
@@ -170,9 +170,9 @@ function LoadingRows() {
 
 function SubmitBtn({ loading, success, label }: { loading: boolean; success: boolean; label: string }) {
   return (
-    <button type="submit" disabled={loading} className="w-full bg-white text-black text-[15px] font-semibold py-4 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+    <button type="submit" disabled={loading} className="w-full bg-white text-black text-base font-semibold py-4 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
       {loading ? <><div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />Menyimpan...</>
-        : success ? <><Check size={17} />Tersimpan!</>
+        : success ? <><Check size={18} />Tersimpan!</>
         : label}
     </button>
   );
@@ -211,9 +211,9 @@ function IconBtn({
 
 function SettingsCard({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 md:p-7 space-y-6">
+    <section className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-7 md:p-8 space-y-6">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-[14px] font-bold text-white uppercase tracking-[0.14em]">{title}</h2>
+        <h2 className="text-sm font-bold text-white uppercase tracking-[0.14em]">{title}</h2>
         {action}
       </div>
       {children}
@@ -238,10 +238,10 @@ function Drawer({ open, onClose, title, children }: { open: boolean; onClose: ()
             aria-label={title}
             className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#0a0a0a] border-l border-white/8 z-[60] flex flex-col shadow-2xl"
           >
-            <div className="flex items-center justify-between px-7 py-5 border-b border-white/8 flex-shrink-0">
-              <h2 className="text-[17px] font-semibold text-white">{title}</h2>
-              <button onClick={onClose} aria-label="Tutup" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition-colors">
-                <X size={17} />
+            <div className="flex items-center justify-between px-8 py-6 border-b border-white/8 flex-shrink-0">
+              <h2 className="text-xl font-semibold text-white">{title}</h2>
+              <button onClick={onClose} aria-label="Tutup" className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition-colors">
+                <X size={18} />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar">{children}</div>
@@ -288,10 +288,10 @@ function AdminSidebar({
                 if (mobile) onMobileClose();
               }}
               aria-current={active ? "page" : undefined}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-[14px] transition-colors ${active ? "bg-white/10 text-white font-semibold" : "text-neutral-400 hover:text-white hover:bg-white/5"}`}
+              className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-[15px] transition-colors ${active ? "bg-white/10 text-white font-semibold" : "text-neutral-400 hover:text-white hover:bg-white/5"}`}
             >
               <div className="flex items-center gap-3">
-                <item.icon size={17} className={active ? "text-white" : "text-neutral-500"} />
+                <item.icon size={18} className={active ? "text-white" : "text-neutral-500"} />
                 {item.label}
               </div>
               <div className="flex items-center gap-1.5">
@@ -621,7 +621,7 @@ function TestimonialsTab({
         </div>
       )}
       <Drawer open={open} onClose={reset} title={editing ? "Edit Testimoni" : "Tambah Testimoni"}>
-        <form onSubmit={handleSubmit} className="p-7 space-y-6">
+        <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <Field label="Nama"><input required type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} placeholder="Budi Santoso" /></Field>
           <Field label="Jabatan / Role"><input required type="text" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className={inputCls} placeholder="Digital Marketer" /></Field>
           <Field label="Rating">
@@ -704,7 +704,7 @@ function AcademyTab({
         </div>
       )}
       <Drawer open={open} onClose={reset} title={editing ? "Edit Tutorial" : "Tambah Tutorial"}>
-        <form onSubmit={handleSubmit} className="p-7 space-y-6">
+        <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <Field label="Judul Tutorial"><input required type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inputCls} placeholder="Cara Pakai Finance Tracker" /></Field>
           <Field label="Kategori">
             <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={inputCls + " appearance-none"}>
@@ -939,10 +939,10 @@ function SettingsTab({
         title="Settings"
         subtitle="Kelola identitas website dan pengalaman toko dari satu layar."
         action={
-          <button type="submit" form="settings-form" disabled={saving} className="inline-flex items-center gap-2 bg-white text-black text-[15px] font-semibold px-6 py-3 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50">
+          <button type="submit" form="settings-form" disabled={saving} className="inline-flex items-center gap-2 bg-white text-black text-base font-semibold px-6 py-3.5 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-50">
             {saving ? <><div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />Menyimpan...</>
-              : ok ? <><Check size={17} />Tersimpan</>
-              : <><Save size={17} />Simpan</>}
+              : ok ? <><Check size={18} />Tersimpan</>
+              : <><Save size={18} />Simpan</>}
           </button>
         }
       />
@@ -1234,17 +1234,17 @@ function BlogTab({
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-4 md:gap-5 mb-7">
-        <div className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 text-center">
-          <div className="text-3xl md:text-4xl font-bold text-white tabular-nums">{blogPosts.length}</div>
-          <div className="text-[12px] text-neutral-600 mt-1.5 uppercase tracking-wider">Total</div>
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 md:p-8 text-center">
+          <div className="text-5xl md:text-6xl font-bold text-white tabular-nums">{blogPosts.length}</div>
+          <div className="text-sm text-neutral-600 mt-2 uppercase tracking-wider">Total</div>
         </div>
-        <div className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 text-center">
-          <div className="text-3xl md:text-4xl font-bold text-green-400 tabular-nums">{published}</div>
-          <div className="text-[12px] text-neutral-600 mt-1.5 uppercase tracking-wider">Published</div>
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 md:p-8 text-center">
+          <div className="text-5xl md:text-6xl font-bold text-green-400 tabular-nums">{published}</div>
+          <div className="text-sm text-neutral-600 mt-2 uppercase tracking-wider">Published</div>
         </div>
-        <div className="bg-[#0d0d0d] border border-white/8 rounded-xl p-5 text-center">
-          <div className="text-3xl md:text-4xl font-bold text-neutral-400 tabular-nums">{drafts}</div>
-          <div className="text-[12px] text-neutral-600 mt-1.5 uppercase tracking-wider">Draft</div>
+        <div className="bg-[#0d0d0d] border border-white/8 rounded-2xl p-6 md:p-8 text-center">
+          <div className="text-5xl md:text-6xl font-bold text-neutral-400 tabular-nums">{drafts}</div>
+          <div className="text-sm text-neutral-600 mt-2 uppercase tracking-wider">Draft</div>
         </div>
       </div>
 
