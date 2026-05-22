@@ -17,7 +17,7 @@ import {
   Plus, Trash2, Edit3, Package, X, Menu,
   MousePointerClick, MessageSquare, BookOpen,
   Settings as SettingsIcon, Mail, LayoutDashboard, LogOut,
-  Globe, Star, Check, Save,
+  Globe, Star, Check, Save, AlertCircle,
   ExternalLink, Video, ChevronRight, FileText,
   Eye, Tag, Image as ImageIcon, AlignLeft,
   Inbox,
@@ -805,6 +805,7 @@ function SettingsTab({
     shopCategories: "", // comma-separated
     shopCtaText: "", shopPaymentNote: "",
   });
+  const [saveErr, setSaveErr] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [ok, setOk] = useState(false);
   const [brandErr, setBrandErr] = useState<string | null>(null);
@@ -892,12 +893,14 @@ function SettingsTab({
   };
 
   const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault(); setSaving(true);
+    e.preventDefault();
+    setSaving(true);
+    setSaveErr(null);
     const cats = form.shopCategories
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
-    await saveToSupabase("site_settings", {
+    const result = await saveToSupabase("site_settings", {
       id: settings?.id || "main",
       ...form,
       logoUrl: form.logoUrl || null,
@@ -907,13 +910,19 @@ function SettingsTab({
       shopTrustBadges: trustBadges,
       shopFeatures: shopFeatures,
     });
+    setSaving(false);
+    if (result?.ok === false) {
+      setSaveErr(`Gagal menyimpan: ${result.error}`);
+      return;
+    }
     // Invalidate server-side metadata cache so favicon/logo updates immediately.
     try {
       await fetch("/api/admin/revalidate-settings", { method: "POST" });
     } catch {
       // Non-fatal — will eventually expire from TTL.
     }
-    setSaving(false); setOk(true); setTimeout(() => setOk(false), 2000);
+    setOk(true);
+    setTimeout(() => setOk(false), 2000);
   };
 
   const addTrustBadge = () => setTrustBadges((prev) => [...prev, { label: "", icon: "Star" }]);
@@ -946,6 +955,32 @@ function SettingsTab({
           </button>
         }
       />
+
+      {saveErr && (
+        <div className="flex items-start gap-3 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-2xl px-5 py-4 mb-6">
+          <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold mb-1">Gagal menyimpan settings</p>
+            <p className="text-red-400/80 text-xs leading-relaxed">{saveErr}</p>
+            <p className="text-red-400/60 text-xs mt-2">Kemungkinan kolom di tabel <code className="bg-red-500/10 px-1 rounded">site_settings</code> belum lengkap. Jalankan SQL migration di bawah ini di Supabase SQL Editor.</p>
+            <details className="mt-3">
+              <summary className="text-xs text-red-400/70 cursor-pointer hover:text-red-400 transition-colors">Lihat SQL Migration</summary>
+              <code className="block mt-2 text-xs bg-black/40 rounded-lg px-3 py-3 font-mono text-yellow-300/80 select-all whitespace-pre leading-relaxed">{`ALTER TABLE site_settings
+  ADD COLUMN IF NOT EXISTS "logoUrl" text,
+  ADD COLUMN IF NOT EXISTS "faviconUrl" text,
+  ADD COLUMN IF NOT EXISTS "brandName" text,
+  ADD COLUMN IF NOT EXISTS "shopTitle" text,
+  ADD COLUMN IF NOT EXISTS "shopSubtitle" text,
+  ADD COLUMN IF NOT EXISTS "shopBadgeText" text,
+  ADD COLUMN IF NOT EXISTS "shopCategories" text[],
+  ADD COLUMN IF NOT EXISTS "shopCtaText" text,
+  ADD COLUMN IF NOT EXISTS "shopPaymentNote" text,
+  ADD COLUMN IF NOT EXISTS "shopTrustBadges" jsonb,
+  ADD COLUMN IF NOT EXISTS "shopFeatures" jsonb;`}</code>
+            </details>
+          </div>
+        </div>
+      )}
 
       <form id="settings-form" onSubmit={handleSave} className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
         <SettingsCard
