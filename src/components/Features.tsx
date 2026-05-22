@@ -302,7 +302,7 @@ function FeatureRow({ eyebrow, title, desc, icon: Icon, visual, reverse }: Featu
           </div>
           <span className="text-xs font-medium tracking-[0.18em] uppercase text-white/30">{eyebrow}</span>
         </div>
-        <h3 className="text-3xl md:text-4xl font-semibold text-white/90 tracking-tight leading-[1.15]">
+        <h3 className="text-3xl md:text-5xl font-semibold text-white/90 tracking-tight leading-[1.1]">
           {title}
         </h3>
         <p className="text-neutral-400 text-base leading-relaxed">{desc}</p>

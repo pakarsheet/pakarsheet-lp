@@ -8,7 +8,7 @@ import { CodeBackground } from "./CodeBackground";
 
 export function Hero() {
   return (
-    <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
+    <section className="relative pt-36 pb-20 md:pt-56 lg:pt-64 md:pb-32 overflow-hidden">
       {/* Background elements */}
       <CodeBackground />
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-white/[0.03] blur-[80px] rounded-full pointer-events-none" />
@@ -30,7 +30,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight mb-6 text-white/90 leading-[1.1]"
+            className="text-5xl md:text-7xl lg:text-8xl xl:text-[110px] font-semibold tracking-tight mb-6 text-white/90 leading-[1.05]"
           >
             Stop buang waktu untuk <br className="hidden md:block" />
             input data manual.
@@ -72,7 +72,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-20 relative mx-auto max-w-6xl"
+          className="mt-24 relative mx-auto max-w-6xl"
           style={{ willChange: "transform, opacity" }}
         >
           <div className="rounded-[32px] border border-white/10 bg-white/[0.02] p-2 md:p-3 shadow-2xl overflow-hidden relative">

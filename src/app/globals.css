@@ -49,6 +49,11 @@ body::before {
 }
 
 @layer components {
+  /* Cap all section containers on very wide screens so content doesn't float */
+  .container {
+    max-width: 1536px; /* = screen-2xl */
+  }
+
   .glass-card {
     @apply bg-white/[0.02] backdrop-blur-2xl border border-white/5;
   }

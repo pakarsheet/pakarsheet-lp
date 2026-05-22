@@ -250,7 +250,7 @@ function GraphLayout({ inView }: { inView: boolean }) {
             initial={{ opacity: 0, scale: 0.7 }}
             animate={inView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="relative flex flex-col items-center justify-center w-36 h-36 rounded-3xl bg-[#111] border border-white/[0.15] shadow-[0_0_60px_rgba(255,255,255,0.05)] flex-shrink-0"
+            className="relative flex flex-col items-center justify-center w-44 h-44 rounded-3xl bg-[#111] border border-white/[0.15] shadow-[0_0_80px_rgba(255,255,255,0.07)] flex-shrink-0"
           >
             {[1.14, 1.28].map((scale, i) => (
               <motion.div key={i} className="absolute inset-0 rounded-3xl border border-white/[0.08]"

@@ -122,10 +122,10 @@ function StatCard({ stat, index }: { stat: (typeof stats)[0]; index: number }) {
       {/* Number */}
       <div className="relative z-10">
         <div className="flex items-baseline gap-1 mb-1">
-          <span className="text-5xl font-bold tracking-tight text-white leading-none">
+          <span className="text-6xl md:text-7xl font-bold tracking-tight text-white leading-none">
             <Counter value={stat.value} decimals={(stat as { decimals?: number }).decimals ?? 0} />
           </span>
-          <span className="text-2xl font-semibold text-white/40 leading-none">{stat.suffix}</span>
+          <span className="text-3xl font-semibold text-white/40 leading-none">{stat.suffix}</span>
         </div>
         <p className="text-sm font-semibold text-white/70 tracking-tight">{stat.label}</p>
         <p className="text-xs text-neutral-600 mt-1">{stat.sublabel}</p>

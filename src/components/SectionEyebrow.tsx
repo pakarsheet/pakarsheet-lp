@@ -15,7 +15,7 @@ export function SectionEyebrow({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/8 text-[11px] font-medium tracking-[0.18em] uppercase text-white/50 ${className}`}
+      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs font-medium tracking-[0.18em] uppercase text-white/60 ${className}`}
     >
       <Icon size={12} strokeWidth={2.2} className="text-white/55" />
       <span>{label}</span>
