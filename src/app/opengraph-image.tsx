@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
-export const dynamic = "force-static";
-export const revalidate = 86400; // revalidate once per day
+export const dynamic = "force-dynamic";
+// OG images are cached automatically by Vercel/CDN edge — no need for force-static
 export const alt = "Pakarsheet - Template Google Sheets Premium";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
