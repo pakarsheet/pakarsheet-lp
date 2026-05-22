@@ -236,7 +236,7 @@ export default function ProductDetailPage({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="relative bg-[#080808] lg:border-r border-white/[0.05] flex flex-col"
+            className="relative bg-[#080808] lg:border-r border-white/[0.05] flex flex-col justify-center p-6 lg:p-10"
           >
             {/* Official badge overlay */}
             <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/10">
@@ -244,8 +244,8 @@ export default function ProductDetailPage({
               <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Official Product</span>
             </div>
 
-            {/* Main swiper — 1:1 aspect ratio */}
-            <div className="relative aspect-square w-full group">
+            {/* Main swiper — 1:1 aspect ratio, contained with rounded corners */}
+            <div className="relative aspect-square w-full rounded-2xl overflow-hidden group">
               <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 navigation={{ prevEl: ".swiper-prev", nextEl: ".swiper-next" }}
@@ -289,8 +289,8 @@ export default function ProductDetailPage({
               )}
             </div>
 
-            {/* Thumbnail strip + category info bar */}
-            <div className="p-4 lg:p-6 border-t border-white/[0.05] bg-[#080808] space-y-4">
+            {/* Thumbnail strip + trust badges */}
+            <div className="mt-4 space-y-4">
               <ThumbnailStrip
                 images={productImages}
                 activeIdx={activeImg}
